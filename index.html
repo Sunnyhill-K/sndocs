@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T12:58:35+09:00">
+<meta name="build" content="2026-10-05T13:25:45+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1008,6 +1008,15 @@ function listHtml(items, withWhere){
   return `<div class="mlist"><table><thead><tr><th>#</th>${withWhere?'<th>위치</th>':''}<th>종류</th><th>작성</th><th>원문</th><th>바꿀 문장</th><th>이유</th></tr></thead><tbody>${items.map(it=>`
     <tr><td class="n"><button class="jump" data-n="${it.n}" title="문서의 이 자리로 이동">${it.n}</button></td>${withWhere?`<td class="w">${esc(it.where)}</td>`:''}<td class="kd"><span class="chip kd ${esc(it.k||'')}">${esc(it.kind)}</span>${it.n===items.length?' <span class="chip last">마지막</span>':''}</td><td class="w who" style="${userColor(it.who, it.whoId)?`color:${userColor(it.who, it.whoId)}`:''}">${esc(userLabel(it.who, it.whoId)||it.who)}</td><td class="before">${esc(it.before)}</td><td class="after">${esc(it.after)}</td><td class="reason">${md(it.reason)}${it.reacts?` <span class="chip">${esc(it.reacts)}</span>`:''}${(it.replies||[]).length?`<div class="lreps">${it.replies.map(r=>`<div>↳ ${md(r)}</div>`).join('')}</div>`:''}</td></tr>`).join('')}</tbody></table></div>`;
 }
+// 메모 한 건만 글로 옮긴다. 전체 복사(listText)와 같은 꼴이라 섞어 붙여도 어색하지 않다.
+function markText(c, i){
+  const it=listItems(c)[i]; if (!it) return '';
+  return `${it.n}. ${it.who?'['+it.who+'] ':''}${it.where?'['+it.where+'] ':''}${it.kind}`
+    + (it.before ? ' · '+it.before : '')
+    + (it.after ? '\n   → '+it.after : '')
+    + (it.reason ? '\n   이유: '+it.reason : '')
+    + ((it.replies||[]).length ? '\n'+it.replies.map(r=>'   '+r).join('\n') : '');
+}
 function listText(c, items){
   const head = `${c.title||''} · 퇴고 메모 ${fmtN(items.length)}곳 (${c.date||''})`;
   const plain = t => t||'';
@@ -1884,12 +1893,15 @@ function renderPdfNotes(c){
     ${(()=>{ const ed=canEdit && m._editing; const canDel=canEdit && (!m.byId || (me && (m.byId===me.id || me.role==='admin')));
       const body = ed
         ? `${m.kind==='rep' ? `<textarea rows="1" class="after" data-i="${i}" data-f="after" placeholder="이렇게 바꿈">${esc(m.after||'')}</textarea>` : ''}${mdField(m.reason||'', `data-i="${i}" data-f="reason"`, m.kind==='memo'?'메모':'왜 고쳤는지', 'txt', m.segs)}<div class="mbtns"><button class="btn small primary" data-act="msave" data-i="${i}">저장 <kbd>Ctrl+↵</kbd></button><button class="btn small" data-act="mcancel" data-i="${i}">취소 <kbd>Esc</kbd></button></div>`
-        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div>${canEdit?`<div class="macts"><button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}</div>`:''}`;
+        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div><div class="macts"><button class="rl" data-act="mcopy" data-i="${i}" title="이 메모 한 건을 글로 복사합니다">복사</button>${canEdit?`<button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}`:''}</div>`;
       return body; })()}${reactsHtml(m, i)}${repliesHtml(m, i)}</div>`; }).join('');
   notes.querySelectorAll('.nn').forEach(b=>b.addEventListener('click', ()=>{ const n=b.closest('.note'); if (n){ jumpCur=n.dataset.h; if (pdfListMode){ pdfListMode=false; textRevMode=false; refreshPdfHead(c); setTimeout(()=>jumpToHunk(+n.dataset.h), 60); } else jumpToHunk(+n.dataset.h); } }));
   notes.querySelectorAll('.nvb').forEach(b=>b.addEventListener('click', e=>{ e.preventDefault(); const n=b.closest('.note'); if (n) jumpCur=n.dataset.h; jumpMemo(+b.dataset.d); }));
   notes.querySelectorAll('[data-act="mdel"]').forEach(b=>b.addEventListener('click', async ()=>{ const i=+b.dataset.i; if (!(await ask(`${i+1}번 메모를 삭제하시겠습니까? 본문의 표시와 답글도 함께 지워집니다.`, '삭제'))) return;
     pushHist(c, `메모 ${i+1} 삭제`); c.marks.splice(i,1); view.dirty=true; drawAllMarks(c); refreshPdfHead(c); layoutNotes(); }));
+  notes.querySelectorAll('[data-act="mcopy"]').forEach(b=>b.addEventListener('click', ()=>{
+    const i=+b.dataset.i; collectMarks(c); const t=markText(c, i);
+    if (t) copyText(t, `${i+1}번 메모를 복사했습니다`); }));
   notes.querySelectorAll('[data-act="medit"]').forEach(b=>b.addEventListener('click', ()=>{ const i=+b.dataset.i; const m=c.marks[i]; m._editing=true; m._snap={after:m.after||'', reason:m.reason||'', segs:JSON.parse(JSON.stringify(m.segs||null))}; renderPdfNotes(c); setTimeout(()=>focusHunk(i+1), 30); }));
   const commitEdit=async (i)=>{ const m=c.marks[i]; const n=document.getElementById('note'+(i+1)); if (!m || !n) return;
     const ta=n.querySelector('textarea[data-f="after"]'); const tr=n.querySelector('textarea[data-f="reason"]');
@@ -2305,35 +2317,34 @@ document.addEventListener('selectionchange', ()=>{
 // 끌기 시작한 조각과 끝낸 조각의 가로 범위를 자로 삼아, 그와 전혀 안 겹치는 조각은 뺀다.
 // (칸을 가로질러 끌면 자가 양쪽을 덮으므로 둘 다 남는다 — 일부러 가로지른 것은 그대로 둔다.)
 function colRange(range, tl){
-  // 끌기를 시작한 자리가 글자 위가 아니면(빈 곳을 짚는 흔한 경우) 경계점은 글자층이나 쪽 자체가 된다.
-  // 그때는 childNodes[offset] 으로 실제 조각을 집어 와야 한다 — 안 그러면 자를 못 구해 걸러내기가 통째로 꺼진다.
-  const spanOf=(n, off, end)=>{
-    let e=n;
-    if (e && e.nodeType===1 && e.childNodes.length){
-      let i = (off==null) ? 0 : (end ? off-1 : off);
-      e = e.childNodes[Math.max(0, Math.min(i, e.childNodes.length-1))];
-    }
-    e = e && (e.nodeType===1 ? e : e.parentElement);
-    return (e && e.closest) ? e.closest('.textLayer span') : null;
-  };
-  let x0=Infinity, x1=-Infinity;
-  [spanOf(range.startContainer, range.startOffset, false), spanOf(range.endContainer, range.endOffset, true)].forEach(sp=>{
-    if (!sp) return; const r=sp.getBoundingClientRect();
-    if (r.width>0){ x0=Math.min(x0, r.left); x1=Math.max(x1, r.right); }
-  });
-  if (x1>x0) return {x0, x1};
-  // 그래도 못 집으면: 고른 조각을 가로로 묶어, 줄이 가장 많이 모인 묶음을 그 칸으로 본다.
   if (!tl) return null;
-  const rs=[...tl.querySelectorAll(':scope > span')].filter(sp=>range.intersectsNode(sp))
-    .map(sp=>sp.getBoundingClientRect()).filter(r=>r.width>0).sort((a,b)=>a.left-b.left);
-  if (rs.length<2) return null;
+  // 경계점이 닿은 조각으로 자를 삼으면 안 된다. 오른쪽 칸 첫 글자의 왼쪽을 짚으면 브라우저는
+  // 가장 가까운 캐럿으로 「왼쪽 칸의 끝」을 잡고, 그 칸은 글자가 한 자도 안 잡힌 채 범위에만 든다.
+  // 그걸 자로 쓰면 자가 왼쪽 칸까지 덮어 걸러내기가 무의미해진다(화면으로는 오른쪽부터 끈 것처럼 보인다).
+  // → 글자가 실제로 잡힌 조각만 모아, 가로로 겹치는 것끼리 묶고, 글자가 가장 많이 모인 묶음을 그 칸으로 본다.
+  const items=[];
+  [...tl.querySelectorAll(':scope > span')].forEach(sp=>{
+    if (!range.intersectsNode(sp)) return;
+    const r2=document.createRange(); r2.selectNodeContents(sp);
+    try {
+      if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0) r2.setStart(range.startContainer, range.startOffset);
+      if (range.compareBoundaryPoints(Range.END_TO_END, r2)<0) r2.setEnd(range.endContainer, range.endOffset);
+    } catch(e){ return; }
+    const n=r2.toString().trim().length; if (!n) return;        // 범위에만 들고 글자는 안 잡힌 조각
+    const b=sp.getBoundingClientRect(); if (!(b.width>0)) return;
+    items.push({x0:b.left, x1:b.right, n});
+  });
+  if (items.length<2) return null;
+  const headIt=items[0], tailIt=items[items.length-1];            // 글자가 잡힌 첫 조각·마지막 조각(글 순서)
   const cl=[];
-  rs.forEach(r=>{ const last=cl[cl.length-1];
-    if (last && r.left < last.x1-1){ last.x1=Math.max(last.x1, r.right); last.n++; }
-    else cl.push({x0:r.left, x1:r.right, n:1}); });
-  if (cl.length<2) return null;                       // 묶음이 하나면 표가 아니다 — 거르지 않는다
-  const best=cl.reduce((a,b)=>(b.n>a.n ? b : a));
-  return (best.n > rs.length/2) ? {x0:best.x0, x1:best.x1} : null;
+  [...items].sort((a,b)=>a.x0-b.x0).forEach(it=>{ const last=cl[cl.length-1];
+    if (last && it.x0 < last.x1-1){ last.x1=Math.max(last.x1, it.x1); }
+    else cl.push({x0:it.x0, x1:it.x1}); });
+  if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
+  const clOf=it=>cl.find(c=>it.x0 < c.x1+1 && it.x1 > c.x0-1);
+  const a=clOf(headIt), z=clOf(tailIt); if (!a || !z) return null;
+  // 첫 조각이 든 묶음부터 마지막 조각이 든 묶음까지 — 칸을 일부러 가로지른 것은 양쪽 다 남는다
+  return {x0:Math.min(a.x0, z.x0), x1:Math.max(a.x1, z.x1)};
 }
 const inCol = (lim, left, right) => !lim || (right > lim.x0+1 && left < lim.x1-1);
 // 고른 글을 읽을 때 줄이 바뀌는 자리에 공백을 넣는다. 줄바꿈(br)을 렌더링에서 뺐기 때문에
