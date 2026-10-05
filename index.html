@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:37:17+09:00">
+<meta name="build" content="2026-10-05T14:42:19+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2430,6 +2430,20 @@ function selBoxes(range, tl){
   });
   return out;
 }
+// 🔴 손가락·마우스가 지나간 가로 범위 (2026-10-05)
+// 표의 칸을 문서에서 찾으려던 시도는 여기서 막혔다 — pdf.js 가 표 한 행의 글자를 공백 없이 이어 붙이고
+// 조각째 늘여 폭을 맞추면, 글자 사이가 **완전히 등간격**이 된다(폰 진단: 중앙값 1.6 · 최대 틈 1.6).
+// 칸 경계가 기하학적으로 존재하지 않으므로 조각으로도, 공백으로도, 틈으로도 가를 수 없다.
+// → 문서를 보지 말고 **사람이 어디를 쓸었는지**를 본다. 오른쪽 칸만 쓸었으면 왼쪽 칸은 안 지나갔다.
+let dragX=null;
+function noteDragX(e){
+  const t=e.target; if (!t || !t.closest || !t.closest('.page')) return;
+  const now=Date.now();
+  if (!dragX || now-dragX.t > 1500) dragX={x0:e.clientX, x1:e.clientX, t:now};
+  else { dragX.x0=Math.min(dragX.x0, e.clientX); dragX.x1=Math.max(dragX.x1, e.clientX); dragX.t=now; }
+}
+document.addEventListener('pointerdown', noteDragX, true);
+document.addEventListener('pointermove', e=>{ if (e.buttons || e.pointerType==='touch') noteDragX(e); }, true);
 function colRange(range, tl){
   if (!tl) return null;
   // 자도 같은 상자(글자 덩어리)로 잰다 — 조각으로 재면 표 한 행이 한 조각인 PDF 에서 칸이 안 갈린다.
@@ -2441,6 +2455,17 @@ function colRange(range, tl){
     if (last && it.left < last.x1-1){ last.x1=Math.max(last.x1, it.right); }
     else cl.push({x0:it.left, x1:it.right}); });
   window._colDbg={items:items.length, cls:cl.map(c=>Math.round(c.x0)+'~'+Math.round(c.x1))};
+  // 사람이 쓸고 지나간 자리가 있으면 그것을 먼저 쓴다 — 조각이 어떻게 생겼든 상관없다.
+  // 스친 덩어리들의 전체 범위로 넓혀, 짧게 눌러 고른 경우에도 그 줄이 통째로 남게 한다.
+  if (dragX && Date.now()-dragX.t < 5000){
+    const pad=Math.max(8, (items[0].bottom-items[0].top));
+    const hit=items.filter(it=> it.right > dragX.x0-pad && it.left < dragX.x1+pad);
+    if (hit.length && hit.length < items.length){
+      const x0=Math.min(...hit.map(h=>h.left)), x1=Math.max(...hit.map(h=>h.right));
+      window._colDbg={items:items.length, cls:['손가락 '+Math.round(dragX.x0)+'~'+Math.round(dragX.x1)+' → '+Math.round(x0)+'~'+Math.round(x1)]};
+      return {x0, x1};
+    }
+  }
   if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
   const clOf=it=>cl.find(c=>it.left < c.x1+1 && it.right > c.x0-1);
   const a=clOf(headIt), z=clOf(tailIt); if (!a || !z) return null;
