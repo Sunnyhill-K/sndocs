@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:42:19+09:00">
+<meta name="build" content="2026-10-05T15:10:21+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2424,7 +2424,7 @@ function selBoxes(range, tl){
         if (r.width<=1 || r.height<=1) return;
         const L=Math.max(r.left, ink.left),  R=Math.min(r.right, ink.right);
         const T=Math.max(r.top,  ink.top),   B=Math.min(r.bottom, ink.bottom);
-        if (R-L>1 && B-T>1) out.push({left:L, right:R, top:T, bottom:B});
+        if (R-L>1 && B-T>1) out.push(clipByDrag({left:L, right:R, top:T, bottom:B}));
       });
     });
   });
@@ -2444,6 +2444,19 @@ function noteDragX(e){
 }
 document.addEventListener('pointerdown', noteDragX, true);
 document.addEventListener('pointermove', e=>{ if (e.buttons || e.pointerType==='touch') noteDragX(e); }, true);
+// 한 덩어리가 왼쪽 칸부터 오른쪽 칸까지 통째로 걸쳐 있으면 덩어리를 고르는 것으로는 못 가른다
+// (폰 진단: 준상자에 36~297 — 쪽 왼쪽부터 오른쪽 끝까지 한 덩어리).
+// 그때는 상자 자체를 깎는다 — 손가락이 지나지 않은 바깥쪽을 잘라낸다.
+// 넉넉히 여유를 두어, 글자 시작보다 조금 안쪽에서 쓸기 시작해도 글자가 잘리지 않게 한다.
+function clipByDrag(r){
+  if (!dragX || Date.now()-dragX.t > 5000) return r;
+  const pad=Math.max(14, (r.bottom-r.top)*1.6);
+  let L=r.left, R=r.right;
+  const cutL=dragX.x0-pad, cutR=dragX.x1+pad;
+  if (cutL > L && cutL < R-2) L=cutL;            // 왼쪽에 안 쓴 자리가 있다
+  if (cutR < R && cutR > L+2) R=cutR;            // 오른쪽에 안 쓴 자리가 있다
+  return (R-L>2) ? {left:L, right:R, top:r.top, bottom:r.bottom} : r;
+}
 function colRange(range, tl){
   if (!tl) return null;
   // 자도 같은 상자(글자 덩어리)로 잰다 — 조각으로 재면 표 한 행이 한 조각인 PDF 에서 칸이 안 갈린다.
