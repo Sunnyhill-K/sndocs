@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:03:23+09:00">
+<meta name="build" content="2026-10-05T14:08:54+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2328,6 +2328,13 @@ document.addEventListener('selectionchange', ()=>{
 // 표에서는 왼쪽 칸 글자가 오른쪽 칸 글자 사이에 끼어 있어서, 오른쪽 칸만 끌어도 옆 칸이 범위에 빨려든다.
 // 끌기 시작한 조각과 끝낸 조각의 가로 범위를 자로 삼아, 그와 전혀 안 겹치는 조각은 뺀다.
 // (칸을 가로질러 끌면 자가 양쪽을 덮으므로 둘 다 남는다 — 일부러 가로지른 것은 그대로 둔다.)
+// 조각의 「글자가 실제로 놓인 자리」. 조각 자체의 상자는 손가락용으로 늘려 둔 padding(fillGaps)까지
+// 품어서, 폰에서는 옆 칸까지 닿아 버린다 — 글자만 재야 칸이 갈린다.
+function inkRect(sp){
+  try { const r=document.createRange(); r.selectNodeContents(sp); const b=r.getBoundingClientRect();
+        if (b.width>0) return b; } catch(e){}
+  return sp.getBoundingClientRect();
+}
 function colRange(range, tl){
   if (!tl) return null;
   // 경계점이 닿은 조각으로 자를 삼으면 안 된다. 오른쪽 칸 첫 글자의 왼쪽을 짚으면 브라우저는
@@ -2343,7 +2350,7 @@ function colRange(range, tl){
       if (range.compareBoundaryPoints(Range.END_TO_END, r2)<0) r2.setEnd(range.endContainer, range.endOffset);
     } catch(e){ return; }
     const n=r2.toString().trim().length; if (!n) return;        // 범위에만 들고 글자는 안 잡힌 조각
-    const b=sp.getBoundingClientRect(); if (!(b.width>0)) return;
+    const b=inkRect(sp); if (!(b.width>0)) return;
     items.push({x0:b.left, x1:b.right, n});
   });
   if (items.length<2) return null;
@@ -2366,7 +2373,7 @@ function pdfSelText(range, pageEl){
   const out=[]; let lastTop=null; const lim=colRange(range, tl);
   [...tl.querySelectorAll(':scope > span')].forEach(sp=>{
     if (!range.intersectsNode(sp)) return;
-    const sr=sp.getBoundingClientRect(); if (!inCol(lim, sr.left, sr.right)) return;   // 옆 칸
+    const sr=inkRect(sp); if (!inCol(lim, sr.left, sr.right)) return;   // 옆 칸
     const r2=document.createRange(); r2.selectNodeContents(sp);
     try {
       if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0) r2.setStart(range.startContainer, range.startOffset);
