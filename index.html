@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:08:54+09:00">
+<meta name="build" content="2026-10-05T14:13:32+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2309,6 +2309,15 @@ function paintSel(){
               hit.top=Math.min(hit.top, r.top);   hit.bottom=Math.max(hit.bottom, r.bottom); }
     else boxes.push({left:r.left, right:r.right, top:r.top, bottom:r.bottom});
   });
+  if (SELDIAG){
+    const raw=[...range.getClientRects()].filter(r=>r.width>1 && r.height>1);
+    const px=r=>Math.round(r.left-pr.left)+'~'+Math.round((r.right!=null?r.right:r.left)-pr.left);
+    const dbg=window._colDbg||{};
+    selDiag('자=' + (lim ? Math.round(lim.x0-pr.left)+'~'+Math.round(lim.x1-pr.left) : '없음')
+      + ' 조각' + (dbg.items||0) + ' 묶음[' + ((dbg.cls||[]).map(c=>c).join(' | ')) + ']'
+      + ' 준상자=' + raw.map(px).join(',')
+      + ' 칠함=' + boxes.map(px).join(','));
+  }
   const box=document.createElement('div'); box.className='selpaint';
   boxes.forEach(b=>{
     const d=document.createElement('div'); d.className='selbox';
@@ -2359,6 +2368,7 @@ function colRange(range, tl){
   [...items].sort((a,b)=>a.x0-b.x0).forEach(it=>{ const last=cl[cl.length-1];
     if (last && it.x0 < last.x1-1){ last.x1=Math.max(last.x1, it.x1); }
     else cl.push({x0:it.x0, x1:it.x1}); });
+  window._colDbg={items:items.length, cls:cl.map(c=>Math.round(c.x0)+'~'+Math.round(c.x1))};
   if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
   const clOf=it=>cl.find(c=>it.x0 < c.x1+1 && it.x1 > c.x0-1);
   const a=clOf(headIt), z=clOf(tailIt); if (!a || !z) return null;
