@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T15:10:21+09:00">
+<meta name="build" content="2026-10-05T22:37:22+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1848,7 +1848,7 @@ function refreshPdfHead(c){
     $('#pgPrev').addEventListener('click', ()=>goPage((currentPage()||1)-1));
     $('#pgNext').addEventListener('click', ()=>goPage((currentPage()||1)+1));
   }
-  if (cb) cb.addEventListener('click', async ()=>{ if (!(await ask(`메모 ${fmtN(c.marks.length)}곳을 모두 지웁니다. 되돌리기로 복구할 수 있습니다.`,'모두 지우기'))) return; pushHist(c, `메모 모두 지우기 (${fmtN(c.marks.length)})`); c.marks=[]; view.dirty=true; drawAllMarks(c); refreshPdfHead(c); });
+  if (cb) cb.addEventListener('click', async ()=>{ if (!(await ask(`메모 ${fmtN(c.marks.length)}곳을 모두 지웁니다. 되돌리기로 복구할 수 있습니다.`,'모두 지우기'))) return; pushHist(c, `메모 모두 지우기 (${fmtN(c.marks.length)})`); c.marks=[]; view.dirty=true; view.risky=true; drawAllMarks(c); refreshPdfHead(c); });
   bindHead(c, collectMarks);
   // 목록만 보기 ↔ 문서 보기
   const sheet=$('#pdfSheet'), list=$('#mlist');
@@ -1898,7 +1898,7 @@ function renderPdfNotes(c){
   notes.querySelectorAll('.nn').forEach(b=>b.addEventListener('click', ()=>{ const n=b.closest('.note'); if (n){ jumpCur=n.dataset.h; if (pdfListMode){ pdfListMode=false; textRevMode=false; refreshPdfHead(c); setTimeout(()=>jumpToHunk(+n.dataset.h), 60); } else jumpToHunk(+n.dataset.h); } }));
   notes.querySelectorAll('.nvb').forEach(b=>b.addEventListener('click', e=>{ e.preventDefault(); const n=b.closest('.note'); if (n) jumpCur=n.dataset.h; jumpMemo(+b.dataset.d); }));
   notes.querySelectorAll('[data-act="mdel"]').forEach(b=>b.addEventListener('click', async ()=>{ const i=+b.dataset.i; if (!(await ask(`${i+1}번 메모를 삭제하시겠습니까? 본문의 표시와 답글도 함께 지워집니다.`, '삭제'))) return;
-    pushHist(c, `메모 ${i+1} 삭제`); c.marks.splice(i,1); view.dirty=true; drawAllMarks(c); refreshPdfHead(c); layoutNotes(); }));
+    pushHist(c, `메모 ${i+1} 삭제`); c.marks.splice(i,1); view.dirty=true; view.risky=true; drawAllMarks(c); refreshPdfHead(c); layoutNotes(); }));
   notes.querySelectorAll('[data-act="mcopy"]').forEach(b=>b.addEventListener('click', ()=>{
     const i=+b.dataset.i; collectMarks(c); const t=markText(c, i);
     if (t) copyText(t, `${i+1}번 메모를 복사했습니다`); }));
@@ -3295,7 +3295,8 @@ async function loadDoc(c){
   (c.marks||[]).forEach(m=>{ m.reason=unband(m.reason); }); c.note=unband(c.note);
   ensureMids(c); c._base=new Set(c.marks.map(m=>m.mid)); c._baseTs=d.ts||'';
   if (c._legacyVis && token) setTimeout(()=>toast('이 문서의 「볼 수 있는 사람」은 아직 화면 제한만 걸려 있습니다. 한 번 저장하면 지정된 사람만 열 수 있게 봉인됩니다'), 300);
-  c.loaded=true; return c;
+  c.loaded=true; try { await offerDraft(c); } catch(e){}
+  return c;
 }
 function meta(c){ return {id:c.id, title:c.title, date:c.date, ts:c.ts||'', type:c.type||'text', client:c.client||'', n:caseCount(c), lock:!!c.lock, vis:(Array.isArray(c.vis)?c.vis:null), owner:c.owner||'', ver:(c.versions||[]).length+1}; }
 function canSee(c){ if (!me) return true; if (me.role==='admin' || c.owner===me.id) return true; return !Array.isArray(c.vis) || c.vis.includes(me.id); }
@@ -3306,7 +3307,8 @@ async function updateIndex(fn){
   list.sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.id||'').localeCompare(a.id||''));
   await ghWrite('docs/index.json', te.encode(JSON.stringify(list)), 'index');
 }
-async function saveDoc(c, btn){
+async function saveDoc(c, btn, opt){
+  const auto = !!(opt && opt.auto);
   const msg=$('#saveMsg'); if (msg){ msg.textContent='저장하는 중…'; msg.className='msg'; } if (btn) btn.disabled=true;
   try {
     if (!token) throw new Error('편집자만 저장할 수 있습니다');
@@ -3358,13 +3360,15 @@ async function saveDoc(c, btn){
     if (c._snapPdf){ if (msg) msg.textContent='이전 버전 PDF 보관 중…'; Prog.set(0.2, '이전 버전 PDF 보관 중'); await ghWrite(c._snapPdf.file, await encB(key, b64ToBytes(c._snapPdf.b64)), `version pdf: ${c.title}`, f=>Prog.set(0.2+f*0.2, '이전 버전 PDF 보관 중')); delete c._snapPdf; }
     if (isPdf(c) && (c.pdfDirty || keyChanged)){ if (!c.pdf) throw new Error('PDF 내용이 메모리에 없습니다. 문서를 다시 열어 주세요'); if (msg) msg.textContent='PDF 올리는 중…'; const mb=(c.pdf.length*0.75/1048576).toFixed(1); Prog.set(0.4, `PDF 올리는 중 (${mb}MB)`); await ghWrite(`docs/${c.id}.pdf.enc`, await encB(key, b64ToBytes(c.pdf)), `pdf: ${c.title}`, f=>Prog.set(0.4+f*0.4, `PDF 올리는 중 (${mb}MB)`)); c.pdfDirty=false; }
     if (msg) msg.textContent='문서 저장하는 중…'; Prog.set(0.85, '문서 저장하는 중');
-    await ghWrite(`docs/${c.id}.json`, te.encode(JSON.stringify(Object.assign({}, m, c.lock?{lock:true, wrap}:{}, uw?{uw}:{}, {ct}))), `save: ${c.title}`);
+    await ghWrite(`docs/${c.id}.json`, te.encode(JSON.stringify(Object.assign({}, m, c.lock?{lock:true, wrap}:{}, uw?{uw}:{}, {ct}))), (auto?'auto: ':'save: ')+c.title);
     Prog.set(0.95, '목록 갱신'); await updateIndex(list=>{ const i=list.findIndex(x=>x.id===c.id); if (i>=0) list[i]=m; else list.push(m); }); Prog.done();
     const idx=cases.findIndex(x=>x.id===c.id); if (idx>=0){ if (cases[idx]!==c) Object.assign(cases[idx], c); } else cases.push(c);
     { const tgt=(idx>=0?cases[idx]:c); tgt.ver=m.ver; tgt.n=m.n; c.ver=m.ver; } renderList();   // 왼쪽 목록의 버전·개수 칩도 바로 갱신(목록 객체가 따로일 때도)
     c._base=new Set(c.marks.map(m=>m.mid)); c._baseTs=c.ts||'';
     const wasDraft=!!view.draft; const y=window.scrollY;
-    view.draft=null; view.id=c.id; view.dirty=false; location.hash='case='+c.id; toast('저장했습니다');
+    view.draft=null; view.id=c.id; view.dirty=false; view.risky=false; location.hash='case='+c.id;
+    dropDraftLocal(c.id); lastAutoAt=Date.now(); lastSig=docSig(c); syncTopActs();
+    toast(auto ? '자동 저장했습니다' : '저장했습니다');
     // 저장 뒤 화면을 맨 위로 보내지 않는다: 기존 PDF 문서는 머리만 갱신, 그 외는 다시 그린 뒤 같은 자리로
     if (!wasDraft && isPdf(c)){ refreshPdfHead(c); restoreSpot(y, true); }
     else { pendingSpot={y, focus:true}; render(); if (!isPdf(c)){ pendingSpot=null; restoreSpot(y, true); } }
@@ -3910,7 +3914,11 @@ async function copyText(t, ok){
 $('#btnList').addEventListener('click', async ()=>{ if (!(await leaveOk())) return; view={mode:'list',id:null,draft:null,dirty:false,show:'side'}; location.hash=''; render(); });
 $('#btnReload').addEventListener('click', async ()=>{ if (!(await leaveOk())) return; location.reload(); });
 // 폰 상단 바의 되돌리기·다시 실행·저장은 도구줄의 진짜 단추를 눌러 준다(도구줄은 스크롤에 사라지므로)
-function syncTopActs(){ const u=$('#tUndo'), r=$('#tRedo'), sv=$('#tSave'); if (!u) return; const ub=$('#undoBtn'), rb=$('#redoBtn'), sb=$('#saveCase'); u.disabled=!(ub && !ub.disabled); r.disabled=!(rb && !rb.disabled); sv.disabled=!(sb && !sb.disabled);
+function syncTopActs(){ const u=$('#tUndo'), r=$('#tRedo'), sv=$('#tSave'); if (!u) return;
+  { const need=!!(view.dirty && view.risky); const sb2=$('#saveCase');
+    if (sv) sv.textContent = need ? '저장 ●' : '저장';
+    if (sb2) sb2.title = need ? '지운 것이 있어 자동 저장을 멈췄습니다 — 눌러서 올려 주세요' : '';
+    if (sv) sv.title = need ? '지운 것이 있어 자동 저장을 멈췄습니다' : '저장'; } const ub=$('#undoBtn'), rb=$('#redoBtn'), sb=$('#saveCase'); u.disabled=!(ub && !ub.disabled); r.disabled=!(rb && !rb.disabled); sv.disabled=!(sb && !sb.disabled);
   const tl=$('#tList'), sh=$('.shell'); if (tl && sh){ const inDoc=document.body.classList.contains('inDoc'); const open=inDoc && !sh.classList.contains('nrail'); tl.classList.toggle('on', open); tl.textContent = open ? '목록 닫기' : '목록'; tl.disabled=!inDoc; } }
 // 폰의 [목록]: 문서 위에 목록을 덮어 보인다(문서를 고르면 접힌다). 접힌 목록의 「펼치기」 띠는 폰에서 없앤다
 { const tl=$('#tList'); if (tl) tl.addEventListener('click', ()=>{ const sh=$('.shell'); if (!sh) return; if (npop.h!=null) closeNotePop(); sh.classList.toggle('nrail'); try { syncFold(); } catch(e){} syncTopActs(); pinOverlays(); }); }
@@ -3933,6 +3941,75 @@ $('#btnRail').addEventListener('click', e=>{ e.stopPropagation(); shell.classLis
 // 레이아웃 폭(clientWidth)만 본다 — innerWidth 는 아이폰 핀치 줌에 따라 줄어 PDF 를 통째로 다시 그리게 했다
 let rsT=null, lastW=document.documentElement.clientWidth, lastStacked=isMob();
 window.addEventListener('resize', ()=>{ layoutNotes(); fixBodyWidth(); clearTimeout(rsT); rsT=setTimeout(()=>{ const w=document.documentElement.clientWidth; const nowStacked=isMob(); if (nowStacked!==lastStacked || (nowStacked && Math.abs(w-lastW)>10)){ lastStacked=nowStacked; lastW=w; if (pdfState && $('#doc')) drawPages(); else layoutTextDoc(); } else lastW=w; }, 250); });
+// ══════════════ 자동저장 ══════════════
+// 두 층으로 나눈다.
+//  1층 — 고칠 때마다 브라우저에 담아 둔다. 깃헙을 전혀 안 쓰므로 값도 위험도 없다.
+//        창이 꺼지거나 폰이 탭을 정리해도 다시 열 때 이어서 할 수 있다.
+//  2층 — 손을 멈추고 90초, 그리고 지난 저장에서 5분이 지났을 때만 깃헙에 올린다.
+//        🔴 **지우는 일이 섞이면 올리지 않는다** — 메모 삭제·모두 지우기·버전 삭제는
+//        사람이 한 번 더 보고 눌러야 한다(2026-10-05 쑤닐님). 저장 단추에 ● 를 띄워 알린다.
+const IDLE_MS=90000, FLOOR_MS=300000, DRAFT_KEY=id=>'redpen.draft.'+id;
+let lastEditAt=0, lastAutoAt=0, autoBusy=false, lastSig='', draftT=0;
+function curDocNow(){ return view.draft || cases.find(x=>x.id===view.id) || null; }
+function docSig(c){
+  if (!c) return '';
+  const ms=c.marks||[];
+  let n=0; ms.forEach(m=>{ n += (m.reason||'').length + (m.after||'').length + (m.text||'').length + (m.replies||[]).length*7 + (m.kind||'').length; });
+  return ms.length+':'+n+':'+(c.note||'').length+':'+(c.crop?1:0);
+}
+async function saveDraftLocal(){
+  const c=curDocNow(); if (!c || !c.id || !view.dirty) return;
+  try {
+    const body={marks:c.marks||[], note:c.note||'', noteSegs:c.noteSegs||[], crop:c.crop||null, at:Date.now(), title:c.title||''};
+    const u8=new TextEncoder().encode(JSON.stringify(body));
+    const out = K ? await encB(K, u8) : u8;
+    localStorage.setItem(DRAFT_KEY(c.id), b64(out));
+  } catch(e){ /* 용량이 찼거나 열쇠가 없으면 조용히 넘어간다 — 1층은 어디까지나 보험이다 */ }
+}
+function dropDraftLocal(id){ try { localStorage.removeItem(DRAFT_KEY(id)); } catch(e){} }
+// 저장 안 한 것이 남아 있으면 문서를 열 때 물어본다
+async function offerDraft(c){
+  if (!c || !c.id || !K) return;
+  let raw; try { raw=localStorage.getItem(DRAFT_KEY(c.id)); } catch(e){ return; }
+  if (!raw) return;
+  let body=null;
+  try { body=JSON.parse(new TextDecoder().decode(await decB(K, ub64(raw)))); } catch(e){ dropDraftLocal(c.id); return; }
+  const same = JSON.stringify(body.marks||[])===JSON.stringify(c.marks||[]) && (body.note||'')===(c.note||'');
+  if (same){ dropDraftLocal(c.id); return; }
+  const mins=Math.max(1, Math.round((Date.now()-(body.at||0))/60000));
+  const when = mins<60 ? mins+'분 전' : Math.round(mins/60)+'시간 전';
+  if (await ask(`저장하지 않은 변경이 남아 있습니다(${when}). 이어서 하시겠습니까?\n\n「버리기」를 누르면 저장된 내용으로 엽니다.`, '이어서 하기')){
+    c.marks=body.marks||[]; c.note=body.note||''; c.noteSegs=body.noteSegs||[];
+    if (body.crop) c.crop=body.crop; else delete c.crop;
+    view.dirty=true; lastEditAt=Date.now(); lastSig=docSig(c);
+    const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs();
+    toast('저장 안 한 변경을 되살렸습니다 — 확인하고 저장해 주세요');
+    render();
+  } else dropDraftLocal(c.id);
+}
+// 손이 멈춘 지 오래됐고, 지우는 일이 안 섞였으면 조용히 올린다
+function maybeAutoSave(){
+  if (autoBusy || !view.dirty || view.risky) return;
+  if (!token || typeof editable!=='function' || !editable()) return;
+  if (view.draft) return;                                   // 아직 저장한 적 없는 새 문서는 손으로
+  const c=curDocNow(); if (!c || !c.id) return;
+  if (roVer) return;                                        // 옛 버전을 보는 중
+  const now=Date.now();
+  if (now-lastEditAt < IDLE_MS || now-lastAutoAt < FLOOR_MS) return;
+  autoBusy=true; lastAutoAt=now;
+  saveDoc(c, null, {auto:true}).catch(()=>{}).then(()=>{ autoBusy=false; });
+}
+setInterval(()=>{
+  const c=curDocNow(); if (!c) return;
+  if (!view.dirty){ lastSig=docSig(c); return; }
+  const sig=docSig(c);
+  if (sig!==lastSig){                                       // 방금 뭔가 고쳤다
+    lastSig=sig; lastEditAt=Date.now();
+    clearTimeout(draftT); draftT=setTimeout(saveDraftLocal, 2000);
+    return;
+  }
+  maybeAutoSave();
+}, 1000);
 window.addEventListener('beforeunload', e=>{ if (view.dirty){ e.preventDefault(); e.returnValue=''; } });
 document.fonts && document.fonts.ready.then(()=>layoutNotes());
 
