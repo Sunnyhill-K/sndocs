@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T13:25:45+09:00">
+<meta name="build" content="2026-10-05T14:03:23+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2294,19 +2294,31 @@ function paintSel(){
   const host=pageEl.querySelector('.marks'); if (!host) return;   // 겹과 같은 좌표계(자른 쪽에서도 맞는다)
   const pr=pgRect(pageEl); if (!pr.width || !pr.height) return;
   const lim=colRange(range, pageEl.querySelector('.textLayer'));
-  const box=document.createElement('div'); box.className='selpaint'; let n=0;
+  // 브라우저는 한 줄을 글꼴·크기 단위로 쪼개 여러 상자로 돌려준다(한글+숫자가 섞인 줄은 두 벌이 겹쳐 온다).
+  // 그대로 다 그리면 반투명이 포개져 그 줄만 진해진다 — 「두 줄이 이중으로 칠해진 느낌」이 이것이다.
+  // → 같은 줄에서 가로로 겹치거나 맞닿는 상자는 하나로 합쳐 그린다.
+  const cy=r=>(r.top+r.bottom)/2, hh=r=>(r.bottom-r.top);
+  const boxes=[];
   [...range.getClientRects()].forEach(r=>{
     if (r.width<=1 || r.height<=1) return;
     if (r.height > pr.height*0.25) return;                        // 글줄이라 보기엔 너무 큰 상자
     if (!inCol(lim, r.left, r.right)) return;                     // 옆 칸
-    const d=document.createElement('div'); d.className='selbox';
-    d.style.left=((r.left-pr.left)/pr.width*100)+'%';
-    d.style.top=((r.top-pr.top)/pr.height*100)+'%';
-    d.style.width=(r.width/pr.width*100)+'%';
-    d.style.height=(r.height/pr.height*100)+'%';
-    box.appendChild(d); n++;
+    const hit=boxes.find(b=> Math.abs(cy(b)-cy(r)) < Math.min(hh(b), hh(r))*0.6
+                             && r.left < b.right+2 && r.right > b.left-2);
+    if (hit){ hit.left=Math.min(hit.left, r.left); hit.right=Math.max(hit.right, r.right);
+              hit.top=Math.min(hit.top, r.top);   hit.bottom=Math.max(hit.bottom, r.bottom); }
+    else boxes.push({left:r.left, right:r.right, top:r.top, bottom:r.bottom});
   });
-  if (n) host.appendChild(box);
+  const box=document.createElement('div'); box.className='selpaint';
+  boxes.forEach(b=>{
+    const d=document.createElement('div'); d.className='selbox';
+    d.style.left=((b.left-pr.left)/pr.width*100)+'%';
+    d.style.top=((b.top-pr.top)/pr.height*100)+'%';
+    d.style.width=((b.right-b.left)/pr.width*100)+'%';
+    d.style.height=((b.bottom-b.top)/pr.height*100)+'%';
+    box.appendChild(d);
+  });
+  if (boxes.length) host.appendChild(box);
 }
 document.addEventListener('selectionchange', ()=>{
   if (selPaintReq) return;
