@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:21:52+09:00">
+<meta name="build" content="2026-10-05T14:28:31+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2359,36 +2359,48 @@ function selBoxes(range, tl){
   [...tl.querySelectorAll(':scope > span')].forEach(sp=>{
     if (!range.intersectsNode(sp)) return;
     const node=sp.firstChild; if (!node || node.nodeType!==3) return;
-    const txt=node.nodeValue || ''; if (!txt.trim()) return;
-    const ink=inkRect(sp);
-    // 조각 안을 「넓은 공백(두 칸 이상)」으로 끊어 글자 덩어리로 나눈다 — 표 한 행이 한 조각으로
-    // 그려진 PDF 에서는 칸과 칸 사이가 이 공백으로만 구별된다.
-    const runs=[]; let k=0;
-    while (k<txt.length){
-      while (k<txt.length && /\s/.test(txt[k])) k++;
-      if (k>=txt.length) break;
-      let e=k;
-      while (e<txt.length){
-        if (/\s/.test(txt[e])){
-          let w=e; while (w<txt.length && /\s/.test(txt[w])) w++;
-          if (w-e>=2) break;                       // 넓은 공백 = 칸 경계로 본다
-          e=w; continue;
-        }
-        e++;
-      }
-      runs.push([k, e]); k=e;
+    const txt=node.nodeValue || ''; const n=txt.length; if (!txt.trim()) return;
+    const ink=inkRect(sp); const gap=Math.max(6, (ink.bottom-ink.top)*1.1);
+    const at=k=>{ const r=document.createRange(); r.setStart(node,k); r.setEnd(node,k+1); return r.getBoundingClientRect(); };
+    // 🔴 칸 경계는 「공백 글자」로 찾을 수 없다 — pdf.js 는 표 칸 사이를 좌표로만 띄우고
+    // 공백을 한 자도 안 넣기도 한다(2026-10-05 폰 진단: 넓은 공백 기준으로는 한 번도 안 끊겼다).
+    // 그래서 **눈에 보이는 틈**으로 찾는다 — 띄어쓰기 자리마다 앞뒤 글자 사이가
+    // 글자 높이만큼 벌어졌으면 거기가 칸과 칸 사이다.
+    const cuts=[];
+    for (let k=0;k<n;k++){
+      if (!/\s/.test(txt[k])) continue;
+      let a=k-1; while (a>=0 && /\s/.test(txt[a])) a--;
+      let b=k+1; while (b<n && /\s/.test(txt[b])) b++;
+      if (a<0 || b>=n) continue;
+      let ra, rb; try { ra=at(a); rb=at(b); } catch(e){ continue; }
+      if (ra.width>0 && rb.width>0 && (rb.left-ra.right) > gap) cuts.push(b);
+      k=b-1;
     }
+    if (!cuts.length && n>=12){
+      // 띄어쓰기를 한 자도 안 넣은 PDF 도 있다 — 그때는 글자 사이를 직접 훑어 틈을 찾는다.
+      // (공백으로 못 찾았을 때만 하므로 값이 비싸지 않다)
+      let prev=null;
+      for (let k=0;k<n;k++){
+        if (/\s/.test(txt[k])) continue;
+        let r; try { r=at(k); } catch(e){ continue; }
+        if (!(r.width>0)) continue;
+        if (prev!=null && (r.left-prev) > gap) cuts.push(k);
+        prev=r.right;
+      }
+    }
+    const runs=[]; let st=0;
+    cuts.forEach(c=>{ if (c>st) runs.push([st, c]); st=c; });
+    runs.push([st, n]);
     runs.forEach(([a,b])=>{
       const r2=document.createRange();
       try { r2.setStart(node, a); r2.setEnd(node, b); } catch(e){ return; }
-      // 고른 범위와의 교집합만 남긴다
       try {
         if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0){
-          if (range.comparePoint(node, b)<0) return;     // 덩어리 전체가 고르기 앞
+          if (range.comparePoint(node, b)<0) return;      // 덩어리 전체가 고르기 앞
           r2.setStart(range.startContainer, range.startOffset);
         }
         if (range.compareBoundaryPoints(Range.END_TO_END, r2)<0){
-          if (range.comparePoint(node, a)>0) return;     // 덩어리 전체가 고르기 뒤
+          if (range.comparePoint(node, a)>0) return;      // 덩어리 전체가 고르기 뒤
           r2.setEnd(range.endContainer, range.endOffset);
         }
       } catch(e){ return; }
@@ -2413,8 +2425,8 @@ function colRange(range, tl){
   [...items].sort((a,b)=>a.left-b.left).forEach(it=>{ const last=cl[cl.length-1];
     if (last && it.left < last.x1-1){ last.x1=Math.max(last.x1, it.right); }
     else cl.push({x0:it.left, x1:it.right}); });
-  if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
   window._colDbg={items:items.length, cls:cl.map(c=>Math.round(c.x0)+'~'+Math.round(c.x1))};
+  if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
   const clOf=it=>cl.find(c=>it.left < c.x1+1 && it.right > c.x0-1);
   const a=clOf(headIt), z=clOf(tailIt); if (!a || !z) return null;
   // 첫 덩어리가 든 묶음부터 마지막 덩어리가 든 묶음까지 — 칸을 일부러 가로지른 것은 양쪽 다 남는다
