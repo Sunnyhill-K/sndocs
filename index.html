@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T12:44:24+09:00">
+<meta name="build" content="2026-10-05T12:50:50+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2265,13 +2265,28 @@ function fillGaps(tl, pageH){
   const down=Math.round(pageH - last.t/100*pageH);
   if (down>0) last.list.forEach(sp=>{ sp.style.paddingBottom=down+'px'; });
 }
+// PDF 글자층에는 표가 없다 — 칸이든 뭐든 그냥 조각이 늘어서 있을 뿐이고, 그 순서는 PDF 가 그린 순서다.
+// 표에서는 왼쪽 칸 글자가 오른쪽 칸 글자 사이에 끼어 있어서, 오른쪽 칸만 끌어도 옆 칸이 범위에 빨려든다.
+// 끌기 시작한 조각과 끝낸 조각의 가로 범위를 자로 삼아, 그와 전혀 안 겹치는 조각은 뺀다.
+// (칸을 가로질러 끌면 자가 양쪽을 덮으므로 둘 다 남는다 — 일부러 가로지른 것은 그대로 둔다.)
+function colRange(range){
+  const spanOf=n=>{ const e=n && (n.nodeType===1 ? n : n.parentElement); return (e && e.closest) ? e.closest('.textLayer span') : null; };
+  let x0=Infinity, x1=-Infinity;
+  [spanOf(range.startContainer), spanOf(range.endContainer)].forEach(sp=>{
+    if (!sp) return; const r=sp.getBoundingClientRect();
+    if (r.width>0){ x0=Math.min(x0, r.left); x1=Math.max(x1, r.right); }
+  });
+  return (x1>x0) ? {x0, x1} : null;
+}
+const inCol = (lim, left, right) => !lim || (right > lim.x0+1 && left < lim.x1-1);
 // 고른 글을 읽을 때 줄이 바뀌는 자리에 공백을 넣는다. 줄바꿈(br)을 렌더링에서 뺐기 때문에
 // 그냥 읽으면 「…문장이다둘째…」처럼 앞뒤 단어가 붙는다. 표시 자리는 좌표로 잡으므로 이건 글자만의 문제다.
 function pdfSelText(range, pageEl){
   const tl=pageEl && pageEl.querySelector('.textLayer'); if (!tl) return range.toString();
-  const out=[]; let lastTop=null;
+  const out=[]; let lastTop=null; const lim=colRange(range);
   [...tl.querySelectorAll(':scope > span')].forEach(sp=>{
     if (!range.intersectsNode(sp)) return;
+    const sr=sp.getBoundingClientRect(); if (!inCol(lim, sr.left, sr.right)) return;   // 옆 칸
     const r2=document.createRange(); r2.selectNodeContents(sp);
     try {
       if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0) r2.setStart(range.startContainer, range.startOffset);
@@ -2439,7 +2454,8 @@ function bindSelection(cont, c0){
       const pageEl = (range.commonAncestorContainer.nodeType===1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement).closest('.page');
       if (!pageEl) return;
       const pr=pgRect(pageEl);
-      let rects=[...range.getClientRects()].filter(r=>r.width>2 && r.height>2 && r.height < pr.height*0.25).map(r=>[(r.left-pr.left)/pr.width,(r.top-pr.top)/pr.height,r.width/pr.width,r.height/pr.height]);   // 쪽 높이 1/4 넘는 상자는 글줄이 아니라 그림 덩어리   // 2px 미만 조각만 버림(쪽 크기와 무관)
+      const lim=colRange(range);
+      let rects=[...range.getClientRects()].filter(r=>r.width>2 && r.height>2 && r.height < pr.height*0.25 && inCol(lim, r.left, r.right)).map(r=>[(r.left-pr.left)/pr.width,(r.top-pr.top)/pr.height,r.width/pr.width,r.height/pr.height]);   // 쪽 높이 1/4 넘는 상자는 글줄이 아니라 그림 덩어리   // 2px 미만 조각만 버림(쪽 크기와 무관)
       if (!rects.length) return;
       // 같은 줄끼리 합치기
       rects.sort((a,b)=>a[1]-b[1]||a[0]-b[0]); const merged=[];
