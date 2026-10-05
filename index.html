@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:13:32+09:00">
+<meta name="build" content="2026-10-05T14:21:52+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2299,18 +2299,18 @@ function paintSel(){
   // → 같은 줄에서 가로로 겹치거나 맞닿는 상자는 하나로 합쳐 그린다.
   const cy=r=>(r.top+r.bottom)/2, hh=r=>(r.bottom-r.top);
   const boxes=[];
-  [...range.getClientRects()].forEach(r=>{
-    if (r.width<=1 || r.height<=1) return;
-    if (r.height > pr.height*0.25) return;                        // 글줄이라 보기엔 너무 큰 상자
+  selBoxes(range, pageEl.querySelector('.textLayer')).forEach(r=>{
+    if (r.right-r.left<=1 || r.bottom-r.top<=1) return;
+    if (r.bottom-r.top > pr.height*0.25) return;                  // 글줄이라 보기엔 너무 큰 상자
     if (!inCol(lim, r.left, r.right)) return;                     // 옆 칸
     const hit=boxes.find(b=> Math.abs(cy(b)-cy(r)) < Math.min(hh(b), hh(r))*0.6
-                             && r.left < b.right+2 && r.right > b.left-2);
+                             && r.left < b.right+2 && r.right > b.left-2);   // 같은 줄에서 겹치거나 맞닿음
     if (hit){ hit.left=Math.min(hit.left, r.left); hit.right=Math.max(hit.right, r.right);
               hit.top=Math.min(hit.top, r.top);   hit.bottom=Math.max(hit.bottom, r.bottom); }
     else boxes.push({left:r.left, right:r.right, top:r.top, bottom:r.bottom});
   });
   if (SELDIAG){
-    const raw=[...range.getClientRects()].filter(r=>r.width>1 && r.height>1);
+    const raw=selBoxes(range, pageEl.querySelector('.textLayer'));
     const px=r=>Math.round(r.left-pr.left)+'~'+Math.round((r.right!=null?r.right:r.left)-pr.left);
     const dbg=window._colDbg||{};
     selDiag('자=' + (lim ? Math.round(lim.x0-pr.left)+'~'+Math.round(lim.x1-pr.left) : '없음')
@@ -2344,35 +2344,80 @@ function inkRect(sp){
         if (b.width>0) return b; } catch(e){}
   return sp.getBoundingClientRect();
 }
-function colRange(range, tl){
-  if (!tl) return null;
-  // 경계점이 닿은 조각으로 자를 삼으면 안 된다. 오른쪽 칸 첫 글자의 왼쪽을 짚으면 브라우저는
-  // 가장 가까운 캐럿으로 「왼쪽 칸의 끝」을 잡고, 그 칸은 글자가 한 자도 안 잡힌 채 범위에만 든다.
-  // 그걸 자로 쓰면 자가 왼쪽 칸까지 덮어 걸러내기가 무의미해진다(화면으로는 오른쪽부터 끈 것처럼 보인다).
-  // → 글자가 실제로 잡힌 조각만 모아, 가로로 겹치는 것끼리 묶고, 글자가 가장 많이 모인 묶음을 그 칸으로 본다.
-  const items=[];
+// 고른 자리를 상자로 돌려준다 — 조각마다 「고른 부분」과 「글자가 놓인 자리」의 교집합만 남긴다.
+//
+// 🔴 왜 교집합이 필요한가 (2026-10-05 폰 진단으로 밝혀짐)
+// ① 표의 한 행이 **한 조각**으로 그려진 PDF 가 있다. 「정비·준비기간의 대부…개시일 산정…」이 한 덩어리라
+//    조각 단위로는 왼쪽 칸과 오른쪽 칸을 가를 수가 없다(진단: 조각13"정비준비기"@14 — 14번째 글자부터 고름).
+// ② 게다가 손가락용으로 늘려 둔 padding(fillGaps)이 그 조각을 쪽 왼쪽 끝까지 넓혀서,
+//    range 가 주는 상자가 0 부터 시작한다(진단: 준상자에 0~338). 그 띠가 그대로 칠해져 옆 칸을 덮었다.
+// → 조각의 글자 자리로 가두면 padding 이 잘리고, 고르지 않은 글자는 애초에 상자가 생기지 않는다.
+function selBoxes(range, tl){
+  const out=[];
+  if (!tl){ [...range.getClientRects()].forEach(r=>{ if (r.width>1 && r.height>1)
+      out.push({left:r.left, right:r.right, top:r.top, bottom:r.bottom}); }); return out; }
   [...tl.querySelectorAll(':scope > span')].forEach(sp=>{
     if (!range.intersectsNode(sp)) return;
-    const r2=document.createRange(); r2.selectNodeContents(sp);
-    try {
-      if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0) r2.setStart(range.startContainer, range.startOffset);
-      if (range.compareBoundaryPoints(Range.END_TO_END, r2)<0) r2.setEnd(range.endContainer, range.endOffset);
-    } catch(e){ return; }
-    const n=r2.toString().trim().length; if (!n) return;        // 범위에만 들고 글자는 안 잡힌 조각
-    const b=inkRect(sp); if (!(b.width>0)) return;
-    items.push({x0:b.left, x1:b.right, n});
+    const node=sp.firstChild; if (!node || node.nodeType!==3) return;
+    const txt=node.nodeValue || ''; if (!txt.trim()) return;
+    const ink=inkRect(sp);
+    // 조각 안을 「넓은 공백(두 칸 이상)」으로 끊어 글자 덩어리로 나눈다 — 표 한 행이 한 조각으로
+    // 그려진 PDF 에서는 칸과 칸 사이가 이 공백으로만 구별된다.
+    const runs=[]; let k=0;
+    while (k<txt.length){
+      while (k<txt.length && /\s/.test(txt[k])) k++;
+      if (k>=txt.length) break;
+      let e=k;
+      while (e<txt.length){
+        if (/\s/.test(txt[e])){
+          let w=e; while (w<txt.length && /\s/.test(txt[w])) w++;
+          if (w-e>=2) break;                       // 넓은 공백 = 칸 경계로 본다
+          e=w; continue;
+        }
+        e++;
+      }
+      runs.push([k, e]); k=e;
+    }
+    runs.forEach(([a,b])=>{
+      const r2=document.createRange();
+      try { r2.setStart(node, a); r2.setEnd(node, b); } catch(e){ return; }
+      // 고른 범위와의 교집합만 남긴다
+      try {
+        if (range.compareBoundaryPoints(Range.START_TO_START, r2)>0){
+          if (range.comparePoint(node, b)<0) return;     // 덩어리 전체가 고르기 앞
+          r2.setStart(range.startContainer, range.startOffset);
+        }
+        if (range.compareBoundaryPoints(Range.END_TO_END, r2)<0){
+          if (range.comparePoint(node, a)>0) return;     // 덩어리 전체가 고르기 뒤
+          r2.setEnd(range.endContainer, range.endOffset);
+        }
+      } catch(e){ return; }
+      if (!r2.toString().trim()) return;
+      [...r2.getClientRects()].forEach(r=>{
+        if (r.width<=1 || r.height<=1) return;
+        const L=Math.max(r.left, ink.left),  R=Math.min(r.right, ink.right);
+        const T=Math.max(r.top,  ink.top),   B=Math.min(r.bottom, ink.bottom);
+        if (R-L>1 && B-T>1) out.push({left:L, right:R, top:T, bottom:B});
+      });
+    });
   });
+  return out;
+}
+function colRange(range, tl){
+  if (!tl) return null;
+  // 자도 같은 상자(글자 덩어리)로 잰다 — 조각으로 재면 표 한 행이 한 조각인 PDF 에서 칸이 안 갈린다.
+  const items=selBoxes(range, tl);
   if (items.length<2) return null;
-  const headIt=items[0], tailIt=items[items.length-1];            // 글자가 잡힌 첫 조각·마지막 조각(글 순서)
+  const headIt=items[0], tailIt=items[items.length-1];            // 글 순서의 첫·마지막 덩어리
   const cl=[];
-  [...items].sort((a,b)=>a.x0-b.x0).forEach(it=>{ const last=cl[cl.length-1];
-    if (last && it.x0 < last.x1-1){ last.x1=Math.max(last.x1, it.x1); }
-    else cl.push({x0:it.x0, x1:it.x1}); });
-  window._colDbg={items:items.length, cls:cl.map(c=>Math.round(c.x0)+'~'+Math.round(c.x1))};
+  [...items].sort((a,b)=>a.left-b.left).forEach(it=>{ const last=cl[cl.length-1];
+    if (last && it.left < last.x1-1){ last.x1=Math.max(last.x1, it.right); }
+    else cl.push({x0:it.left, x1:it.right}); });
   if (cl.length<2) return null;                                  // 묶음이 하나면 표가 아니다 — 거르지 않는다
-  const clOf=it=>cl.find(c=>it.x0 < c.x1+1 && it.x1 > c.x0-1);
+  window._colDbg={items:items.length, cls:cl.map(c=>Math.round(c.x0)+'~'+Math.round(c.x1))};
+  const clOf=it=>cl.find(c=>it.left < c.x1+1 && it.right > c.x0-1);
   const a=clOf(headIt), z=clOf(tailIt); if (!a || !z) return null;
-  // 첫 조각이 든 묶음부터 마지막 조각이 든 묶음까지 — 칸을 일부러 가로지른 것은 양쪽 다 남는다
+  // 첫 덩어리가 든 묶음부터 마지막 덩어리가 든 묶음까지 — 칸을 일부러 가로지른 것은 양쪽 다 남는다
   return {x0:Math.min(a.x0, z.x0), x1:Math.max(a.x1, z.x1)};
 }
 const inCol = (lim, left, right) => !lim || (right > lim.x0+1 && left < lim.x1-1);
@@ -2552,7 +2597,9 @@ function bindSelection(cont, c0){
       if (!pageEl) return;
       const pr=pgRect(pageEl);
       const lim=colRange(range, pageEl.querySelector('.textLayer'));
-      let rects=[...range.getClientRects()].filter(r=>r.width>2 && r.height>2 && r.height < pr.height*0.25 && inCol(lim, r.left, r.right)).map(r=>[(r.left-pr.left)/pr.width,(r.top-pr.top)/pr.height,r.width/pr.width,r.height/pr.height]);   // 쪽 높이 1/4 넘는 상자는 글줄이 아니라 그림 덩어리   // 2px 미만 조각만 버림(쪽 크기와 무관)
+      let rects=selBoxes(range, pageEl.querySelector('.textLayer'))
+        .filter(r=>(r.right-r.left)>2 && (r.bottom-r.top)>2 && (r.bottom-r.top) < pr.height*0.25 && inCol(lim, r.left, r.right))
+        .map(r=>[(r.left-pr.left)/pr.width,(r.top-pr.top)/pr.height,(r.right-r.left)/pr.width,(r.bottom-r.top)/pr.height]);   // 쪽 높이 1/4 넘는 상자는 글줄이 아니라 그림 덩어리   // 2px 미만 조각만 버림(쪽 크기와 무관)
       if (!rects.length) return;
       // 같은 줄끼리 합치기
       rects.sort((a,b)=>a[1]-b[1]||a[0]-b[0]); const merged=[];
