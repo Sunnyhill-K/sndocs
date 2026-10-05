@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T12:50:50+09:00">
+<meta name="build" content="2026-10-05T12:53:45+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -298,7 +298,9 @@ ins{color:var(--ins);text-decoration:underline;text-decoration-thickness:1.5px;t
 .textLayer span,.textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0% 0%}
 .textLayer span{pointer-events:auto}
 .textLayer br{display:none}
-.textLayer ::selection{background:rgba(45,91,185,.5)}
+.textLayer ::selection{background:transparent} .textLayer ::-moz-selection{background:transparent}
+.selpaint{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.selbox{position:absolute;background:rgba(45,91,185,.42);border-radius:1px}
 .textLayer span{padding-top:.15em;margin-top:-.15em}
 .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none;-webkit-user-select:none}
 .textLayer.selecting .endOfContent{top:0}   /* 고르는 중에는 글자층 전체를 덮어, 빈 곳으로 끌어도 선택이 여기서 멈춘다 */
@@ -2265,6 +2267,39 @@ function fillGaps(tl, pageH){
   const down=Math.round(pageH - last.t/100*pageH);
   if (down>0) last.list.forEach(sp=>{ sp.style.paddingBottom=down+'px'; });
 }
+// 선택 색을 브라우저에 맡기면 두 가지가 같이 칠해진다 — 손가락용으로 늘려 둔 빈 자리(fillGaps),
+// 그리고 표에서 사이에 끼어 든 옆 칸 글자. 둘 다 글자가 아닌데 덮여 버린다.
+// 그래서 PDF 글자층에서는 브라우저 선택 색을 끄고, 우리가 고른 조각만 골라 직접 칠한다.
+// 선택 자체는 건드리지 않는다(건드리면 안드로이드가 손잡이를 거둔다 — 2026-09-20).
+let selPaintReq=0;
+function paintSel(){
+  document.querySelectorAll('.selpaint').forEach(e=>e.remove());
+  const sel=window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return;
+  const range=sel.getRangeAt(0);
+  const node=range.commonAncestorContainer;
+  const el=(node.nodeType===1 ? node : node.parentElement);
+  const pageEl=el && el.closest ? el.closest('.page') : null; if (!pageEl) return;
+  const host=pageEl.querySelector('.marks'); if (!host) return;   // 겹과 같은 좌표계(자른 쪽에서도 맞는다)
+  const pr=pgRect(pageEl); if (!pr.width || !pr.height) return;
+  const lim=colRange(range);
+  const box=document.createElement('div'); box.className='selpaint'; let n=0;
+  [...range.getClientRects()].forEach(r=>{
+    if (r.width<=1 || r.height<=1) return;
+    if (r.height > pr.height*0.25) return;                        // 글줄이라 보기엔 너무 큰 상자
+    if (!inCol(lim, r.left, r.right)) return;                     // 옆 칸
+    const d=document.createElement('div'); d.className='selbox';
+    d.style.left=((r.left-pr.left)/pr.width*100)+'%';
+    d.style.top=((r.top-pr.top)/pr.height*100)+'%';
+    d.style.width=(r.width/pr.width*100)+'%';
+    d.style.height=(r.height/pr.height*100)+'%';
+    box.appendChild(d); n++;
+  });
+  if (n) host.appendChild(box);
+}
+document.addEventListener('selectionchange', ()=>{
+  if (selPaintReq) return;
+  selPaintReq=requestAnimationFrame(()=>{ selPaintReq=0; try { paintSel(); } catch(e){} });
+});
 // PDF 글자층에는 표가 없다 — 칸이든 뭐든 그냥 조각이 늘어서 있을 뿐이고, 그 순서는 PDF 가 그린 순서다.
 // 표에서는 왼쪽 칸 글자가 오른쪽 칸 글자 사이에 끼어 있어서, 오른쪽 칸만 끌어도 옆 칸이 범위에 빨려든다.
 // 끌기 시작한 조각과 끝낸 조각의 가로 범위를 자로 삼아, 그와 전혀 안 겹치는 조각은 뺀다.
