@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-05T14:34:59+09:00">
+<meta name="build" content="2026-10-05T14:37:17+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2285,6 +2285,7 @@ function fillGaps(tl, pageH){
 // 선택 자체는 건드리지 않는다(건드리면 안드로이드가 손잡이를 거둔다 — 2026-09-20).
 let selPaintReq=0;
 function paintSel(){
+  if (typeof SELDIAG!=='undefined' && SELDIAG) window._runDbg=[];
   document.querySelectorAll('.selpaint').forEach(e=>e.remove());
   const sel=window.getSelection(); if (!sel || sel.isCollapsed || !sel.rangeCount) return;
   const range=sel.getRangeAt(0);
@@ -2313,7 +2314,7 @@ function paintSel(){
     const raw=selBoxes(range, pageEl.querySelector('.textLayer'));
     const px=r=>Math.round(r.left-pr.left)+'~'+Math.round((r.right!=null?r.right:r.left)-pr.left);
     const dbg=window._colDbg||{};
-    selDiag('자=' + (lim ? Math.round(lim.x0-pr.left)+'~'+Math.round(lim.x1-pr.left) : '없음')
+    selDiag((window._runDbg||[]).join(' ・ ') + '  //  자=' + (lim ? Math.round(lim.x0-pr.left)+'~'+Math.round(lim.x1-pr.left) : '없음')
       + ' 조각' + (dbg.items||0) + ' 묶음[' + ((dbg.cls||[]).map(c=>c).join(' | ')) + ']'
       + ' 준상자=' + raw.map(px).join(',')
       + ' 칠함=' + boxes.map(px).join(','));
@@ -2362,7 +2363,8 @@ function inkRect(sp){
 // → 그 조각 안 글자 사이 간격을 다 모아 **중앙값**을 내고, 그보다 유난히 벌어진 곳만 경계로 본다.
 //   글자가 작든 크든, 확대를 하든 말든 같은 판단이 된다.
 function runsOf(sp, node, txt, ink){
-  if (sp._runs && sp._runs.w===Math.round(ink.right-ink.left)) return sp._runs.v;
+  if (sp._runs && sp._runs.w===Math.round(ink.right-ink.left)
+      && !(typeof SELDIAG!=='undefined' && SELDIAG)) return sp._runs.v;
   const n=txt.length;
   const marks=[];
   for (let k=0;k<n;k++){
@@ -2377,7 +2379,17 @@ function runsOf(sp, node, txt, ink){
     const pos=ds.filter(d=>d>0).sort((a,b)=>a-b);
     const med = pos.length ? pos[Math.floor(pos.length/2)] : 0;
     const thr = Math.max(med*3 + 1, (ink.bottom-ink.top)*0.45, 3);
-    for (let i=1;i<marks.length;i++) if ((marks[i].left - marks[i-1].right) > thr) cuts.push(marks[i].k);
+    let mx=0, mxAt=-1;
+    for (let i=1;i<marks.length;i++){
+      const d=marks[i].left - marks[i-1].right;
+      if (d>mx){ mx=d; mxAt=marks[i].k; }
+      if (d > thr) cuts.push(marks[i].k);
+    }
+    if (typeof SELDIAG!=='undefined' && SELDIAG){
+      (window._runDbg=window._runDbg||[]).push('"'+txt.slice(0,6)+'" 글자'+marks.length
+        +' 중앙값'+med.toFixed(1)+' 문턱'+thr.toFixed(1)+' 최대틈'+mx.toFixed(1)+'@'+mxAt+' 끊김'+cuts.length);
+      if (window._runDbg.length>6) window._runDbg.shift();
+    }
   }
   const runs=[]; let st=0;
   cuts.forEach(c=>{ if (c>st) runs.push([st, c]); st=c; });
