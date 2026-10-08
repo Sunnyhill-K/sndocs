@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-08T19:06:15+09:00">
+<meta name="build" content="2026-10-09T00:03:29+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -210,8 +210,11 @@ ins{color:var(--ins);text-decoration:underline;text-decoration-thickness:1.5px;t
 .lreps{margin-top:4px;color:var(--ink-2);font-size:.95em} .xreps{margin-top:4px;padding-left:8px;border-left:2px solid #e3e5df;font-size:13px} .xrep{padding:2px 0}
 .reacts{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin-top:4px;min-height:18px} .reacts .rc{border:1px solid var(--rule);background:var(--paper-2);border-radius:10px;padding:0 7px;font-size:calc(14px * var(--ui,1));line-height:1.5;cursor:pointer;color:var(--ink)} .reacts .rc.on{border-color:var(--ins);background:var(--ins-bg)} .reacts .rc:hover{border-color:var(--ink-3)}
 .radd{position:relative;display:inline-flex} .radd .rplus{border:1px dashed var(--rule);background:transparent;border-radius:10px;padding:0 6px;font-size:calc(11px * var(--ui,1));line-height:1.5;cursor:pointer;color:var(--ink-3);opacity:.6} .note:hover .radd .rplus,.radd.open .rplus{opacity:1} .radd .rplus:hover{color:var(--ink);border-color:var(--ink-3)}
+.reacts:empty{display:none} .reacts.ro .rc{cursor:default} .reacts.ro .rc:hover{border-color:var(--rule)} .reacts.ro .rc.on:hover{border-color:var(--ins)}
+.reply .rh .radd{margin-left:1px} .reply .reacts{margin-top:3px;min-height:0} .reply .reacts .rc{font-size:calc(12.5px * var(--ui,1));padding:0 6px}
 .radd .rmenu{display:none;position:absolute;left:0;bottom:calc(100% + 2px);padding-bottom:6px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;box-shadow:0 6px 18px rgba(0,0,0,.18);padding:4px;gap:2px;z-index:6;white-space:nowrap} .radd.open .rmenu{display:flex;flex-direction:column;gap:3px}
-@media (hover:hover){.radd:hover .rmenu{display:flex;flex-direction:column;gap:3px}} .radd .rmenu{padding:8px 10px 10px} .rmenu .rrow{display:grid;grid-template-columns:repeat(7,auto);gap:2px;align-items:center;justify-content:start} .rmenu .rext{display:none;border-top:1px solid var(--rule);padding-top:3px} .radd.ext .rext{display:grid} .rmenu .rmore{font-weight:700;color:var(--ink-3)} .rmenu .rin{width:56px;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:4px;padding:1px 4px;background:var(--paper-2);color:var(--ink)} .rmenu .rin:focus{border-color:var(--focus);outline:none} .radd .rcus{display:none;align-items:center;gap:7px;border-top:1px solid var(--rule);margin-top:3px;padding-top:5px} .radd.ext .rcus{display:flex} .rmenu .rtip{color:var(--ink-3);font-size:calc(10.5px * var(--ui,1));font-family:var(--sans);white-space:nowrap} .rmenu .rtip.on{color:var(--ins);font-weight:600} .radd .rboard{display:none;grid-template-columns:repeat(7,1fr);gap:1px;margin-top:3px;padding-top:5px;border-top:1px solid var(--rule)} .radd.pick .rboard{display:grid} .radd .rpg{display:none;align-items:center;justify-content:center;gap:8px;padding-top:2px} .radd.pick .rpg{display:flex} .radd .rmenu .rpg button{font-size:13px;line-height:1;padding:1px 7px;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px} .radd .rmenu .rpg button:hover{color:var(--ink);border-color:var(--ink-3)} .radd .rpg .pn{color:var(--ink-3);font-size:calc(10.5px * var(--ui,1));font-family:var(--mono)} .radd .rmenu .rboard button{font-size:17px;padding:2px 0;line-height:1.2} .radd .rboard button.sel{background:var(--ins-bg);outline:1px solid var(--ins)} .radd.down .rmenu{bottom:auto;top:calc(100% + 2px)} .radd.down::after{bottom:auto;top:100%} .radd::after{content:'';position:absolute;left:-16px;right:-16px;bottom:100%;height:16px} .radd .rmenu button{border:0;background:transparent;font-size:19px;line-height:1.2;padding:2px 5px;border-radius:4px;cursor:pointer} .radd .rmenu button:hover{background:var(--paper-2)}
+/* 이모티콘 판은 .open 일 때만 보인다 — 누르거나, 1초 머물렀을 때 스크립트가 붙인다. :hover 로 바로 띄우는 규칙을 두면 그 1초가 소용없고(2026-09-21 에 고쳤다고 한 것이 이 규칙 때문에 안 먹고 있었다), 고른 뒤에도 마우스가 판 위에 있는 동안 판이 안 닫힌다. */
+.radd .rmenu{padding:8px 10px 10px} .rmenu .rrow{display:grid;grid-template-columns:repeat(7,auto);gap:2px;align-items:center;justify-content:start} .rmenu .rext{display:none;border-top:1px solid var(--rule);padding-top:3px} .radd.ext .rext{display:grid} .rmenu .rmore{font-weight:700;color:var(--ink-3)} .rmenu .rin{width:56px;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:4px;padding:1px 4px;background:var(--paper-2);color:var(--ink)} .rmenu .rin:focus{border-color:var(--focus);outline:none} .radd .rcus{display:none;align-items:center;gap:7px;border-top:1px solid var(--rule);margin-top:3px;padding-top:5px} .radd.ext .rcus{display:flex} .rmenu .rtip{color:var(--ink-3);font-size:calc(10.5px * var(--ui,1));font-family:var(--sans);white-space:nowrap} .rmenu .rtip.on{color:var(--ins);font-weight:600} .radd .rboard{display:none;grid-template-columns:repeat(7,1fr);gap:1px;margin-top:3px;padding-top:5px;border-top:1px solid var(--rule)} .radd.pick .rboard{display:grid} .radd .rpg{display:none;align-items:center;justify-content:center;gap:8px;padding-top:2px} .radd.pick .rpg{display:flex} .radd .rmenu .rpg button{font-size:13px;line-height:1;padding:1px 7px;color:var(--ink-3);border:1px solid var(--rule);border-radius:4px} .radd .rmenu .rpg button:hover{color:var(--ink);border-color:var(--ink-3)} .radd .rpg .pn{color:var(--ink-3);font-size:calc(10.5px * var(--ui,1));font-family:var(--mono)} .radd .rmenu .rboard button{font-size:17px;padding:2px 0;line-height:1.2} .radd .rboard button.sel{background:var(--ins-bg);outline:1px solid var(--ins)} .radd.down .rmenu{bottom:auto;top:calc(100% + 2px)} .radd.open.down::after{bottom:auto;top:100%} .radd.open::after{content:'';position:absolute;left:-16px;right:-16px;bottom:100%;height:16px} .radd .rmenu button{border:0;background:transparent;font-size:19px;line-height:1.2;padding:2px 5px;border-radius:4px;cursor:pointer} .radd .rmenu button:hover{background:var(--paper-2)}
 .note .n .nv{display:inline-flex;gap:3px;margin-left:4px} .note .nvb{border:1px solid var(--ink-3);background:var(--paper);color:var(--ink);cursor:pointer;padding:1px 8px;font-size:calc(13px * var(--ui,1));font-weight:700;line-height:1.3;border-radius:4px;font-family:var(--sans)} .note .nvb:hover{border-color:var(--ink);background:var(--paper-2)}
 .note textarea{width:100%;border:0;border-bottom:1px dashed var(--rule);background:transparent;resize:none;padding:2px 0;line-height:1.5;min-height:22px;font-size:calc(14.5px * var(--ui,1));overflow:hidden}
 .note textarea:focus{border-bottom-color:var(--focus);outline:none}
@@ -548,7 +551,8 @@ body.draw-mode .toast{bottom:calc(var(--inkbar-h, 60px) + 30px)}
   /* 반응 피커: 손가락 크기로 */
   .reacts{gap:6px;min-height:34px} .reacts .rc{min-height:34px;padding:0 11px;font-size:calc(15px * var(--ui,1))}
   .radd .rplus{min-height:34px;padding:0 13px;font-size:calc(14px * var(--ui,1));opacity:1}
-  .radd .rmenu{padding:10px 12px 12px} .radd .rmenu button{font-size:24px;padding:7px 9px}
+  .reply .reacts{min-height:0} .reply .reacts .rc{min-height:30px;padding:0 10px;font-size:calc(14px * var(--ui,1))} .reply .rh .radd .rplus{min-height:28px;padding:0 11px}
+  .radd .rmenu{padding:10px 12px 12px} .radd .rmenu button{font-size:24px;padding:7px clamp(3px, calc((100vw - 276px) / 14), 9px)}
   .radd .rmenu .rpg button{font-size:16px;padding:5px 12px}
   .rmenu .rin{width:70px;font-size:16px;padding:6px 8px} .rmenu .rtip{font-size:calc(12px * var(--ui,1))}
   .radd .rboard{gap:2px} .radd .rmenu .rboard button{font-size:23px;padding:6px 0}
@@ -889,11 +893,11 @@ function headHtml(c, statsHtml, toolsHtml){
 function fmtTs(ts){ if (!ts) return ''; const d=new Date(ts); if (isNaN(d)) return ''; const z=n=>String(n).padStart(2,'0'); return `${z(d.getMonth()+1)}/${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`; }
 function repliesHtml(m, i){
   const rs=m.replies||[]; const mine=me?me.id:''; const admin=me&&me.role==='admin';
-  const items=rs.map((r,k)=>{ const col=userColor(r.by, r.byId); const own=r.byId===mine; return `<div class="reply" data-k="${k}"><div class="rh"><span class="who" style="--nc:${col||'var(--ink-2)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span><span class="rt">${fmtTs(r.ts)}${r.mt&&r.mt!==r.ts?' (수정됨)':''}</span><span class="spacer"></span>${(own&&editable())?`<button class="rl" data-act="edit" data-i="${i}" data-k="${k}">수정</button>`:''}${((own||admin)&&editable())?`<button class="rl" data-act="del" data-i="${i}" data-k="${k}">삭제</button>`:''}</div><div class="rb">${md(r.t||'')}</div></div>`; }).join('');
+  const items=rs.map((r,k)=>{ const col=userColor(r.by, r.byId); const own=r.byId===mine; return `<div class="reply" data-k="${k}"><div class="rh"><span class="who" style="--nc:${col||'var(--ink-2)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span><span class="rt">${fmtTs(r.ts)}${r.mt&&r.mt!==r.ts?' (수정됨)':''}</span>${canReact()?reactAdd(i, k):''}<span class="spacer"></span>${(own&&editable())?`<button class="rl" data-act="edit" data-i="${i}" data-k="${k}">수정</button>`:''}${((own||admin)&&editable())?`<button class="rl" data-act="del" data-i="${i}" data-k="${k}">삭제</button>`:''}</div><div class="rb">${md(r.t||'')}</div>${replyReacts(r, i, k)}</div>`; }).join('');
   return `<div class="replies">${items}${(me&&editable())?`<button class="rl radd2" data-i="${i}">답글${rs.length?' '+rs.length:''}</button><div class="rform" hidden><textarea class="rta" rows="2" placeholder="답글 — Ctrl+Enter 저장 · Enter 줄바꿈 · Esc 취소"></textarea><div class="rbtns"><button class="btn small primary" data-act="save">남기기 <kbd>Ctrl+↵</kbd></button><button class="btn small" data-act="cancel">취소 <kbd>Esc</kbd></button></div></div>`:''}</div>`;
 }
 function bindReplies(root, c){
-  const rerender=(i)=>{ const m=c.marks[i]; const n=document.getElementById('note'+(i+1)); if (!n) return; const old=n.querySelector('.replies'); if (old) old.outerHTML=repliesHtml(m, i); bindReplies(n, c); requestAnimationFrame(layoutNotes); };
+  const rerender=(i)=>{ const m=c.marks[i]; const n=document.getElementById('note'+(i+1)); if (!n) return; const old=n.querySelector('.replies'); if (old) old.outerHTML=repliesHtml(m, i); bindReplies(n, c); const nw=n.querySelector('.replies'); if (nw) bindReacts(nw, c); requestAnimationFrame(layoutNotes); };
   const openForm=(box, i, k, text)=>{ const f=box.querySelector('.rform'); const ta=f.querySelector('.rta'); f.hidden=false; f.dataset.k=(k==null?'':k); ta.value=text||''; ta.focus(); requestAnimationFrame(layoutNotes);
     ta.onkeydown=e=>{ if (e.key==='Enter' && (e.ctrlKey||e.metaKey)){ e.preventDefault(); f.querySelector('[data-act="save"]').click(); } if (e.key==='Escape'){ e.preventDefault(); f.querySelector('[data-act="cancel"]').click(); } };
     f.querySelector('[data-act="save"]').onclick=()=>{ const v=ta.value.trim(); if (!v) return; const m=c.marks[i]; m.replies=m.replies||[]; const kk=f.dataset.k;
@@ -905,7 +909,7 @@ function bindReplies(root, c){
   root.querySelectorAll('.reply .rl[data-act="edit"]').forEach(b=>b.addEventListener('click', ()=>{ const i=+b.dataset.i, k=+b.dataset.k; const r=c.marks[i].replies[k]; openForm(b.closest('.replies'), i, k, r.t); }));
   root.querySelectorAll('.reply .rl[data-act="del"]').forEach(b=>b.addEventListener('click', async ()=>{ const i=+b.dataset.i, k=+b.dataset.k; if (!(await ask('이 답글을 삭제하시겠습니까?', '삭제'))) return; pushHist(c, `메모 ${i+1} 답글 삭제`); c.marks[i].replies.splice(k,1); if (!c.marks[i].replies.length) delete c.marks[i].replies; c.marks[i].mt=Date.now(); view.dirty=true; rerender(i); }));
 }
-// ── 메모 반응(슬랙 이모티콘): 👍 ✅ ❤️ 👀 😂 🙏 — 사람마다 한 번씩, 다시 누르면 취소 ──
+// ── 메모 반응(슬랙 이모티콘): 👍 ✅ ❤️ 👀 😂 🙏 — 사람마다 한 번씩, 다시 누르면 취소. 메모에도 답글에도 단다 ──
 const REACTS_FIXED=['👍','✅','❤️']; const REACTS_DEF=['👀','😂','🙏'];
 function myEmo(){ let loc={}; try { loc=JSON.parse(localStorage.getItem(prefKey())||'{}'); } catch(e){} const u=me && cfg && (cfg.users||[]).find(x=>x.id===me.id); const remote=(u&&u.pref&&u.pref.emo)||{}; return Object.assign({}, remote, loc.emo||{}); }
 function quickReacts(){ const emo=myEmo(); const mine=Object.keys(emo).filter(e=>!REACTS_FIXED.includes(e)).sort((a,b)=>(emo[b].n-emo[a].n)||(emo[b].t-emo[a].t)).slice(0,3); const fill=REACTS_DEF.filter(e=>!mine.includes(e)); return [...REACTS_FIXED, ...mine, ...fill].slice(0,6); }
@@ -924,10 +928,15 @@ function boardPage(w, pg){ const cs=boardCells(w); const per=RCOLS*RROWS; const 
   cs.forEach((b,i)=>{ b.style.display = (Math.floor(i/per)===pg) ? '' : 'none'; });
   const lab=w.querySelector('.rpg .pn'); if (lab) lab.textContent=(pg+1)+' / '+(last+1); return pg; }
 function selBoard(w, k){ const cs=boardCells(w); cs.forEach(b=>b.classList.remove('sel')); if (k>=0 && cs[k]){ boardPage(w, Math.floor(k/(RCOLS*RROWS))); cs[k].classList.add('sel'); } tipBoard(w); }
-function placeMenu(w){ const m=w.querySelector('.rmenu'); if (!m) return; w.classList.remove('down'); m.style.left='0px';
-  let r=m.getBoundingClientRect(); if (r.top < 6 && r.height < window.innerHeight-24){ w.classList.add('down'); r=m.getBoundingClientRect(); }
-  let dx=0; const over=r.right-(window.innerWidth-10); if (over>0) dx=-over; if (r.left+dx < 6) dx=6-r.left;
-  if (dx) m.style.left=Math.round(dx)+'px'; }
+// 판 자리 잡기. 재는 동안에도 판이 화면 오른쪽으로 삐져나오면 안 된다 — 폰에서는 삐져나온 만큼 화면이 넓어진 것으로 쳐서(innerWidth 가 따라 커지고,
+// 그 순간 스크롤이 튄다) 한순간이어도 화면이 흔들린다. 그래서 왼쪽 멀리(-9999px) 치워 놓고 크기만 잰 뒤에 자리를 준다(왼쪽으로 벗어난 것은 화면을 넓히지 않는다).
+// 화면 폭도 innerWidth 가 아니라 documentElement.clientWidth 로 잰다.
+function placeMenu(w){ const m=w.querySelector('.rmenu'); if (!m) return; w.classList.remove('down'); m.style.left='-9999px'; const vw=document.documentElement.clientWidth||window.innerWidth;
+  const wl=w.getBoundingClientRect().left; let r=m.getBoundingClientRect(); if (r.top < 6 && r.height < window.innerHeight-24){ w.classList.add('down'); r=m.getBoundingClientRect(); }
+  let dx=0; const over=wl+r.width-(vw-10); if (over>0) dx=-over; if (wl+dx < 6) dx=6-wl;
+  m.style.left=Math.round(dx)+'px'; }
+// 판을 연다. 보이기 전에 먼저 왼쪽 멀리 치워 둔다(위와 같은 까닭) — 답글의 ＋ 는 오른쪽에 있을 수 있어, 그대로 띄우면 크게 삐져나온다.
+function openRadd(w, pin){ const m=w.querySelector('.rmenu'); if (m && !w.classList.contains('open')) m.style.left='-9999px'; w.classList.add('open'); if (pin) w._pin=true; placeMenu(w); requestAnimationFrame(()=>placeMenu(w)); }
 function ensureBoard(w){ let b=w.querySelector('.rboard'); if (b) return b; const menu=w.querySelector('.rmenu'); if (!menu) return null;
   b=document.createElement('span'); b.className='rboard'; b.innerHTML=REACT_BOARD.map(e=>`<button type="button" tabindex="-1" data-e="${e}">${e}</button>`).join(''); menu.appendChild(b);
   const pg=document.createElement('span'); pg.className='rpg'; pg.innerHTML=`<button type="button" tabindex="-1" data-d="-1" title="앞쪽">‹</button><span class="pn"></span><button type="button" tabindex="-1" data-d="1" title="다음 쪽">›</button>`; menu.appendChild(pg);
@@ -940,26 +949,38 @@ function ensureBoard(w){ let b=w.querySelector('.rboard'); if (b) return b; cons
   return b; }
 function openBoard(w){ clearTimeout(w._t); ensureBoard(w); w.classList.add('open','ext','pick'); w._pin=true; tipBoard(w); requestAnimationFrame(()=>placeMenu(w)); }
 const reactKeys = r => { const ks=Object.keys(r||{}).filter(e=>(r[e]||[]).length); return [...REACTS.filter(e=>ks.includes(e)), ...ks.filter(e=>!REACTS.includes(e))]; };
-function reactsHtml(m, i){
-  const r=m.reacts||{}; const mine=me?me.id:'';
-  const chips=reactKeys(r).map(e=>{ const ids=r[e]; const names=ids.map(id=>{ const u=(cfg.users||[]).find(x=>x.id===id); return u?u.name:id; }).join(', '); return `<button class="rc ${ids.includes(mine)?'on':''}" data-i="${i}" data-e="${esc(e)}" title="${esc(names)}">${esc(e)} ${ids.length}</button>`; }).join('');
-  const quick=quickReacts(); const more=[...REACTS_MORE, ...REACTS_DEF].filter(e=>!quick.includes(e));
-  return `<div class="reacts">${chips}${me?`<span class="radd"><button class="rplus" data-i="${i}" title="반응 남기기">＋</button><span class="rmenu"><span class="rrow">${quick.map(e=>`<button data-i="${i}" data-e="${e}">${e}</button>`).join('')}<button class="rmore" title="더 보기">…</button></span><span class="rrow rext">${more.map(e=>`<button data-i="${i}" data-e="${e}">${e}</button>`).join('')}</span><span class="rcus"><input class="rin" data-i="${i}" maxlength="8" placeholder="직접" title="눌러서 이모티콘 판 열기 · 방향키로 골라 Enter"><span class="rtip">입력하려면 Enter를 누르세요</span></span></span></span>`:''}</div>`;
-}
-function toggleReact(c, i, e){
-  if (!me) return; const m=c.marks[i]; if (!m) return; m.reacts=m.reacts||{}; const ids=m.reacts[e]||[]; const k=ids.indexOf(me.id);
-  if (k>=0) ids.splice(k,1); else { ids.push(me.id); if (!REACTS_FIXED.includes(e)){ const emo=myEmo(); const cur=emo[e]||{n:0,t:0}; emo[e]={n:cur.n+1, t:Date.now()}; savePref({emo}); } }
-  if (ids.length) m.reacts[e]=ids; else delete m.reacts[e]; if (!Object.keys(m.reacts).length) delete m.reacts;
+const kOf = el => el.dataset.k==null ? null : +el.dataset.k;   // 답글에 단 반응이면 그 답글 번호, 메모에 단 것이면 null
+const kAt = k => k==null ? '' : ` data-k="${k}"`;
+const reactSum = r => reactKeys(r).map(e=>e+' '+r[e].length).join(' ');   // 「👍 2 ✅ 1」 — 목록·내보내기용
+function reactChips(r, i, k){ const mine=me?me.id:'';
+  return reactKeys(r).map(e=>{ const ids=r[e]; const names=ids.map(id=>{ const u=(cfg.users||[]).find(x=>x.id===id); return u?u.name:id; }).join(', '); return `<button class="rc ${ids.includes(mine)?'on':''}" data-i="${i}"${kAt(k)} data-e="${esc(e)}" title="${esc(names)}">${esc(e)} ${ids.length}</button>`; }).join(''); }
+function reactAdd(i, k){ const at=`data-i="${i}"${kAt(k)}`; const quick=quickReacts(); const more=[...REACTS_MORE, ...REACTS_DEF].filter(e=>!quick.includes(e));
+  return `<span class="radd"><button class="rplus" ${at} title="반응 남기기">＋</button><span class="rmenu"><span class="rrow">${quick.map(e=>`<button ${at} data-e="${e}">${e}</button>`).join('')}<button class="rmore" title="더 보기">…</button></span><span class="rrow rext">${more.map(e=>`<button ${at} data-e="${e}">${e}</button>`).join('')}</span><span class="rcus"><input class="rin" ${at} maxlength="8" placeholder="직접" title="눌러서 이모티콘 판 열기 · 방향키로 골라 Enter"><span class="rtip">입력하려면 Enter를 누르세요</span></span></span></span>`; }
+// 반응을 달 수 있는 사람: 저장할 수 있는 사람만(답글 단추와 같은 조건). 뷰어·옛 버전 화면에서는 보기만 한다 — 달아도 저장이 안 되어 혼자만 보이다 사라진다.
+const canReact = () => !!me && editable();
+function reactsHtml(m, i){ const can=canReact(); return `<div class="reacts${can?'':' ro'}">${reactChips(m.reacts||{}, i)}${can?reactAdd(i):''}</div>`; }
+// 답글에 달린 반응(답글마다 `reacts`): 있을 때만 답글 아래 한 줄. ＋ 는 답글 머리줄에 둔다 — 반응이 없는 답글마다 빈 줄이 생기지 않게.
+function replyReacts(r, i, k){ const ch=reactChips(r.reacts||{}, i, k); return ch ? `<div class="reacts rr${canReact()?'':' ro'}">${ch}</div>` : ''; }
+// k = 답글 번호(없으면 메모 자체). 답글의 `mt` 는 건드리지 않는다(「수정됨」 표시에 쓰인다) — 합치기는 메모의 `mt` 로 한다.
+// 다시 그릴 때는 바뀐 그 줄만 갈아 끼우고 그 줄만 잇는다. 메모 전체를 다시 이으면 손대지 않은 쪽 단추에 처리기가 두 번 붙어, 누를 때마다 달았다 지운다.
+function toggleReact(c, i, e, k){
+  if (!canReact()) return; const m=c.marks[i]; if (!m) return; const o=(k==null) ? m : (m.replies||[])[k]; if (!o) return;
+  o.reacts=o.reacts||{}; const ids=o.reacts[e]||[]; const j=ids.indexOf(me.id);
+  if (j>=0) ids.splice(j,1); else { ids.push(me.id); if (!REACTS_FIXED.includes(e)){ const emo=myEmo(); const cur=emo[e]||{n:0,t:0}; emo[e]={n:cur.n+1, t:Date.now()}; savePref({emo}); } }
+  if (ids.length) o.reacts[e]=ids; else delete o.reacts[e]; if (!Object.keys(o.reacts).length) delete o.reacts;
   m.mt=Date.now(); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs();
-  const n=document.getElementById('note'+(i+1)); if (n){ const old=n.querySelector('.reacts'); if (old) old.outerHTML=reactsHtml(m, i); bindReacts(n, c); }
+  const n=document.getElementById('note'+(i+1));
+  if (n && k==null){ const old=n.querySelector('.reacts:not(.rr)'); if (old){ old.outerHTML=reactsHtml(m, i); bindReacts(n.querySelector('.reacts:not(.rr)'), c); } }
+  else if (n){ const rp=n.querySelector('.replies:not(.ro) .reply[data-k="'+k+'"]');
+    if (rp){ const old=rp.querySelector('.reacts'); if (old) old.remove(); const h=replyReacts(o, i, k); if (h){ rp.insertAdjacentHTML('beforeend', h); bindReacts(rp.querySelector('.reacts'), c); } } }
   requestAnimationFrame(layoutNotes);
 }
 function bindReacts(root, c){
-  root.querySelectorAll('.rc').forEach(b=>b.addEventListener('click', ()=>toggleReact(c, +b.dataset.i, b.dataset.e)));
-  root.querySelectorAll('.rplus').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); const w=b.parentElement; document.querySelectorAll('.radd.open').forEach(x=>{ if (x!==w) closeRadd(x); }); if (w.classList.contains('open')) closeRadd(w); else { w.classList.add('open'); w._pin=true; requestAnimationFrame(()=>placeMenu(w)); } }));
+  root.querySelectorAll('.rc').forEach(b=>b.addEventListener('click', ()=>toggleReact(c, +b.dataset.i, b.dataset.e, kOf(b))));
+  root.querySelectorAll('.rplus').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); const w=b.parentElement; document.querySelectorAll('.radd.open').forEach(x=>{ if (x!==w) closeRadd(x); }); if (w.classList.contains('open')) closeRadd(w); else openRadd(w, true); }));
   root.querySelectorAll('.radd').forEach(w=>{ if (isMob()) return;   // 폰은 ＋ 를 눌러서만 연다
-    w.addEventListener('mouseenter', ()=>{ clearTimeout(w._t); w._t=setTimeout(()=>{ w.classList.add('open'); requestAnimationFrame(()=>placeMenu(w)); }, 1000); }); w.addEventListener('mouseleave', ()=>{ if (w._pin || w.contains(document.activeElement)) return; clearTimeout(w._t); w._t=setTimeout(()=>closeRadd(w), 500); }); });
-  root.querySelectorAll('.rmenu .rrow button[data-e]').forEach(b=>b.addEventListener('click', ()=>{ const w=b.closest('.radd'); closeRadd(w); toggleReact(c, +b.dataset.i, b.dataset.e); }));
+    w.addEventListener('mouseenter', ()=>{ clearTimeout(w._t); w._t=setTimeout(()=>openRadd(w, false), 1000); }); w.addEventListener('mouseleave', ()=>{ if (w._pin || w.contains(document.activeElement)) return; clearTimeout(w._t); w._t=setTimeout(()=>closeRadd(w), 500); }); });
+  root.querySelectorAll('.rmenu .rrow button[data-e]').forEach(b=>b.addEventListener('click', ()=>{ const w=b.closest('.radd'); closeRadd(w); toggleReact(c, +b.dataset.i, b.dataset.e, kOf(b)); }));
   root.querySelectorAll('.rmore').forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); const w=b.closest('.radd'); w.classList.add('open'); w.classList.toggle('ext'); w._pin=true; if (!w.classList.contains('ext')) w.classList.remove('pick'); requestAnimationFrame(()=>placeMenu(w)); }));
   root.querySelectorAll('.rin').forEach(inp=>{ const w=inp.closest('.radd');   // 누르면 이모티콘 판 · 방향키로 고르고 Enter 로 이 칸에 · 다시 Enter 로 달기
     inp.addEventListener('focus', ()=>openBoard(w));
@@ -977,7 +998,7 @@ function bindReacts(root, c){
         const sel=w.querySelector('.rboard button.sel');
         if (sel){ inp.value=sel.dataset.e; selBoard(w, -1); return; }
         const v=inp.value.trim(); if (!v || !/\p{Extended_Pictographic}/u.test(v)) { toast('이모티콘만 넣을 수 있습니다'); return; }
-        inp.value=''; closeRadd(w); toggleReact(c, +inp.dataset.i, v); return;
+        inp.value=''; closeRadd(w); toggleReact(c, +inp.dataset.i, v, kOf(inp)); return;
       }
       if (e.key==='Escape'){ e.preventDefault(); if (w.classList.contains('pick')){ selBoard(w, -1); w.classList.remove('pick','down'); } else closeRadd(w); }
     });
@@ -1044,12 +1065,12 @@ function bindHead(c, collect){
 // ── 메모 목록(표) + 복사용 텍스트: 텍스트형·PDF형 공통 ──
 function listItems(c){
   const withTags=(t,segs)=>{ if (!segs||!segs.length) return t||''; let out='', pos=0; for (const g of [...segs].sort((x,y)=>x.s-y.s)){ out+=t.slice(pos,g.s)+'['+g.by+'] '+t.slice(g.s,g.e); pos=g.e; } return out+t.slice(pos); };
-  return (c.marks||[]).map((m,i)=>({n:i+1, where: isPdf(c) ? m.page+'쪽' : '', kind:KIND[m.kind], k:m.kind, before:m.text||'', after:m.after||'', reason:withTags(m.reason||'', m.segs), who:(m.by||''), whoId:(m.byId||''), reacts:REACTS.filter(e=>(m.reacts||{})[e]&&m.reacts[e].length).map(e=>e+' '+m.reacts[e].length).join(' '), replies:(m.replies||[]).map(r=>'['+(userLabel(r.by, r.byId)||r.by||'')+'] '+(r.t||''))}));
+  return (c.marks||[]).map((m,i)=>({n:i+1, where: isPdf(c) ? m.page+'쪽' : '', kind:KIND[m.kind], k:m.kind, before:m.text||'', after:m.after||'', reason:withTags(m.reason||'', m.segs), who:(m.by||''), whoId:(m.byId||''), reacts:reactSum(m.reacts||{}), replies:(m.replies||[]).map(r=>'['+(userLabel(r.by, r.byId)||r.by||'')+'] '+(r.t||'')), rreacts:(m.replies||[]).map(r=>reactSum(r.reacts||{}))}));
 }
 function listHtml(items, withWhere){
   if (!items.length) return `<div class="mlist"><div class="none">표시가 없습니다.</div></div>`;
   return `<div class="mlist"><table><thead><tr><th>#</th>${withWhere?'<th>위치</th>':''}<th>종류</th><th>작성</th><th>원문</th><th>바꿀 문장</th><th>이유</th></tr></thead><tbody>${items.map(it=>`
-    <tr><td class="n"><button class="jump" data-n="${it.n}" title="문서의 이 자리로 이동">${it.n}</button></td>${withWhere?`<td class="w">${esc(it.where)}</td>`:''}<td class="kd"><span class="chip kd ${esc(it.k||'')}">${esc(it.kind)}</span>${it.n===items.length?' <span class="chip last">마지막</span>':''}</td><td class="w who" style="${userColor(it.who, it.whoId)?`color:${userColor(it.who, it.whoId)}`:''}">${esc(userLabel(it.who, it.whoId)||it.who)}</td><td class="before">${esc(it.before)}</td><td class="after">${esc(it.after)}</td><td class="reason">${md(it.reason)}${it.reacts?` <span class="chip">${esc(it.reacts)}</span>`:''}${(it.replies||[]).length?`<div class="lreps">${it.replies.map(r=>`<div>↳ ${md(r)}</div>`).join('')}</div>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+    <tr><td class="n"><button class="jump" data-n="${it.n}" title="문서의 이 자리로 이동">${it.n}</button></td>${withWhere?`<td class="w">${esc(it.where)}</td>`:''}<td class="kd"><span class="chip kd ${esc(it.k||'')}">${esc(it.kind)}</span>${it.n===items.length?' <span class="chip last">마지막</span>':''}</td><td class="w who" style="${userColor(it.who, it.whoId)?`color:${userColor(it.who, it.whoId)}`:''}">${esc(userLabel(it.who, it.whoId)||it.who)}</td><td class="before">${esc(it.before)}</td><td class="after">${esc(it.after)}</td><td class="reason">${md(it.reason)}${it.reacts?` <span class="chip">${esc(it.reacts)}</span>`:''}${(it.replies||[]).length?`<div class="lreps">${it.replies.map((r,k)=>`<div>↳ ${md(r)}${(it.rreacts||[])[k]?` <span class="chip">${esc(it.rreacts[k])}</span>`:''}</div>`).join('')}</div>`:''}</td></tr>`).join('')}</tbody></table></div>`;
 }
 // 메모 한 건만 글로 옮긴다. 전체 복사(listText)와 같은 꼴이라 섞어 붙여도 어색하지 않다.
 function markText(c, i){
@@ -1204,7 +1225,7 @@ function exportNote(c, m, i){
   const h=i+1; const col=userColor(m.by, m.byId);
   return `<div class="xn ${m.kind}" id="xn${h}"><div class="xh">${(m.lost||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
     + (m.text?`<div class="xsrc">${esc(m.text)}</div>`:'') + (m.kind==='rep'?`<div class="xafter">→ ${esc(m.after||'')}</div>`:'')
-    + ((m.reason||'').trim()?`<div class="xtxt">${md(m.reason||'', m.segs)}</div>`:'') + (m.reacts?`<div class="xtxt" style="color:var(--ink-3)">${esc(reactKeys(m.reacts).map(e=>e+' '+m.reacts[e].length).join('  '))}</div>`:'') + ((m.replies||[]).length?`<div class="xreps">${m.replies.map(r=>`<div class="xrep"><b style="color:${userColor(r.by, r.byId)||'inherit'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</b> ${md(r.t||'')}</div>`).join('')}</div>`:'') + `</div>`;
+    + ((m.reason||'').trim()?`<div class="xtxt">${md(m.reason||'', m.segs)}</div>`:'') + (m.reacts?`<div class="xtxt" style="color:var(--ink-3)">${esc(reactKeys(m.reacts).map(e=>e+' '+m.reacts[e].length).join('  '))}</div>`:'') + ((m.replies||[]).length?`<div class="xreps">${m.replies.map(r=>`<div class="xrep"><b style="color:${userColor(r.by, r.byId)||'inherit'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</b> ${md(r.t||'')}${r.reacts?` <span style="color:var(--ink-3)">${esc(reactSum(r.reacts))}</span>`:''}</div>`).join('')}</div>`:'') + `</div>`;
 }
 async function exportDoc(c){
   collectMarks(c);
