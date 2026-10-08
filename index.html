@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-08T12:14:22+09:00">
+<meta name="build" content="2026-10-08T12:38:00+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -347,6 +347,8 @@ body.area-mode .page{cursor:crosshair;user-select:none} body.area-mode .textLaye
 .page svg.inks .hit.hot{stroke:rgba(46,125,79,.45)}
 .page svg.inks .hit.sel{stroke:rgba(45,91,185,.42)}
 .page svg.inks .marq{fill:rgba(45,91,185,.08);stroke:#2D5BB9;stroke-width:1.2px;stroke-dasharray:5 4;vector-effect:non-scaling-stroke}
+.page svg.inks .sb{fill:none;stroke:#2D5BB9;stroke-width:1px;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+.page svg.inks .sh{fill:#fff;stroke:#2D5BB9;stroke-width:1.5px;vector-effect:non-scaling-stroke}
 .mbox.area.inkbox.hunk{background:none!important;border-color:transparent!important}
 .mbox.area.inkbox.hunk.hot{outline:none}
 .hide-marks .page svg.inks{display:none}
@@ -373,9 +375,9 @@ body.draw-mode.ink-over .page{cursor:pointer}
 .inkbar .btn.on{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
 .inkbar .selrow{display:flex;gap:4px;align-items:center;justify-content:center;flex-wrap:wrap;padding-bottom:6px;border-bottom:1px solid var(--rule)}
 .inkbar .selrow b{font-size:calc(12.5px * var(--ui,1));font-weight:600;margin-right:4px;white-space:nowrap}
-body.draw-mode .toast{bottom:84px} body.draw-mode.ink-has-sel .toast{bottom:124px}
+body.draw-mode .toast{bottom:calc(var(--inkbar-h, 60px) + 30px)}
 .pics .page{cursor:zoom-in}
-@media (max-width:760px){ .inkbar{bottom:8px;padding:6px 6px;width:auto} .inkbar .toolrow{gap:5px 8px} .inkbar.chain .toolrow{display:none} .inkbar.chain .selrow{border-bottom:0;padding-bottom:0} .inkbar .ib{min-width:29px;padding:0 3px} .inkbar .ib.sw{width:25px} body.draw-mode .toast{bottom:112px} body.draw-mode.ink-has-sel .toast{bottom:152px} }
+@media (max-width:760px){ .inkbar{bottom:8px;padding:6px 6px;width:auto} .inkbar .toolrow{gap:5px 8px} .inkbar .toolrow .grp{order:2} .inkbar .toolrow .grp:first-child{order:0} .inkbar .toolrow .fin{order:1} .inkbar.chain .toolrow{display:none} .inkbar.chain .selrow{border-bottom:0;padding-bottom:0} .inkbar .ib{min-width:29px;padding:0 3px} .inkbar .ib.sw{width:25px} body.draw-mode .toast{bottom:calc(var(--inkbar-h, 114px) + 18px)} }
 .pop{position:absolute;z-index:6;display:flex;gap:4px;background:var(--btn);padding:4px;border-radius:5px;box-shadow:0 3px 10px rgba(0,0,0,.25);transform:translate(-50%,8px)}
 .pop button{border:0;background:transparent;color:var(--btn-ink);padding:4px 9px;border-radius:3px;cursor:pointer;font-size:calc(12.5px * var(--ui,1))}
 .pop button:hover{background:rgba(127,127,127,.3)}
@@ -846,8 +848,8 @@ function renderHelp(main){
   <ul><li>글자를 드래그하면 삭제(Alt+1)·바꾸기(Alt+2)·메모(Alt+3)가 가능합니다.</li>
   <li>Alt+A 를 켜면 글자가 아닌 부분(그림 등)에서도 영역을 드래그하여 선택할 수 있습니다. PDF 의 그림 부분은 켜지 않아도 네모로 끌면 영역 메모가 됩니다.</li>
   <li>도면·사진은 「PDF · 도면 그림」 유형에 그림 파일(JPG·PNG)이나 그림이 든 HTML 파일을 그대로 넣습니다. 그림 한 장이 한 쪽이 되고, 그림을 누르면 새 탭에 크게 열립니다(HTML·Word 문서 속 그림도 누르면 크게 열립니다).</li>
-  <li>「선 그리기」(Alt+P)를 켜면 쪽 위에 선을 긋습니다. 색 일곱 가지·두께 네 단계·실선/파선/점선, 자유선과 직선(Ctrl 을 누른 채 그으면 수평·수직, Shift 는 45°까지), 이어 그리기(누를 때마다 꼭짓점이 찍히고, 같은 자리를 두 번 누르거나 Enter 로 끝냄 · 첫 점을 누르면 닫힘), 직사각형과 원(Shift = 정사각형·정원, Ctrl = 누른 자리가 가운데). 지우개는 내가 그은 선만 지우고, 되돌리기(Ctrl+Z)도 됩니다. 선은 「내보내기」와 「주석 PDF」에도 함께 나갑니다.</li>
-  <li>그은 선을 누르면 고릅니다(Shift·Ctrl 을 누른 채 누르면 여럿). 고른 선에는 메모 달기·그룹(Ctrl+G)·그룹 풀기(Ctrl+Shift+G)·지우기(Delete)·색과 굵기 바꾸기가 되고, 「선 고르기」 도구로는 끌어서 옮기거나 빈 곳을 끌어 네모에 닿은 선을 한꺼번에 고릅니다. 선 위에서 우클릭(폰은 길게 누름)하면 같은 메뉴가 뜹니다 — 선 그리기를 켜지 않아도 됩니다.</li>
+  <li>「선 그리기」(Alt+P)를 켜면 쪽 위에 선을 긋습니다. 색 일곱 가지·두께 네 단계·실선/파선/점선, 자유선과 직선(Ctrl 을 누른 채 그으면 수평·수직, Shift 는 45°까지), 이어 그리기(누를 때마다 꼭짓점이 찍히고, 같은 자리를 두 번 누르거나 Enter 로 끝냄 · 첫 점을 누르면 닫힘), 직사각형과 원(Shift = 정사각형·정원, Ctrl = 누른 자리가 가운데). 막대의 화살표 단추로 열린 선의 끝에 화살촉을 달고(끝 · 양쪽), 속 채우기 단추로 닫힌 도형의 속을 연하게·진하게 채웁니다. 지우개는 내가 그은 선만 지우고, 되돌리기(Ctrl+Z)도 됩니다. 선은 「내보내기」와 「주석 PDF」에도 함께 나갑니다.</li>
+  <li>그은 선을 누르면 고릅니다(Shift·Ctrl 을 누른 채 누르면 여럿). 고른 선에는 메모 달기·그룹(Ctrl+G)·그룹 풀기(Ctrl+Shift+G)·지우기(Delete)·색과 굵기 바꾸기가 되고, 「선 고르기」 도구로는 끌어서 옮기거나 빈 곳을 끌어 네모에 닿은 선을 한꺼번에 고릅니다. 고른 선 둘레의 손잡이를 끌면 크기가 바뀌고(Shift = 비율 그대로, Ctrl = 한가운데 기준), 곧은 선은 양 끝 손잡이로 끝점을 옮깁니다. 복제는 Ctrl+D, 방향키는 1px 씩(Shift 는 10px) 옮깁니다. 선 위에서 우클릭(폰은 길게 누름)하면 같은 메뉴가 뜹니다 — 선 그리기를 켜지 않아도 됩니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
   <li>메모가 있는 문서의 본문을 고쳐 저장하면 메모를 새 글의 같은 구절로 다시 맞춥니다. 구절이 사라진 메모는 「자리 잃음」으로 남습니다.</li>
@@ -1079,7 +1081,7 @@ async function exportPdfAnnots(c){
     addMarkAnnot(pdfDoc, page, m, i+1, boxes, vp.width); n++;
   }
   if ((c.note||'').trim() && pages[0]){ const pg=await st.doc.getPage(1); const vp=pg.getViewport({scale:1}); const [x,y]=vp.convertToPdfPoint(12, 12); addOverallAnnot(pdfDoc, pages[0], c, x, y); }
-  let nk=0; for (const k of liveInks(c)){ const page=pages[k.p-1]; if (!page) continue; const pg=await st.doc.getPage(k.p); drawInkPdf(page, k, pg.getViewport({scale:1})); nk++; }   // 그은 선
+  let nk=0; { const LI=liveInks(c); for (const pass of [0, 1]) for (const k of LI){ const page=pages[k.p-1]; if (!page) continue; const pg=await st.doc.getPage(k.p); drawInkPdf(page, k, pg.getViewport({scale:1}), pass); if (pass) nk++; } }   // 그은 선
   if (!n && !nk && !(c.note||'').trim()) throw new Error('넣을 표시가 없습니다');
   return await pdfDoc.save({useObjectStreams:false});
 }
@@ -2678,9 +2680,9 @@ const INK_WIDTHS=[[0.0015,'가늘게'],[0.004,'보통'],[0.008,'굵게'],[0.013,
 const INK_DASH=[['solid','실선'],['dash','파선'],['dot','점선']];
 const inkColor = v => /^#[0-9a-fA-F]{6}$/.test(v||'') ? v : '#E53935';
 const inkW = v => Math.min(0.05, Math.max(0.0005, +v||0.004));
-const inkTool={shape:'free', c:'#E53935', w:0.004, d:'solid', erase:false};
-try { const t=JSON.parse(localStorage.getItem('redpen.ink')||'{}'); if (['line','poly','rect','oval'].indexOf(t.shape)>=0) inkTool.shape=t.shape; if (INK_COLORS.some(x=>x[0]===t.c)) inkTool.c=t.c; if (INK_WIDTHS.some(x=>x[0]===t.w)) inkTool.w=t.w; if (INK_DASH.some(x=>x[0]===t.d)) inkTool.d=t.d; } catch(e){}
-function saveInkTool(){ try { localStorage.setItem('redpen.ink', JSON.stringify({shape:inkTool.shape==='select'?'free':inkTool.shape, c:inkTool.c, w:inkTool.w, d:inkTool.d})); } catch(e){} }
+const inkTool={shape:'free', c:'#E53935', w:0.004, d:'solid', a:0, f:0, erase:false};   // a = 화살촉(1 끝 · 2 양쪽) · f = 속 채우기(0.25 연하게 · 1 진하게)
+try { const t=JSON.parse(localStorage.getItem('redpen.ink')||'{}'); if (['line','poly','rect','oval'].indexOf(t.shape)>=0) inkTool.shape=t.shape; if (INK_COLORS.some(x=>x[0]===t.c)) inkTool.c=t.c; if (INK_WIDTHS.some(x=>x[0]===t.w)) inkTool.w=t.w; if (INK_DASH.some(x=>x[0]===t.d)) inkTool.d=t.d; if (t.a===1 || t.a===2) inkTool.a=t.a; if (t.f===0.25 || t.f===1) inkTool.f=t.f; } catch(e){}
+function saveInkTool(){ try { localStorage.setItem('redpen.ink', JSON.stringify({shape:inkTool.shape==='select'?'free':inkTool.shape, c:inkTool.c, w:inkTool.w, d:inkTool.d, a:inkTool.a, f:inkTool.f})); } catch(e){} }
 const newInkId=()=>'k'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const inkCase=()=>(view.mode==='case' && pdfState && pdfState.c) || null;
 function liveInks(c, p){ return ((c&&c.inks)||[]).filter(k=>k && k.id && !k.del && Array.isArray(k.pts) && k.pts.length && (p==null || k.p===p)); }
@@ -2717,13 +2719,47 @@ function inkSegs(k){
   for (let i=1;i<P.length-1;i++){ const a=P[i], b=P[i+1]; out.push(['Q',a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2]); }   // 점과 점의 가운데를 지나는 매끈한 곡선
   const z=P[P.length-1]; out.push(['L',z[0],z[1]]); return out;
 }
-function inkD(k, W, H){ return inkSegs(k).map(s=>s[0]+s.slice(1).map((v,i)=>+(v*(i%2?H:W)).toFixed(1)).join(' ')).join(''); }
+function segsD(segs, W, H){ return segs.map(s=>s[0]+s.slice(1).map((v,i)=>+(v*(i%2?H:W)).toFixed(1)).join(' ')).join(''); }
+// ── 화살표 · 속 채우기 ──
+// 선에 얹는 칸 둘: a = 화살촉(1 끝 · 2 양쪽), f = 속을 채우는 진하기(0.25 연하게 · 1 진하게). 없는 판에서는 그냥 선으로 보인다.
+// 화살촉은 열린 선에만, 속 채우기는 닫힌 도형(직사각형 · 원 · 처음과 끝이 만나는 선)에만 먹는다.
+const inkA = v => (v===1 || v===2) ? v : 0;
+const inkF = v => { v=+v; return v>0 ? Math.min(1, Math.max(0.05, v)) : 0; };
+function inkClosed(k){ const P=k && k.pts; if (!P || P.length<3) return false; const a=P[0], z=P[P.length-1]; return Math.abs(a[0]-z[0])<6e-4 && Math.abs(a[1]-z[1])<6e-4; }
+function inPoly(P, x, y){ let c=false; for (let i=0, j=P.length-1; i<P.length; j=i++){ const a=P[i], b=P[j]; if ((a[1]>y)!==(b[1]>y) && x < (b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]) c=!c; } return c; }
+// 그릴 꼴: 길(segs) · 화살촉 세모들(heads) · 속 진하기(fill). 화면(SVG) · 새 탭 큰 그림(canvas) · 주석 PDF 가 모두 이것을 쓴다.
+// 화살촉을 다는 선은 촉 속에서 끝나도록 길을 줄인다(선 끝이 촉보다 뭉툭해서 그대로 두면 촉 끝으로 삐져나온다).
+// ar = 쪽의 높이/폭 — 방향과 직각을 재야 하므로 가로세로를 같은 자로 맞춰 놓고 계산한다
+function inkGeom(k, ar){
+  const closed=inkClosed(k), n=closed ? 0 : inkA(k.a), fill=closed ? inkF(k.f) : 0;
+  if (!n) return {segs:inkSegs(k), heads:[], fill};
+  const U=[]; inkPoly(k, 10).forEach(q=>{ const u=[q[0], q[1]*ar], z=U[U.length-1]; if (!z || Math.hypot(u[0]-z[0], u[1]-z[1])>1e-7) U.push(u); });
+  if (U.length<2) return {segs:inkSegs(k), heads:[], fill};
+  const len=inkW(k.w)*3+0.008, hw=len*0.42, heads=[];        // 촉의 길이와 반폭(쪽 폭 대비) — 가는 선도 촉은 보이게
+  const cut=P=>{                                             // P 의 끝에 촉을 달고 길은 끝에서 len*0.7 만큼 줄인다
+    const tip=P[P.length-1]; let d=len*0.7;
+    while (P.length>=2){ const a=P[P.length-2], z=P[P.length-1], L=Math.hypot(z[0]-a[0], z[1]-a[1]);
+      if (L>d){ const t=(L-d)/L; P[P.length-1]=[a[0]+(z[0]-a[0])*t, a[1]+(z[1]-a[1])*t]; break; }
+      d-=L; P.pop(); }
+    const b=P[P.length-1]; let dx=tip[0]-b[0], dy=tip[1]-b[1]; const L2=Math.hypot(dx, dy); if (L2<1e-9){ dx=1; dy=0; } else { dx/=L2; dy/=L2; }
+    const bx=tip[0]-dx*len, by=tip[1]-dy*len;
+    heads.push([tip, [bx-dy*hw, by+dx*hw], [bx+dy*hw, by-dx*hw]]);
+  };
+  cut(U); if (n===2 && U.length>=2){ U.reverse(); cut(U); U.reverse(); }   // 촉 하나도 못 담을 만큼 짧으면 끝에만
+  return {segs: U.length>=2 ? U.map((q,i)=>[i?'L':'M', q[0], q[1]/ar]) : [], heads:heads.map(t=>t.map(q=>[q[0], q[1]/ar])), fill};
+}
 function inkDashArr(k, sw){ return k.d==='dash' ? [sw*3, sw*2.4] : (k.d==='dot' ? [sw*0.02, sw*2.2] : null); }   // 끝이 둥글어 점선은 「길이 0 인 토막」이 동그란 점이 된다
-// 선마다 두 겹: 아래에 넓고 투명한 「빛」(고름·가리킴·메모 초점일 때만 색이 든다), 위에 선 자체. hitW=0 이면(내보내기) 빛은 뺀다
+// 선마다: (속을 채우면) 채움 · 넓고 투명한 「빛」(고름·가리킴·메모 초점일 때만 색이 든다) · 선 자체 · 화살촉.
+// 채움은 모든 선보다 아래에 깐다 — 진하게 채운 도형이 먼저 그어 둔 선을 가리지 않게. hitW=0 이면(내보내기) 빛은 뺀다
 function inkSvg(c, p, VH, hitW){
-  return liveInks(c, p).map(k=>{ const sw=inkW(k.w)*1000; const da=inkDashArr(k, sw); const d=inkD(k, 1000, VH); const id=esc(k.id);
-    return (hitW ? `<path class="hit${inkSel.has(k.id)?' sel':''}" data-id="${id}" d="${d}" fill="none" stroke="transparent" stroke-width="${+(sw+hitW).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>` : '')
-      + `<path${hitW?` data-id="${id}"`:''} d="${d}" fill="none" stroke="${inkColor(k.c)}" stroke-width="${+sw.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"${da?` stroke-dasharray="${da.map(v=>+v.toFixed(2)).join(' ')}"`:''}/>`; }).join('');
+  const ar=VH/1000, xy=q=>(+(q[0]*1000).toFixed(1))+' '+(+(q[1]*VH).toFixed(1)); let fills='', lines='';
+  for (const k0 of liveInks(c, p)){ const k=pvInk(k0), sw=inkW(k.w)*1000, da=inkDashArr(k, sw), G=inkGeom(k, ar), d=segsD(G.segs, 1000, VH), id=esc(k.id), col=inkColor(k.c), tag=hitW ? ` data-id="${id}"` : '';
+    if (G.fill && d) fills+=`<path${tag} d="${d}Z" fill="${col}" fill-opacity="${G.fill}" stroke="none"/>`;
+    if (hitW && d) lines+=`<path class="hit${inkSel.has(k.id)?' sel':''}" data-id="${id}" d="${d}" fill="none" stroke="transparent" stroke-width="${+(sw+hitW).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (d) lines+=`<path${tag} d="${d}" fill="none" stroke="${col}" stroke-width="${+sw.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round"${da?` stroke-dasharray="${da.map(v=>+v.toFixed(2)).join(' ')}"`:''}/>`;
+    for (const t of G.heads) lines+=`<path${tag} d="M${xy(t[0])}L${xy(t[1])}L${xy(t[2])}Z" fill="${col}" stroke="${col}" stroke-width="${+(sw*0.3).toFixed(2)}" stroke-linejoin="round"/>`;
+  }
+  return fills+lines;
 }
 function drawInks(c, p){
   const pageEl=document.querySelector('.page[data-p="'+p+'"]'); if (!pageEl) return;
@@ -2736,29 +2772,46 @@ function drawInks(c, p){
   if (inkHovKey){ inkHovKey=''; document.body.classList.remove('ink-over'); }
   if (inkLive && inkLive.pageEl===pageEl && inkLive.el) sv.appendChild(inkLive.el);   // 긋는 도중에 다시 그려져도(남의 저장 반영 등) 긋던 선은 남긴다
   if (inkChain && inkChain.pageEl===pageEl && inkChain.el) sv.appendChild(inkChain.el);
+  if (inkSel.size && inkSelPage===p) drawSelBox(c);        // 고른 선의 테두리 상자와 손잡이
 }
 function exportInks(c, pg){ const VH=+(1000*pg.h/pg.w).toFixed(2); const s=inkSvg(c, pg.p, VH, 0); return s ? `<svg viewBox="0 0 1000 ${VH}" preserveAspectRatio="none" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none">${s}</svg>` : ''; }
 function paintInksCanvas(ctx, c, p, W, H){
-  for (const k of liveInks(c, p)){ const sw=inkW(k.w)*W; const da=inkDashArr(k, sw);
-    ctx.save(); ctx.beginPath(); ctx.strokeStyle=inkColor(k.c); ctx.lineWidth=sw; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.setLineDash(da||[]);
-    for (const s of inkSegs(k)){ if (s[0]==='M') ctx.moveTo(s[1]*W, s[2]*H); else if (s[0]==='L') ctx.lineTo(s[1]*W, s[2]*H); else ctx.quadraticCurveTo(s[1]*W, s[2]*H, s[3]*W, s[4]*H); }
-    ctx.stroke(); ctx.restore(); }
+  const L=liveInks(c, p), G=L.map(k=>inkGeom(k, H/W));
+  const run=segs=>{ ctx.beginPath(); for (const s of segs){ if (s[0]==='M') ctx.moveTo(s[1]*W, s[2]*H); else if (s[0]==='L') ctx.lineTo(s[1]*W, s[2]*H); else ctx.quadraticCurveTo(s[1]*W, s[2]*H, s[3]*W, s[4]*H); } };
+  L.forEach((k,i)=>{ if (!G[i].fill || !G[i].segs.length) return; ctx.save(); run(G[i].segs); ctx.closePath(); ctx.globalAlpha=G[i].fill; ctx.fillStyle=inkColor(k.c); ctx.fill(); ctx.restore(); });   // 채움은 모든 선 아래에
+  L.forEach((k,i)=>{ const sw=inkW(k.w)*W, da=inkDashArr(k, sw), col=inkColor(k.c);
+    ctx.save(); ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=sw; ctx.lineCap='round'; ctx.lineJoin='round';
+    if (G[i].segs.length){ ctx.setLineDash(da||[]); run(G[i].segs); ctx.stroke(); }
+    ctx.setLineDash([]); ctx.lineWidth=sw*0.3;
+    for (const t of G[i].heads){ ctx.beginPath(); ctx.moveTo(t[0][0]*W, t[0][1]*H); ctx.lineTo(t[1][0]*W, t[1][1]*H); ctx.lineTo(t[2][0]*W, t[2][1]*H); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+    ctx.restore(); });
 }
-// 주석 PDF: 선은 주석이 아니라 쪽 내용 위에 직접 그린다 — 주석을 안 그리는 뷰어(폰 미리보기 등)에서도 보이고 파선·점선이 그대로 나온다
-function drawInkPdf(page, k, vp){
-  const L=window.PDFLib; const pt=(x,y)=>vp.convertToPdfPoint(x*vp.width, y*vp.height);
+// 주석 PDF: 선은 주석이 아니라 쪽 내용 위에 직접 그린다 — 주석을 안 그리는 뷰어(폰 미리보기 등)에서도 보이고 파선·점선이 그대로 나온다.
+// pass 0 = 속 채움만(모든 선 아래에 깔리도록 먼저 한 바퀴), pass 1 = 선과 화살촉
+function drawInkPdf(page, k, vp, pass){
+  const L=window.PDFLib; const pt=(x,y)=>vp.convertToPdfPoint(x*vp.width, y*vp.height), n2=v=>+v.toFixed(2);
   const a=pt(0,0), b=pt(1,0); const pw=Math.hypot(b[0]-a[0], b[1]-a[1]);   // 쪽 폭이 PDF 좌표로 몇 pt 인가(돌려 놓은 쪽에서도 맞게)
-  const sw=inkW(k.w)*pw; const da=inkDashArr(k, sw); const col=inkColor(k.c); const rgb=[1,3,5].map(i=>parseInt(col.slice(i,i+2),16)/255);
-  const ops=[L.pushGraphicsState(), L.setStrokingRgbColor(rgb[0],rgb[1],rgb[2]), L.setLineWidth(sw), L.setLineCap(L.LineCapStyle.Round), L.setLineJoin(L.LineJoinStyle.Round)];
-  if (da) ops.push(L.setDashPattern(da, 0));
-  let cp=null;
-  for (const s of inkSegs(k)){
-    if (s[0]==='M'){ cp=pt(s[1],s[2]); ops.push(L.moveTo(cp[0],cp[1])); }
-    else if (s[0]==='L'){ cp=pt(s[1],s[2]); ops.push(L.lineTo(cp[0],cp[1])); }
-    else { const q=pt(s[1],s[2]), z=pt(s[3],s[4]);   // PDF 에는 2차 곡선이 없어 같은 모양의 3차 곡선으로 바꾼다
-      ops.push(L.appendBezierCurve(cp[0]+(q[0]-cp[0])*2/3, cp[1]+(q[1]-cp[1])*2/3, z[0]+(q[0]-z[0])*2/3, z[1]+(q[1]-z[1])*2/3, z[0], z[1])); cp=z; }
+  const sw=inkW(k.w)*pw, da=inkDashArr(k, sw), col=inkColor(k.c), rgb=[1,3,5].map(i=>parseInt(col.slice(i,i+2),16)/255), G=inkGeom(k, vp.height/vp.width);
+  if (!pass){   // 비치는 채움은 pdf-lib 의 drawSvgPath 에 맡긴다(투명도 설정을 알아서 넣어 준다). 그 좌표는 y 가 아래로 자라므로 부호를 뒤집어 넘긴다
+    if (!G.fill || !G.segs.length) return; let d='';
+    for (const s of G.segs){ if (s[0]==='Q'){ const q=pt(s[1],s[2]), z=pt(s[3],s[4]); d+='Q'+n2(q[0])+' '+n2(-q[1])+' '+n2(z[0])+' '+n2(-z[1]); } else { const q=pt(s[1],s[2]); d+=s[0]+n2(q[0])+' '+n2(-q[1]); } }
+    page.drawSvgPath(d+'Z', {x:0, y:0, color:L.rgb(rgb[0],rgb[1],rgb[2]), opacity:G.fill, borderWidth:0}); return;
   }
-  ops.push(L.stroke(), L.popGraphicsState());
+  const ops=[L.pushGraphicsState(), L.setStrokingRgbColor(rgb[0],rgb[1],rgb[2]), L.setFillingRgbColor(rgb[0],rgb[1],rgb[2]), L.setLineWidth(sw), L.setLineCap(L.LineCapStyle.Round), L.setLineJoin(L.LineJoinStyle.Round)];
+  if (G.segs.length){
+    if (da) ops.push(L.setDashPattern(da, 0));
+    let cp=null;
+    for (const s of G.segs){
+      if (s[0]==='M'){ cp=pt(s[1],s[2]); ops.push(L.moveTo(cp[0],cp[1])); }
+      else if (s[0]==='L'){ cp=pt(s[1],s[2]); ops.push(L.lineTo(cp[0],cp[1])); }
+      else { const q=pt(s[1],s[2]), z=pt(s[3],s[4]);   // PDF 에는 2차 곡선이 없어 같은 모양의 3차 곡선으로 바꾼다
+        ops.push(L.appendBezierCurve(cp[0]+(q[0]-cp[0])*2/3, cp[1]+(q[1]-cp[1])*2/3, z[0]+(q[0]-z[0])*2/3, z[1]+(q[1]-z[1])*2/3, z[0], z[1])); cp=z; }
+    }
+    ops.push(L.stroke());
+  }
+  if (G.heads.length){ ops.push(L.setDashPattern([], 0), L.setLineWidth(sw*0.3));
+    for (const t of G.heads){ const p0=pt(t[0][0],t[0][1]), p1=pt(t[1][0],t[1][1]), p2=pt(t[2][0],t[2][1]); ops.push(L.moveTo(p0[0],p0[1]), L.lineTo(p1[0],p1[1]), L.lineTo(p2[0],p2[1]), L.closePath(), L.fillAndStroke()); } }
+  ops.push(L.popGraphicsState());
   page.pushOperators(...ops);
 }
 // 손떨림 점을 솎는다(Ramer–Douglas–Peucker). 되풀이 호출 대신 스택으로 — 긴 선에서도 호출 깊이가 안 쌓인다
@@ -2773,26 +2826,26 @@ function rdp(pts, eps){
 }
 function snapDir(a, b, n){ const st=Math.PI/((n||8)/2); const dx=b[0]-a[0], dy=b[1]-a[1]; const ang=Math.round(Math.atan2(dy,dx)/st)*st; const len=dx*Math.cos(ang)+dy*Math.sin(ang); return [a[0]+len*Math.cos(ang), a[1]+len*Math.sin(ang)]; }   // n = 4(수평·수직만) · 8(45°까지)
 // 직선의 끝을 이미 그어 둔 선의 끝에 붙인다(7px 안) — 꺾은선을 한 토막씩 이어 그릴 때 이음매가 벌어지지 않게
-function snapEnd(c, p, q, pr){ let best=null, bd=7;
-  for (const k of liveInks(c, p)){ for (const e of [k.pts[0], k.pts[k.pts.length-1]]){ const x=e[0]*pr.width, y=e[1]*pr.height; const d=Math.hypot(x-q[0], y-q[1]); if (d<bd){ bd=d; best=[x,y]; } } }
+function snapEnd(c, p, q, pr, skip){ let best=null, bd=7;   // skip = 지금 고치고 있는 선(제 끝에 붙지 않게)
+  for (const k of liveInks(c, p)){ if (k.id===skip) continue; for (const e of [k.pts[0], k.pts[k.pts.length-1]]){ const x=e[0]*pr.width, y=e[1]*pr.height; const d=Math.hypot(x-q[0], y-q[1]); if (d<bd){ bd=d; best=[x,y]; } } }
   return best||q; }
 // ── 선 고르기 · 그룹 · 선에 메모 ──
 // 고른 선은 화면에만 있는 상태다(저장하지 않는다). 그룹은 선마다 같은 g 값을 주는 것으로 나타낸다 —
 // 선 하나하나가 따로 합쳐지므로(mergeInks) 그룹을 위한 합치기 규칙이 따로 필요 없다.
 // 선에 단 메모는 보통 영역 메모(c.marks)에 ink:[선 id…] 만 얹은 것이다. 선이 살아 있으면 상자 대신 선 곁에 번호를 달고,
 // 선이 지워지면 그 자리의 영역 메모로 남는다. 이 기능이 없는 판에서 열어도 영역 메모로 보이고 저장해도 ink 칸은 따라간다.
-const inkSel=new Set(); let inkSelPage=0, inkDrag=null, inkHovKey='', inkChain=null;   // inkChain = 이어 그리는 중인 선(아래 「도형」)
+const inkSel=new Set(); let inkSelPage=0, inkDrag=null, inkHovKey='', inkChain=null, inkPreview=null, inkCurEl=null;   // inkChain = 이어 그리는 중인 선(아래 「도형」)
 const canInk = k => !k.byId || !!(me && (k.byId===me.id || me.role==='admin'));   // 고치기·옮기기·지우기는 내 선이거나 관리자(메모 삭제와 같은 규칙)
 const inkBump = k => Math.max(Date.now(), (+k.mt||0)+1);                          // 고친 쪽이 합칠 때 이기도록
 const conOf = e => (e && (e.ctrlKey || e.metaKey)) ? 4 : ((e && e.shiftKey) ? 8 : 0);   // 긋는 방향 묶기: Ctrl = 수평·수직만 · Shift = 45°까지
 const markSort = (a,b)=>a.page-b.page || (a.rects[0]||[0,0])[1]-(b.rects[0]||[0,0])[1] || (a.rects[0]||[0,0])[0]-(b.rects[0]||[0,0])[0];
 // 선을 잘게 편 점들(쪽 대비 비율) — 맞히기·상자·네모 고르기가 모두 이것으로 잰다
-function inkPoly(k){
+function inkPoly(k, n){   // n = 곡선 한 토막을 몇으로 펼까(기본 6)
   const out=[]; let cp=null;
   for (const s of inkSegs(k)){
     if (s[0]!=='Q'){ cp=[s[1],s[2]]; out.push(cp); continue; }
     const a=cp, q=[s[1],s[2]], z=[s[3],s[4]];
-    for (let i=1;i<=6;i++){ const t=i/6, u=1-t; out.push([u*u*a[0]+2*u*t*q[0]+t*t*z[0], u*u*a[1]+2*u*t*q[1]+t*t*z[1]]); }
+    for (let i=1, m=n||6; i<=m; i++){ const t=i/m, u=1-t; out.push([u*u*a[0]+2*u*t*q[0]+t*t*z[0], u*u*a[1]+2*u*t*q[1]+t*t*z[1]]); }
     cp=z;
   }
   return out;
@@ -2803,7 +2856,9 @@ function inkDist(k, x, y, W, H){ const P=inkPoly(k); let best=1e9; for (let i=0;
 function inkAt(c, p, x, y, W, H, tol){
   let best=null, bd=1e9; const L=liveInks(c, p);
   for (let i=L.length-1;i>=0;i--){ const d=Math.max(0, inkDist(L[i], x, y, W, H)-inkW(L[i].w)*W/2); if (d<=tol && d<bd){ bd=d; best=L[i]; } }
-  return best;
+  if (best) return best;
+  for (let i=L.length-1;i>=0;i--){ if (inkClosed(L[i]) && inkF(L[i].f) && inPoly(inkPoly(L[i]), x/W, y/H)) return L[i]; }   // 선에는 안 닿았지만 채운 도형의 속을 눌렀다
+  return null;
 }
 function segInRect(ax, ay, bx, by, x0, y0, x1, y1){   // 선분이 네모에 닿는가(Liang–Barsky)
   let t0=0, t1=1; const dx=bx-ax, dy=by-ay; const P=[-dx, dx, -dy, dy], Q=[ax-x0, x1-ax, ay-y0, y1-ay];
@@ -2834,6 +2889,7 @@ function selInks(c){ return inkSel.size ? liveInks(c, inkSelPage).filter(k=>inkS
 // 고른 선의 빛과 막대의 「선 N개」 줄을 지금 상태로 맞춘다
 function paintInkSel(){
   document.querySelectorAll('#doc svg.inks .hit').forEach(h=>h.classList.toggle('sel', inkSel.has(h.getAttribute('data-id'))));
+  drawSelBox(inkCase());
   if (drawMode) buildInkBar();
 }
 function setSel(c, list, add){
@@ -2894,8 +2950,12 @@ function inkDelete(c, list){
 function eraseInk(c, id){ const k=(c.inks||[]).find(x=>x && x.id===id && !x.del); if (k) inkDelete(c, [k]); }   // 지우개: 누른 선 하나만(그룹이어도)
 function inkRestyle(c, patch){
   const list=selInks(c).filter(canInk); if (!list.length) return;
+  if (patch.f && !list.some(inkClosed)){ toast('속 채우기는 닫힌 도형(직사각형 · 원 · 처음과 끝이 만나는 선)에만 됩니다'); return; }
+  if (patch.a && !list.some(k=>!inkClosed(k))){ toast('화살표는 열린 선에만 답니다'); return; }
   pushHist(c, '선 모양 바꾸기');
-  list.forEach(k=>{ k.mt=inkBump(k); if (patch.c) k.c=inkColor(patch.c); if (patch.w) k.w=inkW(patch.w); if (patch.d) k.d=patch.d; });
+  list.forEach(k=>{ k.mt=inkBump(k); if (patch.c) k.c=inkColor(patch.c); if (patch.w) k.w=inkW(patch.w); if (patch.d) k.d=patch.d;
+    if ('a' in patch){ if (inkA(patch.a) && !inkClosed(k)) k.a=inkA(patch.a); else delete k.a; }
+    if ('f' in patch){ if (inkF(patch.f) && inkClosed(k)) k.f=inkF(patch.f); else delete k.f; } });
   view.dirty=true; drawAllMarks(c); refreshPdfHead(c);
 }
 // 옮기기(dx·dy 는 쪽 대비 비율). 쪽 밖으로는 나가지 않게 막고, 선에 단 메모의 자리도 함께 옮긴다
@@ -2905,9 +2965,78 @@ function inkMoveBy(c, list, dx, dy){
   if (Math.abs(dx)<1e-4 && Math.abs(dy)<1e-4) return;
   pushHist(c, list.length>1 ? '선 '+fmtN(list.length)+'개 옮기기' : '선 옮기기'); const ids=new Set(list.map(k=>k.id));
   list.forEach(k=>{ k.mt=inkBump(k); k.pts=k.pts.map(q=>[+((+q[0]||0)+dx).toFixed(4), +((+q[1]||0)+dy).toFixed(4)]); });
+  inkMarksFollow(c, ids);
+  view.dirty=true; drawAllMarks(c); refreshPdfHead(c);
+}
+// ── 크기 조절: 고른 선 둘레의 상자와 손잡이 ──
+// 곧은 선 하나를 골랐으면 양 끝의 둥근 손잡이(끝점을 옮긴다), 그 밖에는 둘레 상자의 여덟 손잡이(늘이고 줄인다).
+// Shift = 가로세로 비율 그대로 · Ctrl = 한가운데를 붙들고. 끄는 동안에는 자료를 건드리지 않고 미리 보기(inkPreview)만 그리다가 놓을 때 한 번에 고친다
+const pvInk = k => (inkPreview && inkPreview.get(k.id)) || k;
+function selHandles(c){
+  const S=selInks(c).map(pvInk); if (!S.length) return null; const p=S[0].p;
+  if (S.length===1 && S[0].t==='line' && S[0].pts.length===2) return {p, box:null, list:S[0].pts.map((q,i)=>({end:i, x:+q[0], y:+q[1]}))};
+  const b=ptsBox(S), w=b[2]-b[0], h=b[3]-b[1], list=[];
+  [0, 0.5, 1].forEach(fy=>[0, 0.5, 1].forEach(fx=>{
+    if ((fx===0.5 && fy===0.5) || (w<1e-4 && fx!==0.5) || (h<1e-4 && fy!==0.5)) return;   // 한가운데는 손잡이가 없다 · 납작한 쪽으로는 늘일 수 없다
+    list.push({fx, fy, x:b[0]+w*fx, y:b[1]+h*fy}); }));
+  return {p, box:b, list};
+}
+function drawSelBox(c){
+  document.querySelectorAll('#doc svg.inks .selbox').forEach(g=>g.remove());
+  const S=(drawMode && c) ? selHandles(c) : null; if (!S) return;
+  const pageEl=document.querySelector('.page[data-p="'+S.p+'"]'), sv=pageEl && pageEl.querySelector(':scope > svg.inks'); if (!sv) return;
+  const VH=+sv.getAttribute('data-vh')||1000, r=(coarsePointer()?5.5:3.5)*1000/(+pageEl.dataset.ow||1000), f=v=>+v.toFixed(1); let h='';
+  if (S.box) h+=`<rect class="sb" x="${f(S.box[0]*1000)}" y="${f(S.box[1]*VH)}" width="${f((S.box[2]-S.box[0])*1000)}" height="${f((S.box[3]-S.box[1])*VH)}"/>`;
+  S.list.forEach(q=>{ const x=q.x*1000, y=q.y*VH; h+= q.end!=null ? `<circle class="sh" cx="${f(x)}" cy="${f(y)}" r="${f(r*1.25)}"/>` : `<rect class="sh" x="${f(x-r)}" y="${f(y-r)}" width="${f(r*2)}" height="${f(r*2)}"/>`; });
+  const g=document.createElementNS(SVGNS,'g'); g.setAttribute('class','selbox'); g.innerHTML=h; sv.appendChild(g);
+}
+function handleAt(c, p, x, y, W, H, tol){   // 그 자리(px)의 손잡이
+  const S=selHandles(c); if (!S || S.p!==p) return null; let best=null, bd=tol;
+  S.list.forEach(q=>{ const d=Math.hypot(q.x*W-x, q.y*H-y); if (d<=bd){ bd=d; best=q; } });
+  return best ? {h:best, box:S.box} : null;
+}
+function setInkCur(el, cur){ if (inkCurEl && inkCurEl!==el) inkCurEl.style.cursor=''; if (el) el.style.cursor=cur||''; inkCurEl=cur ? el : null; }   // 손잡이 위에서는 늘이는 방향의 커서
+// 손잡이를 지금 자리까지 끌었을 때 고른 선들의 새 점들(id → pts)
+function sizeTo(D, e){
+  const pr=pgRect(D.pageEl), W=pr.width||1, H=pr.height||1, cl=v=>Math.min(1, Math.max(0, v)), out=new Map();
+  const x=cl((e.clientX-pr.left)/W), y=cl((e.clientY-pr.top)/H);
+  if (D.h.end!=null){                                          // 곧은 선의 끝점: Ctrl·Shift 면 방향을 묶고, 아니면 다른 선의 끝에 붙인다
+    const k=D.S0[0], o=k.pts[1-D.h.end], n=conOf(e); let q=[x*W, y*H];
+    q = n ? snapDir([o[0]*W, o[1]*H], q, n) : snapEnd(D.c, D.p, q, pr, k.id);
+    const pts=k.pts.map(z=>[z[0], z[1]]); pts[D.h.end]=[cl(q[0]/W), cl(q[1]/H)]; out.set(k.id, pts); return out;
+  }
+  const b=D.box, fx=D.h.fx, fy=D.h.fy, ctr=e.ctrlKey || e.metaKey;
+  const ax = ctr ? (b[0]+b[2])/2 : (fx===0 ? b[2] : b[0]), ay = ctr ? (b[1]+b[3])/2 : (fy===0 ? b[3] : b[1]);   // 붙들린 점: 맞은편(Ctrl 이면 한가운데)
+  const ox=b[0]+(b[2]-b[0])*fx, oy=b[1]+(b[3]-b[1])*fy;       // 손잡이가 원래 있던 자리
+  const lim=(a, lo, hi, px)=>{ let mx=1e9; if (hi-a>1e-9) mx=Math.min(mx, (1-a)/(hi-a)); if (a-lo>1e-9) mx=Math.min(mx, a/(a-lo)); return [Math.min(mx, 4/(px*Math.max(hi-lo, 1e-9))), mx]; };   // [가장 작게(4px), 가장 크게(쪽 안)]
+  const lx=lim(ax, b[0], b[2], W), ly=lim(ay, b[1], b[3], H);
+  let sx = fx===0.5 ? 1 : Math.min(lx[1], Math.max(lx[0], (x-ax)/(ox-ax))), sy = fy===0.5 ? 1 : Math.min(ly[1], Math.max(ly[0], (y-ay)/(oy-ay)));   // 뒤집히지 않게 · 쪽 밖으로 나가지 않게
+  if (e.shiftKey && fx!==0.5 && fy!==0.5){ const s=Math.min(lx[1], ly[1], Math.max(sx, sy)); sx=s; sy=s; }   // 모서리 + Shift = 비율 그대로
+  D.S0.forEach(k=>out.set(k.id, k.pts.map(q=>[ax+(q[0]-ax)*sx, ay+(q[1]-ay)*sy])));
+  return out;
+}
+function inkMarksFollow(c, ids){   // 선에 단 메모의 자리(rects)가 선을 따라가게
   (c.marks||[]).forEach(m=>{ if (!Array.isArray(m.ink) || !m.ink.some(id=>ids.has(id))) return; const L=inkOf(c, m); if (L.length){ m.rects=[inkMarkRect(L)]; m.mt=Math.max(Date.now(), (+m.mt||0)+1); } });
   c.marks.sort(markSort);
+}
+function inkReshape(c, map, label){   // 점을 새것으로 갈아 끼운다(크기 조절 · 끝점 옮기기)
+  const r4=q=>[+(+q[0]).toFixed(4), +(+q[1]).toFixed(4)];
+  const list=liveInks(c).filter(k=>map.has(k.id) && JSON.stringify(map.get(k.id).map(r4))!==JSON.stringify(k.pts.map(r4))); if (!list.length) return;
+  pushHist(c, label);
+  list.forEach(k=>{ k.mt=inkBump(k); k.pts=map.get(k.id).map(r4); });
+  inkMarksFollow(c, new Set(list.map(k=>k.id)));
   view.dirty=true; drawAllMarks(c); refreshPdfHead(c);
+}
+// 복제: 고른 선을 조금 비켜서 하나 더(내 선이 된다). 그룹은 그룹째로. 복제한 것이 고른 상태가 되어 바로 끌어 옮길 수 있다
+function inkDup(c, list){
+  list=(list||selInks(c)).filter(k=>k && !k.del); if (!list.length || !editable()) return;
+  const b=ptsBox(list), dx = b[2]+0.02<=1 ? 0.02 : (b[0]-0.02>=0 ? -0.02 : 0), dy = b[3]+0.02<=1 ? 0.02 : (b[1]-0.02>=0 ? -0.02 : 0);
+  pushHist(c, '선 '+fmtN(list.length)+'개 복제'); const gm=new Map(), now=Date.now();
+  const copies=list.map(k=>{ const o=JSON.parse(JSON.stringify(k)); o.id=newInkId(); o.by=me ? me.name : ''; o.byId=me ? me.id : ''; o.mt=now;
+    o.pts=o.pts.map(q=>[+((+q[0]||0)+dx).toFixed(4), +((+q[1]||0)+dy).toFixed(4)]);
+    if (o.g){ if (!gm.has(o.g)) gm.set(o.g, newInkId()); o.g=gm.get(o.g); } return o; });
+  c.inks=(c.inks||[]).concat(copies); inkSel.clear(); inkSelPage=copies[0].p; copies.forEach(o=>inkSel.add(o.id));
+  view.dirty=true; drawAllMarks(c); refreshPdfHead(c); toast('선 '+fmtN(copies.length)+'개를 복제했습니다');
 }
 // 선 위에서 우클릭(폰은 길게 누름)했을 때의 메뉴. 보여 줄 것이 없으면 false
 function inkMenu(c, list, x, y){
@@ -2916,6 +3045,7 @@ function inkMenu(c, list, x, y){
   (c.marks||[]).forEach((m,i)=>{ if (Array.isArray(m.ink) && m.ink.some(id=>ids.has(id))) items.push({l:fmtN(i+1)+'번 메모 보기', f:()=>focusHunk(i+1)}); });
   if (ed && list.length>1 && !(list[0].g && list.every(k=>k.g===list[0].g))) items.push({l:'그룹으로 묶기 (Ctrl+G)', f:()=>inkGroup(c, list)});
   if (ed && list.some(k=>k.g)) items.push({l:'그룹 풀기 (Ctrl+Shift+G)', f:()=>inkUngroup(c, list)});
+  if (ed && drawMode) items.push({l:'복제 (Ctrl+D)', f:()=>inkDup(c, list)});
   if (ed && list.some(canInk)){ if (items.length) items.push({sep:true}); items.push({l: list.length>1 ? '선 '+fmtN(list.length)+'개 지우기' : '선 지우기', f:()=>inkDelete(c, list)}); }
   if (!items.length) return false;
   showLinkMenu(x, y, items); return true;
@@ -2925,6 +3055,8 @@ function inkBarHtml(){
   if (S.length!==inkSel.size){ inkSel.clear(); S.forEach(k=>inkSel.add(k.id)); }   // 되돌리기·남의 저장으로 사라진 선은 고른 것에서 뺀다
   const ic=d=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>';
   const dashIc=v=>'<svg viewBox="0 0 26 10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M3 5H23"'+(v==='dash'?' stroke-dasharray="5 4.4"':(v==='dot'?' stroke-dasharray="0.1 5"':''))+'/></svg>';
+  const endIc=v=>'<svg viewBox="0 0 26 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">'+(v===2 ? '<path d="M9 5H17"/><path d="M9.5 1.6L3 5l6.5 3.4z" fill="currentColor" stroke="none"/>' : '<path d="M3 5H'+(v?17:23)+'"/>')+(v ? '<path d="M16.5 1.6L23 5l-6.5 3.4z" fill="currentColor" stroke="none"/>' : '')+'</svg>';
+  const fillIc=v=>'<svg viewBox="0 0 26 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="16" height="10" rx="1"'+(v ? ' fill="currentColor" fill-opacity="'+v+'"' : '')+'/></svg>';
   const oneG=S.length>1 && !!S[0].g && S.every(k=>k.g===S[0].g);
   const selRow = S.length ? `<span class="selrow"><b>선 ${fmtN(S.length)}개${oneG?' · 그룹':''}</b><button class="btn small" data-act="memo" title="고른 선에 메모를 답니다 · 선을 우클릭해도 됩니다">메모</button><button class="btn small" data-act="group" title="고른 선을 한 덩어리로 묶습니다 · Ctrl+G"${(S.length>1 && !oneG)?'':' disabled'}>그룹</button><button class="btn small" data-act="ungroup" title="Ctrl+Shift+G"${S.some(k=>k.g)?'':' disabled'}>그룹 풀기</button><button class="btn small danger" data-act="del" title="Delete">지우기</button><button class="btn small" data-act="none" title="Esc">선택 풀기</button></span>` : '';
   const topRow = inkChain ? `<span class="selrow"><b>이어 그리기 · 점 ${fmtN(inkChain.pts.length)}개</b><button class="btn small" data-act="chain-undo" title="Backspace · Ctrl+Z">한 점 지우기</button><button class="btn small primary" data-act="chain-done" title="Enter · Esc · 우클릭 · 같은 자리를 두 번 누르기">완료</button><button class="btn small" data-act="chain-cancel" title="그리던 것을 버립니다">취소</button></span>` : selRow;
@@ -2932,7 +3064,9 @@ function inkBarHtml(){
     <span class="grp" role="group" aria-label="색">${INK_COLORS.map(x=>`<button class="ib sw${on(T.c===x[0])}" data-c="${x[0]}" title="${x[1]}" aria-label="${x[1]}" style="--c:${x[0]}"></button>`).join('')}</span>
     <span class="grp" role="group" aria-label="두께" style="color:${col}">${INK_WIDTHS.map((x,i)=>`<button class="ib${on(T.w===x[0])}" data-w="${x[0]}" title="${x[1]}" aria-label="${x[1]}"><i class="ln" style="height:${[1.5,3,5.5,9][i]}px"></i></button>`).join('')}</span>
     <span class="grp" role="group" aria-label="선 종류" style="color:${col}">${INK_DASH.map(x=>`<button class="ib${on(T.d===x[0])}" data-d="${x[0]}" title="${x[1]}" aria-label="${x[1]}">${dashIc(x[0])}</button>`).join('')}</span>
-    <span class="grp"><button class="btn small${on(T.erase)}" data-erase="1" title="선을 눌러 지웁니다 — 내가 그은 선만(관리자는 전부)">지우개</button><button class="btn small primary" data-end="1" title="Esc · Alt+P">끝</button></span></span>`;
+    <span class="grp" role="group" aria-label="화살표" style="color:${col}">${[[0,'화살표 없음'],[1,'끝에 화살표'],[2,'양쪽에 화살표']].map(x=>`<button class="ib${on(T.a===x[0])}" data-a="${x[0]}" title="${x[1]} — 열린 선에 답니다" aria-label="${x[1]}">${endIc(x[0])}</button>`).join('')}</span>
+    <span class="grp" role="group" aria-label="속 채우기" style="color:${col}">${[[0,'속 비움'],[0.25,'속을 연하게 채움(비쳐 보임)'],[1,'속을 진하게 채움']].map(x=>`<button class="ib${on(T.f===x[0])}" data-f="${x[0]}" title="${x[1]} — 직사각형 · 원 · 닫힌 선" aria-label="${x[1]}">${fillIc(x[0])}</button>`).join('')}</span>
+    <span class="grp fin"><button class="btn small${on(T.erase)}" data-erase="1" title="선을 눌러 지웁니다 — 내가 그은 선만(관리자는 전부)">지우개</button><button class="btn small primary" data-end="1" title="Esc · Alt+P">끝</button></span></span>`;
 }
 function syncInkBody(){
   const b=document.body.classList; b.toggle('ink-erase', drawMode && inkTool.erase); b.toggle('ink-select', drawMode && !inkTool.erase && inkTool.shape==='select');
@@ -2953,10 +3087,13 @@ function buildInkBar(){
       else if (b.dataset.c){ T.c=inkColor(b.dataset.c); T.erase=false; if (c && inkSel.size) inkRestyle(c, {c:T.c}); }      // 고른 선이 있으면 그 선의 모양도 바꾼다
       else if (b.dataset.w){ T.w=inkW(b.dataset.w); T.erase=false; if (c && inkSel.size) inkRestyle(c, {w:T.w}); }
       else if (b.dataset.d){ T.d=b.dataset.d; T.erase=false; if (c && inkSel.size) inkRestyle(c, {d:T.d}); }
+      else if (b.dataset.a!=null){ T.a=inkA(+b.dataset.a); T.erase=false; if (c && inkSel.size) inkRestyle(c, {a:T.a}); }
+      else if (b.dataset.f!=null){ T.f=inkF(+b.dataset.f); T.erase=false; if (c && inkSel.size) inkRestyle(c, {f:T.f}); }
       else if (b.dataset.erase){ T.erase=!T.erase; }
       saveInkTool(); setInkHov(null); buildInkBar(); });
     document.body.appendChild(bar); }
   bar.innerHTML=inkBarHtml(); bar.classList.toggle('chain', !!inkChain); syncInkBody(); pinOverlays();
+  document.body.style.setProperty('--inkbar-h', bar.offsetHeight+'px');   // 알림 글이 막대(줄 수가 그때그때 다르다) 바로 위에 뜨게
 }
 // 선 그리기 켜고 끄기. 머리줄 단추의 글자는 부른 쪽이 refreshPdfHead 로 맞춘다(여기서 부르면 서로 물린다)
 function setDraw(on, c){
@@ -2965,7 +3102,7 @@ function setDraw(on, c){
   const was=drawMode; drawMode=on;
   if (on && !was){ inkTool.erase=false; if (inkTool.shape==='select') inkTool.shape='free'; }   // 켤 때는 늘 펜으로 시작한다(지난번에 지우개·고르기로 끝냈어도)
   document.body.classList.toggle('draw-mode', on);
-  if (!on){ inkSel.clear(); setInkHov(null); document.querySelectorAll('#doc svg.inks .hit.sel').forEach(h=>h.classList.remove('sel')); syncInkBody();
+  if (!on){ inkSel.clear(); inkPreview=null; setInkHov(null); setInkCur(null, ''); drawSelBox(null); document.querySelectorAll('#doc svg.inks .hit.sel').forEach(h=>h.classList.remove('sel')); syncInkBody();
     const bar=document.querySelector('.inkbar'); if (bar) bar.remove(); return; }
   if (cropUI) closeCrop(true);
   if (areaMode){ areaMode=false; document.body.classList.remove('area-mode'); }
@@ -3009,20 +3146,23 @@ function endInk(e, cancel){
 }
 function cancelInkLive(){ endInk(null, true); }
 function commitInk(L){
-  const W=L.pr.width, H=L.pr.height; if (!W || !H) return false; let px, t, lab;
+  const W=L.pr.width, H=L.pr.height; if (!W || !H) return false; let px, t, lab, shut=false;   // shut = 닫힌 도형(속을 채울 수 있다)
   if (L.shape==='rect' || L.shape==='oval'){
     const b=shapeBox(L); if (Math.max(b[2]-b[0], b[3]-b[1]) < 4) return false;   // 끌지 않았다 = 그냥 누른 것
-    px = L.shape==='rect' ? rectPts(b) : ovalPts(b); t = L.shape==='rect' ? 'line' : 'free'; lab = L.shape==='rect' ? '직사각형 그리기' : '원 그리기';
+    px = L.shape==='rect' ? rectPts(b) : ovalPts(b); t = L.shape==='rect' ? 'line' : 'free'; lab = L.shape==='rect' ? '직사각형 그리기' : '원 그리기'; shut=true;
   } else {
     const vs=(window.visualViewport && window.visualViewport.scale) || 1; const straight = L.shape==='line' || !!L.con;
     px = straight ? [L.px[0], L.end||L.px[0]] : rdp(L.px, 0.9/vs);   // 벌려 놓고 그으면 그만큼 촘촘히 남긴다
     let x0=1e9, y0=1e9, x1=-1e9, y1=-1e9; px.forEach(q=>{ x0=Math.min(x0,q[0]); y0=Math.min(y0,q[1]); x1=Math.max(x1,q[0]); y1=Math.max(y1,q[1]); });
     if (Math.max(x1-x0, y1-y0) < 3) return false;          // 그냥 누른 것은 선으로 남기지 않는다(눈에 안 띄는 점이 문서에 쌓인다)
     t = straight ? 'line' : 'free'; lab='선 긋기';
+    if (!straight && inkF(inkTool.f) && px.length>=3 && Math.hypot(px[0][0]-px[px.length-1][0], px[0][1]-px[px.length-1][1])<14){ px=px.concat([px[0]]); shut=true; }   // 속 채우기를 켠 채 처음 자리 가까이에서 끝냈으면 닫아서 채운다
   }
   const c=L.c; const pts=px.map(q=>[+(q[0]/W).toFixed(4), +(q[1]/H).toFixed(4)]);
   pushHist(c, lab+' · '+L.p+'쪽');
-  c.inks=c.inks||[]; c.inks.push({id:newInkId(), p:L.p, t, pts, c:inkColor(inkTool.c), w:inkW(inkTool.w), d:inkTool.d, by: me ? me.name : '', byId: me ? me.id : '', mt:Date.now()});
+  const o={id:newInkId(), p:L.p, t, pts, c:inkColor(inkTool.c), w:inkW(inkTool.w), d:inkTool.d, by: me ? me.name : '', byId: me ? me.id : '', mt:Date.now()};
+  if (shut){ if (inkF(inkTool.f)) o.f=inkF(inkTool.f); } else if (inkA(inkTool.a)) o.a=inkA(inkTool.a);   // 닫힌 도형은 속 채우기, 열린 선은 화살촉
+  c.inks=c.inks||[]; c.inks.push(o);
   if (inkSel.size){ inkSel.clear(); document.querySelectorAll('#doc svg.inks .hit.sel').forEach(h=>h.classList.remove('sel')); }   // 새로 그으면 고른 것은 푼다
   view.dirty=true; drawInks(c, L.p); refreshPdfHead(c); return true;
 }
@@ -3030,9 +3170,9 @@ function commitInk(L){
 // 남기는 꼴은 새로 만들지 않았다. 직사각형은 다섯 점짜리 곧은 선(t:'line'), 원은 32각형을 조절점으로 삼은 매끈한 닫힌 곡선(t:'free'),
 // 이어 그리기는 점이 여럿인 곧은 선(t:'line')이다. 그래서 합치기·고르기·옮기기·메모·내보내기가 손댈 것 없이 그대로 되고,
 // 이 기능이 없는 판을 열어 둔 창에서도 같은 모양으로 보인다.
-function liveEl(sv){   // 지금 고른 색·두께·종류로 된 미리 보기 선
+function liveEl(sv, shut){   // 지금 고른 색·두께·종류로 된 미리 보기 선. shut = 닫힌 도형(속 채우기도 미리 보여 준다)
   const w=inkW(inkTool.w)*1000, dash=inkDashArr({d:inkTool.d}, w);
-  const el=document.createElementNS(SVGNS,'path'); el.setAttribute('fill','none'); el.setAttribute('stroke', inkColor(inkTool.c)); el.setAttribute('stroke-width', +w.toFixed(2)); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
+  const el=document.createElementNS(SVGNS,'path'); el.setAttribute('fill', (shut && inkF(inkTool.f)) ? inkColor(inkTool.c) : 'none'); if (shut && inkF(inkTool.f)) el.setAttribute('fill-opacity', inkF(inkTool.f)); el.setAttribute('stroke', inkColor(inkTool.c)); el.setAttribute('stroke-width', +w.toFixed(2)); el.setAttribute('stroke-linecap','round'); el.setAttribute('stroke-linejoin','round');
   if (dash) el.setAttribute('stroke-dasharray', dash.map(v=>+v.toFixed(2)).join(' '));
   sv.appendChild(el); return el;
 }
@@ -3099,13 +3239,18 @@ function chainEnd(commit, quiet){
   const C=inkChain; if (!C) return; inkChain=null; if (C.el) C.el.remove();
   if (!commit || C.pts.length<2){ if (drawMode) buildInkBar(); return; }   // 점 하나뿐이면 남길 선이 없다
   const c=C.c; pushHist(c, '이어 그리기 · '+C.p+'쪽');
-  c.inks=c.inks||[]; c.inks.push({id:newInkId(), p:C.p, t:'line', pts:C.pts.map(q=>[+q[0].toFixed(4), +q[1].toFixed(4)]), c:inkColor(inkTool.c), w:inkW(inkTool.w), d:inkTool.d, by: me ? me.name : '', byId: me ? me.id : '', mt:Date.now()});
+  const o={id:newInkId(), p:C.p, t:'line', pts:C.pts.map(q=>[+q[0].toFixed(4), +q[1].toFixed(4)]), c:inkColor(inkTool.c), w:inkW(inkTool.w), d:inkTool.d, by: me ? me.name : '', byId: me ? me.id : '', mt:Date.now()};
+  if (inkClosed(o)){ if (inkF(inkTool.f)) o.f=inkF(inkTool.f); } else if (inkA(inkTool.a)) o.a=inkA(inkTool.a);
+  c.inks=c.inks||[]; c.inks.push(o);
   view.dirty=true; if (C.pageEl.isConnected) drawInks(c, C.p);
   if (quiet){ const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); if (drawMode) buildInkBar(); } else refreshPdfHead(c);
 }
 // 고르기 도구로 끄는 중: 선 위에서 시작하면 옮기기, 빈 곳에서 시작하면 네모로 여럿 고르기. 4px 안에서 떼면 그냥 누른 것
 function moveInkDrag(e){
-  const D=inkDrag; const pr=pgRect(D.pageEl); D.pr=pr; const W=pr.width||1, H=pr.height||1, VH=+D.sv.getAttribute('data-vh')||1000;
+  const D=inkDrag;
+  if (D.mode==='size' && !D.go){ const r0=pgRect(D.pageEl); if (Math.hypot(e.clientX-r0.left-D.x0, e.clientY-r0.top-D.y0)<4) return; D.go=true; }   // 4px 안에서는 아직 누른 것(끈 게 아니다)
+  if (D.mode==='size'){ D.map=sizeTo(D, e); inkPreview=new Map(); D.map.forEach((pts, id)=>inkPreview.set(id, Object.assign({}, D.real.get(id), {pts}))); drawInks(D.c, D.p); return; }   // 손잡이를 끄는 중: 미리 보기만
+  const pr=pgRect(D.pageEl); D.pr=pr; const W=pr.width||1, H=pr.height||1, VH=+D.sv.getAttribute('data-vh')||1000;
   const x=e.clientX-pr.left, y=e.clientY-pr.top;
   if (!D.mode){
     if (Math.hypot(x-D.x0, y-D.y0)<4) return;
@@ -3131,6 +3276,10 @@ function endInkDrag(e, cancel){
   try { D.pageEl.releasePointerCapture(D.id); } catch(_){}
   if (D.rb) D.rb.remove();
   D.sv.querySelectorAll('[transform]').forEach(el=>el.removeAttribute('transform'));
+  if (D.mode==='size'){ inkPreview=null;   // 손잡이를 놓았다: 미리 보기를 걷고, 끌었으면 그대로 고친다
+    if (!D.go){ if (!cancel && D.pageEl.isConnected && drawMode) pickInk(D.c, D.hit, D.add, D.addKey); return; }   // 끌지 않고 누르기만 했다 = 그 자리의 선을 고르고 빼는 보통 누름(손잡이가 선 위에 얹혀 있을 때)
+    if (!cancel && D.map && D.pageEl.isConnected && drawMode) inkReshape(D.c, D.map, D.h.end!=null ? '선 끝 옮기기' : '크기 바꾸기');
+    if (D.pageEl.isConnected) drawInks(D.c, D.p); return; }
   if (cancel || !D.pageEl.isConnected || !drawMode) return;
   const c=D.c;
   if (!D.mode){ pickInk(c, D.hit, D.add, D.addKey); return; }
@@ -3155,6 +3304,11 @@ document.addEventListener('pointerdown', e=>{
   const touch=!!e.pointerType && e.pointerType!=='mouse', key=e.shiftKey || e.ctrlKey || e.metaKey;
   const hit=inkAt(c, p, x, y, pr.width, pr.height, touch?14:6);
   if (inkTool.erase){ if (hit) eraseInk(c, hit.id); return; }
+  if (!inkChain && inkSel.size && inkSelPage===p){ const hh=handleAt(c, p, x, y, pr.width, pr.height, touch?18:8);   // 손잡이를 잡았다 = 크기 조절(어느 도구에서나)
+    if (hh){ const S=selInks(c); if (!S.every(canInk)){ toast('다른 사람이 그은 선은 고칠 수 없습니다'); return; }
+      inkDrag={c, pageEl, sv, p, id:e.pointerId, pr, x0:x, y0:y, mode:'size', h:hh.h, box:hh.box, S0:S.map(k=>({id:k.id, pts:k.pts.map(q=>[+q[0]||0, +q[1]||0])})), real:new Map(S.map(k=>[k.id, k])), map:null, go:false, hit, add:key||touch, addKey:key, dx:0, dy:0, rb:null, r:null};
+      try { pageEl.setPointerCapture(e.pointerId); } catch(_){}
+      return; } }
   if (inkTool.shape==='select'){
     inkDrag={c, pageEl, sv, p, id:e.pointerId, pr, x0:x, y0:y, hit, add:key||touch, addKey:key, mode:null, dx:0, dy:0, rb:null, r:null, box:null};   // 손가락은 누를 때마다 더 고른다(Shift 가 없으니)
     try { pageEl.setPointerCapture(e.pointerId); } catch(_){}
@@ -3165,7 +3319,7 @@ document.addEventListener('pointerdown', e=>{
   let q=inkPoint(L, e);
   if (L.shape==='line') q=snapEnd(c, p, q, L.pr);   // 직선의 첫 점은 가까운 선 끝에 붙인다
   L.px.push(q); L.end=q;
-  L.el=liveEl(sv); inkLive=L; paintLive(L);
+  L.el=liveEl(sv, L.shape==='rect' || L.shape==='oval'); inkLive=L; paintLive(L);
   try { pageEl.setPointerCapture(e.pointerId); } catch(_){}
 }, true);
 document.addEventListener('pointermove', e=>{
@@ -3175,10 +3329,14 @@ document.addEventListener('pointermove', e=>{
     if (mine){ C.cur=chainPoint(C, e).q; chainPaint(); }
     return; }
   const L=inkLive;
-  if (!L){   // 긋고 있지 않을 때: 고르기·지우개 도구는 마우스 밑의 선을 알려 준다(고르기는 그룹째)
-    if (!drawMode || e.pointerType!=='mouse' || e.buttons || !(inkTool.erase || inkTool.shape==='select')){ if (inkHovKey) setInkHov(null); return; }
-    const pageEl=e.target && e.target.closest ? e.target.closest('#doc .page') : null; const c=pageEl && inkCase(); if (!c){ setInkHov(null); return; }
-    const pr=pgRect(pageEl); const k=(pr.width && pr.height) ? inkAt(c, +pageEl.dataset.p, e.clientX-pr.left, e.clientY-pr.top, pr.width, pr.height, 6) : null;
+  if (!L){   // 긋고 있지 않을 때: 손잡이 위면 늘이는 방향의 커서 · 고르기·지우개 도구는 마우스 밑의 선을 알려 준다(고르기는 그룹째)
+    if (!drawMode || e.pointerType!=='mouse' || e.buttons){ if (inkHovKey) setInkHov(null); return; }
+    const pageEl=e.target && e.target.closest ? e.target.closest('#doc .page') : null; const c=pageEl && inkCase(); if (!c){ setInkHov(null); setInkCur(null, ''); return; }
+    const pr=pgRect(pageEl), p=+pageEl.dataset.p, x=e.clientX-pr.left, y=e.clientY-pr.top; if (!pr.width || !pr.height) return;
+    const hh=(!inkTool.erase && inkSel.size && inkSelPage===p) ? handleAt(c, p, x, y, pr.width, pr.height, 8) : null;
+    setInkCur(pageEl, hh ? (hh.h.end!=null ? 'move' : (hh.h.fx===0.5 ? 'ns-resize' : (hh.h.fy===0.5 ? 'ew-resize' : (hh.h.fx===hh.h.fy ? 'nwse-resize' : 'nesw-resize')))) : '');
+    if (hh || !(inkTool.erase || inkTool.shape==='select')){ if (inkHovKey) setInkHov(null); return; }
+    const k=inkAt(c, p, x, y, pr.width, pr.height, 6);
     setInkHov(k ? (inkTool.erase ? [k] : inkGroupOf(c, k)) : null); return;
   }
   if (e.pointerId!==L.id) return;
@@ -3203,7 +3361,12 @@ document.addEventListener('keydown', e=>{
     if (inkLive){ cancelInkLive(); return; } if (inkDrag){ endInkDrag(null, true); return; } if (inkSel.size){ clearSel(); return; }
     setDraw(false); refreshPdfHead(c); return; }
   if ((e.key==='Delete' || e.key==='Backspace') && inkSel.size){ e.preventDefault(); inkDelete(c); return; }
-  if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code==='KeyG'){ e.preventDefault(); if (e.shiftKey) inkUngroup(c); else inkGroup(c); }
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code==='KeyG'){ e.preventDefault(); if (e.shiftKey) inkUngroup(c); else inkGroup(c); return; }
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code==='KeyD' && inkSel.size){ e.preventDefault(); inkDup(c); return; }
+  if (!e.ctrlKey && !e.metaKey && !e.altKey && inkSel.size && /^Arrow/.test(e.key)){   // 방향키 = 1px 씩(Shift 는 10px) 옮기기
+    e.preventDefault(); const S=selInks(c); if (!S.every(canInk)){ toast('다른 사람이 그은 선은 옮길 수 없습니다'); return; }
+    const pe=document.querySelector('.page[data-p="'+inkSelPage+'"]'), pr=pe ? pgRect(pe) : null; if (!pr || !pr.width || !pr.height) return; const st=e.shiftKey ? 10 : 1;
+    inkMoveBy(c, S, (e.key==='ArrowRight' ? st : (e.key==='ArrowLeft' ? -st : 0))/pr.width, (e.key==='ArrowDown' ? st : (e.key==='ArrowUp' ? -st : 0))/pr.height); }
 });
 // 이어 그리는 중의 Ctrl+Z 는 「방금 찍은 점」을 지운다(되돌리기 기록보다 먼저 받는다) · Ctrl+S 는 그리던 것을 끝내고 나서 저장되게 한다
 document.addEventListener('keydown', e=>{
