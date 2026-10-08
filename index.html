@@ -3360,6 +3360,10 @@ async function saveDoc(c, btn){
     if (msg) msg.textContent='문서 저장하는 중…'; Prog.set(0.85, '문서 저장하는 중');
     await ghWrite(`docs/${c.id}.json`, te.encode(JSON.stringify(Object.assign({}, m, c.lock?{lock:true, wrap}:{}, uw?{uw}:{}, {ct}))), `save: ${c.title}`);
     Prog.set(0.95, '목록 갱신'); await updateIndex(list=>{ const i=list.findIndex(x=>x.id===c.id); if (i>=0) list[i]=m; else list.push(m); }); Prog.done();
+    // 합치기 기준(_base·_baseTs)은 목록 객체로 옮겨 담기 「전에」 잡는다. 정보 수정·새 버전은 사본(d)을 저장하는데,
+    // 예전엔 옮겨 담은 뒤에 사본에만 기준을 잡아 목록 객체에는 저장 전의 낡은 기준이 남았다. 그 상태로 「현재 버전 삭제」를 하면
+    // 되살린 옛 버전 메모가 「기준에는 있고 깃헙에는 없으니 남이 지운 것」으로 읽혀 저장하면서 전부 지워졌다(2026-10-08 재현).
+    c._base=new Set(c.marks.map(m=>m.mid)); c._baseTs=c.ts||'';
     const idx=cases.findIndex(x=>x.id===c.id); if (idx>=0){ if (cases[idx]!==c) Object.assign(cases[idx], c); } else cases.push(c);
     { const tgt=(idx>=0?cases[idx]:c); tgt.ver=m.ver; tgt.n=m.n; c.ver=m.ver; } renderList();   // 왼쪽 목록의 버전·개수 칩도 바로 갱신(목록 객체가 따로일 때도)
     c._base=new Set(c.marks.map(m=>m.mid)); c._baseTs=c.ts||'';
