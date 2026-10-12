@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T13:54:37+09:00">
+<meta name="build" content="2026-10-12T14:31:15+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -129,7 +129,7 @@ a{color:var(--ins)}
 .chip.scope{background:var(--paper-3);color:var(--ink-2)} .chip.st.done{background:var(--memo-bg);color:var(--memo)} .chip.st.hold{background:var(--rep-bg);color:var(--rep)}
 .note.done{opacity:.72} .note.fout{display:none} .mbox.fout,.mk.fout{display:none} .mbox.done,.mk.done{opacity:.5}
 .macts .sp{flex:1} .rl.st.on{color:var(--ink);font-weight:700;text-decoration:underline}
-.notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)} .notes-title .tb.danger{color:var(--del);border-color:var(--del-line)} .notes-title .tb.danger:hover{background:var(--del-bg)}
 .note input.ftitle{flex:1;min-width:80px;font:inherit;font-size:calc(13px * var(--ui,1));border:1px solid var(--rule);border-radius:4px;padding:2px 6px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
 body.placing .page{cursor:crosshair}
 .ask .box.wide{max-width:640px} .ask .row.pick{flex-wrap:wrap} .ask textarea.bulk{display:block;width:100%;box-sizing:border-box;font:13px/1.5 var(--mono);border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper-2);color:var(--ink);margin:0 0 10px;resize:vertical} .ask textarea.bulk:focus{border-color:var(--focus);outline:none} .ask .dim{color:var(--ink-3);font-size:12.5px} .ask code{background:var(--paper-3);padding:0 4px;border-radius:3px}
@@ -869,6 +869,7 @@ function renderHelp(main){
   <li>그은 선을 누르면 고릅니다(Shift·Ctrl 을 누른 채 누르면 여럿). 고른 선에는 메모 달기·그룹(Ctrl+G)·그룹 풀기(Ctrl+Shift+G)·지우기(Delete)·색과 굵기 바꾸기가 되고, 「선 고르기」 도구로는 끌어서 옮기거나 빈 곳을 끌어 네모에 닿은 선을 한꺼번에 고릅니다. 고른 선 둘레의 손잡이를 끌면 크기가 바뀌고(Shift = 비율 그대로, Ctrl = 한가운데 기준), 곧은 선은 양 끝 손잡이로 끝점을 옮깁니다. 복제는 Ctrl+D, 방향키는 1px 씩(Shift 는 10px) 옮깁니다. 선 위에서 우클릭(폰은 길게 누름)하면 같은 메뉴가 뜹니다 — 선 그리기를 켜지 않아도 됩니다.</li>
   <li>「메모 추가 ▾」는 특정 자리에 묶이지 않는 메모입니다 — 이 쪽 전체나 문서 전체에 달고(일정·공통 요구 사항 같은 것), 나중에 「자리 잡기」로 도면 위에 네모를 끌어 자리를 붙일 수 있습니다. 「여러 건 붙여 넣기」는 빈 줄로 나눈 덩어리마다 메모 한 건을 만듭니다(첫 줄이 <code>[전체] 제목</code> · <code>[3쪽] 제목</code> · <code>[총평]</code>).</li>
   <li>메모마다 「반영됨」「보류」를 눌러 상태를 남기고, 메모 목록 위의 「전부 · 남은 것 · 반영됨 · 보류」로 거릅니다(도면 위 상자도 같이 숨습니다). 이슈 기록처럼 쓰는 문서용이고, 한 번도 안 쓴 문서에는 아무것도 나타나지 않습니다.</li>
+  <li>옛 버전을 보는 중에도 편집자는 그 버전의 메모를 지울 수 있습니다(카드의 「삭제」, 목록 위의 「이 버전 메모 모두 지우기」). 옛 버전은 되돌리기 기록이 없어 묻고 나서 바로 저장합니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
   <li>메모가 있는 문서의 본문을 고쳐 저장하면 메모를 새 글의 같은 구절로 다시 맞춥니다. 구절이 사라진 메모는 「자리 잃음」으로 남습니다.</li>
@@ -2117,6 +2118,15 @@ function bulkPaste(c){ if (!editable()) return; const ov=document.createElement(
     view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); done();
     toast(`메모 ${fmtN(memos.length)}건${notes.length?' · 총평에 덧붙임':''} — 저장(Ctrl+S)하세요${bad.length?' · 못 읽은 덩어리 '+fmtN(bad.length):''}`); });
   document.addEventListener('keydown', onKey); document.body.appendChild(ov); ta.focus(); }
+// 옛 버전의 메모 지우기(편집자): 그 버전 스냅샷(c.versions[].marks)에서 빼고 바로 저장한다 — 옛 버전은 되돌리기 기록이 없으니 묻고 지운다
+async function deleteVerMarks(idx){ const base=cases.find(x=>x.id===view.id); if (!base || !roVer || !artifactNs) return; const v=(base.versions||[]).find(x=>x.n===roVer); if (!v) return;
+  const n=(v.marks||[]).length; if (!n) return;
+  const q = idx==null ? `${roVer}버전의 메모 ${fmtN(n)}건을 모두 지우시겠습니까? 옛 버전이라 되돌리기가 없고, 바로 저장됩니다.` : `${roVer}버전의 ${idx+1}번 메모를 지우시겠습니까? 답글도 함께 지워지고, 옛 버전이라 되돌리기가 없으며 바로 저장됩니다.`;
+  if (!(await ask(q, idx==null ? '모두 지우기' : '삭제'))) return;
+  if (idx==null) v.marks=[]; else v.marks.splice(idx, 1);
+  const vc=base._verCache && base._verCache[roVer]; if (vc) vc.marks=JSON.parse(JSON.stringify(v.marks));   // 보던 사본도 맞춘다(PDF 는 그대로 두어 다시 안 읽게)
+  const nv=roVer; await saveDoc(base, null);
+  if (view.ver===nv) render(); }   // saveDoc 은 현재 버전 기준으로 화면을 손보므로, 옛 버전 화면은 통째로 다시 그린다
 function renderPdfNotes(c){
   const notes=$('#notes'); if (!notes) return;
   const canEdit = editable();
@@ -2125,12 +2135,12 @@ function renderPdfNotes(c){
   const ghostNotes = gs.map(g=>{ const m=g.m; const col=userColor(m.by, m.byId); return `
     <div class="note ghost ${m.kind}" data-h="g${g.h}" id="ghost${g.h}"><div class="n"><span class="mk ghost static">${g.h}ʹ</span><span class="chip kd ${m.kind}">${KIND[m.kind]}</span>${m.by?`<span class="who" style="--nc:${col||'var(--ink-3)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${g.lost?'<span class="chip lostc" title="이 버전에서 같은 구절을 못 찾았습니다. 이월하면 자리 없이 목록에 남습니다">자리 못 찾음</span>':''}<span class="chip hint ${/사라짐|있음$/.test(g.hint)&&!/남아/.test(g.hint)?'ok':''}">${esc(g.hint)}</span><span class="spacer"></span>${editable()?`<button class="carry" data-carry="${esc(m.mid)}" title="이 메모를 이 버전에 넣어 이어서 다룹니다">이월</button>`:''}</div>
     <div class="gt">${esc(m.text||'')}${m.kind==='rep'?` <span class="after">→ ${esc(m.after||'')}</span>`:''}</div>${(m.reason||'').trim()?`<div class="txt">${md(m.reason||'', m.segs)}</div>`:''}${(m.replies||[]).length?`<div class="replies ro">${m.replies.map(r=>`<div class="reply"><div class="rh"><span class="who" style="--nc:${userColor(r.by, r.byId)||'var(--ink-3)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span></div><div class="rb">${md(r.t||'')}</div></div>`).join('')}</div>`:''}</div>`; }).join('');
-  notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}${filterHtml(c)}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
+  notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}${filterHtml(c)}${(roVer && artifactNs && c.marks.length)?`<button class="tb danger" id="vdelAll" title="이 옛 버전의 메모를 모두 지웁니다 — 바로 저장되고 되돌리기가 없습니다">이 버전 메모 모두 지우기</button>`:''}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
     <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${(m.free && canEdit && m._editing)?`<input class="k ftitle" data-i="${i}" data-f="text" value="${esc(m.text||'')}" placeholder="무엇에 대한 메모인지(제목)">`:`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
     ${(()=>{ const ed=canEdit && m._editing; const canDel=canEdit && (!m.byId || (me && (m.byId===me.id || me.role==='admin')));
       const body = ed
         ? `${m.kind==='rep' ? `<textarea rows="1" class="after" data-i="${i}" data-f="after" placeholder="이렇게 바꿈">${esc(m.after||'')}</textarea>` : ''}${mdField(m.reason||'', `data-i="${i}" data-f="reason"`, m.kind==='memo'?'메모':'왜 고쳤는지', 'txt', m.segs)}<div class="mbtns"><button class="btn small primary" data-act="msave" data-i="${i}">저장 <kbd>Ctrl+↵</kbd></button><button class="btn small" data-act="mcancel" data-i="${i}">취소 <kbd>Esc</kbd></button></div>`
-        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div><div class="macts">${canEdit?`<button class="rl st ${m.st==='done'?'on':''}" data-act="mst" data-st="done" data-i="${i}" title="반영됐으면 표시 — 다시 누르면 대기로">반영됨</button><button class="rl st ${m.st==='hold'?'on':''}" data-act="mst" data-st="hold" data-i="${i}" title="보류 — 다시 누르면 대기로">보류</button><span class="sp"></span>${(m.free&&isPdf(c))?`<button class="rl" data-act="mplace" data-i="${i}" title="쪽 위에 네모를 끌어 이 메모의 자리를 붙입니다">자리 잡기</button>`:''}`:''}<button class="rl" data-act="mcopy" data-i="${i}" title="이 메모 한 건을 글로 복사합니다">복사</button>${canEdit?`<button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}`:''}</div>`;
+        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div><div class="macts">${canEdit?`<button class="rl st ${m.st==='done'?'on':''}" data-act="mst" data-st="done" data-i="${i}" title="반영됐으면 표시 — 다시 누르면 대기로">반영됨</button><button class="rl st ${m.st==='hold'?'on':''}" data-act="mst" data-st="hold" data-i="${i}" title="보류 — 다시 누르면 대기로">보류</button><span class="sp"></span>${(m.free&&isPdf(c))?`<button class="rl" data-act="mplace" data-i="${i}" title="쪽 위에 네모를 끌어 이 메모의 자리를 붙입니다">자리 잡기</button>`:''}`:''}<button class="rl" data-act="mcopy" data-i="${i}" title="이 메모 한 건을 글로 복사합니다">복사</button>${(!canEdit && roVer && artifactNs)?`<button class="rl" data-act="vdel" data-i="${i}" title="이 옛 버전에서 이 메모를 지웁니다 — 바로 저장되고 되돌리기가 없습니다">삭제</button>`:''}${canEdit?`<button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}`:''}</div>`;
       return body; })()}${reactsHtml(m, i)}${repliesHtml(m, i)}</div>`; }).join('');
   notes.querySelectorAll('.nn').forEach(b=>b.addEventListener('click', ()=>{ const n=b.closest('.note'); if (!n) return; jumpCur=n.dataset.h; const go=()=>{ if (n.classList.contains('free')) jumpToScope(+n.dataset.p, +n.dataset.h); else jumpToHunk(+n.dataset.h); }; if (pdfListMode){ pdfListMode=false; textRevMode=false; refreshPdfHead(c); setTimeout(go, 60); } else go(); }));
   notes.querySelectorAll('.nvb').forEach(b=>b.addEventListener('click', e=>{ e.preventDefault(); const n=b.closest('.note'); if (n) jumpCur=n.dataset.h; jumpMemo(+b.dataset.d); }));
@@ -2139,6 +2149,8 @@ function renderPdfNotes(c){
   notes.querySelectorAll('[data-act="mcopy"]').forEach(b=>b.addEventListener('click', ()=>{
     const i=+b.dataset.i; collectMarks(c); const t=markText(c, i);
     if (t) copyText(t, `${i+1}번 메모를 복사했습니다`); }));
+  notes.querySelectorAll('[data-act="vdel"]').forEach(b=>b.addEventListener('click', ()=>deleteVerMarks(+b.dataset.i)));
+  { const va=$('#vdelAll'); if (va) va.addEventListener('click', ()=>deleteVerMarks(null)); }
   notes.querySelectorAll('[data-act="mst"]').forEach(b=>b.addEventListener('click', ()=>setStatus(c, +b.dataset.i, b.dataset.st)));
   notes.querySelectorAll('[data-act="mplace"]').forEach(b=>b.addEventListener('click', ()=>startPlacing(c, +b.dataset.i)));
   notes.querySelectorAll('[data-nf]').forEach(b=>b.addEventListener('click', ()=>{ noteFilter=b.dataset.nf; refreshPdfHead(c); if (isPdf(c)) drawAllMarks(c); }));
@@ -2179,7 +2191,7 @@ function collectMarks(c){
   document.querySelectorAll('.note textarea[data-i], .note input[data-i][data-f]').forEach(t=>{ const m=c.marks[+t.dataset.i]; if (!m) return; const v=t.value.trim();
     if (v!==(m[t.dataset.f]||'')){ m.mt=Date.now(); if (me && m.by && !sameUser(m, me)){ m.editedBy=me.name; m.editedById=me.id; } if (t.dataset.f==='reason'){ const bef=(m._snap&&m._snap.reason!=null)?m._snap.reason:(m.reason||''); m.segs=updSegs(m._snap&&m._snap.segs?m._snap.segs:(m.segs||null), bef, v, (me && m.by && !sameUser(m, me)) ? me.name : null, me ? me.id : ''); } if (!m._fresh) m.edited=Date.now(); }   // 편집 중인 채로 문서를 저장하면 그 값으로 확정
     m[t.dataset.f]=v; });
-  const na=$('#noteAll'); if (na){ const v=na.value.trim(); if (v!==(c.note||'')) c.noteMt=Date.now(); c.note=v; }
+  const na=$('#noteAll'); if (na && !roVer){ const v=na.value.trim(); if (v!==(c.note||'')) c.noteMt=Date.now(); c.note=v; }   // 옛 버전을 보는 중엔 화면의 총평이 옛 것이라 읽지 않는다
 }
 // ── 저장 직전 3자 병합: 내가 연 시점(base) · 지금 내 것(local) · 깃헙 최신(remote) 을 메모 단위로 합친다 ──
 async function readRemotePayload(c){
