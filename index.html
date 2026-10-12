@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T15:52:38+09:00">
+<meta name="build" content="2026-10-12T16:06:31+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -131,6 +131,7 @@ a{color:var(--ins)}
 .macts .sp{flex:1} .rl.st.on{color:var(--ink);font-weight:700;text-decoration:underline}
 .notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)} .notes-title .tb.danger{color:var(--del);border-color:var(--del-line)} .notes-title .tb.danger:hover{background:var(--del-bg)}
 .note .ft{font-weight:700;line-height:1.4;margin:-5px 0 5px;font-family:var(--sans)} .note input.ftitle{display:block;width:100%;box-sizing:border-box;margin:-4px 0 6px;font:inherit;font-size:calc(13.5px * var(--ui,1));font-weight:700;border:1px solid var(--rule);border-radius:4px;padding:4px 7px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
+.marks .mh{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border:1.5px solid #C4342D;background:#fff;border-radius:2px;box-sizing:border-box;pointer-events:auto;z-index:5;opacity:0;transition:opacity .12s;touch-action:none} .marks .mh.nw,.marks .mh.se{cursor:nwse-resize} .marks .mh.ne,.marks .mh.sw{cursor:nesw-resize} .marks .mh.ne{margin-top:7px}   /* 오른쪽 위 손잡이는 번호 딱지 자리라 살짝 아래로 — 딱지(옮기기)와 겹치지 않게 */ .marks .mh.show,.marks .mh.hot,.marks .mh:hover,body.area-mode .marks .mh,body.mhdrag .marks .mh{opacity:1} .marks .mh.fout{display:none} body.mhdrag .marks .mbox{transition:none}
 body.placing .page{cursor:crosshair} body.mkdrag,body.mkdrag .page,body.mkdrag .marks .mk{cursor:grabbing} .marks .mk.dragging{pointer-events:none;opacity:.85} .marks .mbox.dragging{opacity:.7;transition:none}
 .ask .fr label{display:block;font-size:12.5px;color:var(--ink-3);margin:8px 0 3px} .ask .fr input{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:4px;padding:6px 8px;background:var(--paper-2);color:var(--ink)} .ask .fr input:focus{border-color:var(--focus);outline:none} .ask .fr .cnt{margin:8px 0 4px;min-height:1.4em;font-size:12.5px;color:var(--ink-2)} .ask .box.wide{max-width:640px} .ask .row.pick{flex-wrap:wrap} .ask textarea.bulk{display:block;width:100%;box-sizing:border-box;font:13px/1.5 var(--mono);border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper-2);color:var(--ink);margin:0 0 10px;resize:vertical} .ask textarea.bulk:focus{border-color:var(--focus);outline:none} .ask .dim{color:var(--ink-3);font-size:12.5px} .ask code{background:var(--paper-3);padding:0 4px;border-radius:3px}
 .txtdoc .t-ghost{background:repeating-linear-gradient(to right,transparent 0 3px,rgba(127,127,127,.28) 3px 6px) bottom/100% 2px no-repeat;color:inherit;text-decoration:none} .txtdoc .t-ghost.hot{outline:2px solid var(--ink-3)}
@@ -871,7 +872,7 @@ function renderHelp(main){
   <li>메모마다 「반영됨」「보류」를 눌러 상태를 남기고, 메모 목록 위의 「전부 · 남은 것 · 반영됨 · 보류」로 거릅니다(도면 위 상자도 같이 숨습니다). 이슈 기록처럼 쓰는 문서용이고, 한 번도 안 쓴 문서에는 아무것도 나타나지 않습니다.</li>
   <li>옛 버전을 보는 중에도 편집자는 그 버전의 메모를 지울 수 있습니다(카드의 「삭제」, 목록 위의 「이 버전 메모 모두 지우기」). 옛 버전은 되돌리기 기록이 없어 묻고 나서 바로 저장합니다.</li>
   <li>도구줄의 「찾아 바꾸기」(메모 복사 오른쪽 · Ctrl+H)는 메모 제목·내용·답글·총평에서 글을 한꺼번에 바꿉니다(카톡 이름을 공식 이름으로 고칠 때 등). 원문은 바꾸지 않고, 바꾼 뒤 저장해야 남습니다. 글자 인식·여백 잘라내기·링크 복사는 제목 줄(「정보 수정」 오른쪽)에 있습니다.</li>
-  <li>메모의 번호 딱지를 끌면 그 메모의 상자가 옮겨집니다(영역 메모든 글자를 잡은 메모든, 다른 쪽 위에 놓으면 그 쪽으로). 누르기만 하면 전처럼 메모로 갑니다. 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
+  <li>메모의 번호 딱지를 끌면 그 메모의 상자가 옮겨집니다(영역 메모든 글자를 잡은 메모든, 다른 쪽 위에 놓으면 그 쪽으로). 누르기만 하면 전처럼 메모로 갑니다. 영역 메모는 딱지나 카드에 마우스를 대면 네 모서리에 손잡이가 떠서 끌면 크기가 바뀝니다(폰은 「영역 선택」을 켜면 늘 보입니다). 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
   <li>메모가 있는 문서의 본문을 고쳐 저장하면 메모를 새 글의 같은 구절로 다시 맞춥니다. 구절이 사라진 메모는 「자리 잃음」으로 남습니다.</li>
@@ -1563,7 +1564,7 @@ function focusHunk(h){
   hot(h,true); setTimeout(()=>hot(h,false), 1500);
 }
 function hot(h, on){
-  document.querySelectorAll(`.hunk[data-h="${h}"], .mk[data-h="${h}"], #note${h}`).forEach(el=>el.classList.toggle('hot', on));
+  document.querySelectorAll(`.hunk[data-h="${h}"], .mk[data-h="${h}"], .mh[data-h="${h}"], #note${h}`).forEach(el=>el.classList.toggle('hot', on));
   inkHot(h, on);   // 선에 단 메모면 그 선도 빛난다
 }
 function autosize(t){ t.style.height='auto'; t.style.height = t.scrollHeight+'px'; }
@@ -2157,10 +2158,37 @@ function findReplace(c){ if (!editable()) return; const ov=document.createElemen
     view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); done();
     toast(`${fmtN(n)}곳을 바꿨습니다 — 저장(Ctrl+S)하세요${r.note?' · 총평은 되돌리기에 안 들어갑니다':''}`); });
   document.addEventListener('keydown', onKey); document.body.appendChild(ov); fa.focus(); }
+// ── 영역 메모 상자 크기 조절: 모서리 손잡이(.mh)를 끌면 그 모서리가 따라간다. 상자가 1% 보다 작아지거나 쪽 밖으로 나가지는 않는다.
+function mhPlace(hd, r){ const cn=hd.dataset.cn; hd.style.left=((cn[1]==='w'?r[0]:r[0]+r[2])*100)+'%'; hd.style.top=((cn[0]==='n'?r[1]:r[1]+r[3])*100)+'%'; }
+function mhShow(el, h, on){ const hs=el.querySelectorAll(`.mh[data-h="${h}"]`); if (!hs.length) return; clearTimeout(el['_mh'+h]); if (on) hs.forEach(x=>x.classList.add('show')); else el['_mh'+h]=setTimeout(()=>hs.forEach(x=>x.classList.remove('show')), 500); }
+let mhDrag=null;
+function mhRect(d, e){ const dx=(e.clientX-d.x0)/d.pr.width, dy=(e.clientY-d.y0)/d.pr.height; let [l,t,w,hh]=d.r0; let R=l+w, B=t+hh; const MIN=0.01;
+  if (d.cn[1]==='w') l=Math.min(R-MIN, Math.max(0, l+dx)); else R=Math.max(l+MIN, Math.min(1, R+dx));
+  if (d.cn[0]==='n') t=Math.min(B-MIN, Math.max(0, t+dy)); else B=Math.max(t+MIN, Math.min(1, B+dy));
+  return [l, t, R-l, B-t]; }
+function mhPaint(d, r){ const el=d.pageEl.querySelector('.marks'); const bx=el.querySelector(`.mbox[data-h="${d.h}"]`); if (bx){ bx.style.left=(r[0]*100)+'%'; bx.style.top=(r[1]*100)+'%'; bx.style.width=(r[2]*100)+'%'; bx.style.height=(r[3]*100)+'%'; }
+  const k=el.querySelector(`.mk[data-h="${d.h}"]`); if (k){ k.style.left=((r[0]+r[2])*100)+'%'; k.style.top=(r[1]*100)+'%'; } el.querySelectorAll(`.mh[data-h="${d.h}"]`).forEach(hd=>mhPlace(hd, r)); }
+function mhEnd(e, commit){ const d=mhDrag; if (!d) return; mhDrag=null; document.body.classList.remove('mhdrag'); try { d.hd.releasePointerCapture(d.id); } catch(_){}
+  if (!d.go){ return; } mkDragAt=Date.now(); const m=d.c.marks[d.h-1]; if (!commit || !m){ mhPaint(d, d.r0); return; }
+  const r=mhRect(d, e).map(v=>+v.toFixed(4)); if (r.every((v,i)=>Math.abs(v-d.r0[i])<1e-4)){ mhPaint(d, d.r0); return; }
+  pushHist(d.c, `메모 ${d.h} 크기`); m.rects=[r]; m.mt=Date.now(); sortMarks(d.c); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(d.c); refreshPdfHead(d.c); const ni=d.c.marks.indexOf(m); setTimeout(()=>{ hot(ni+1, true); setTimeout(()=>hot(ni+1, false), 1200); }, 60); }
+document.addEventListener('pointerdown', e=>{
+  if (e.button!==0 || e.isPrimary===false || drawMode || cropUI || view.mode!=='case' || !editable() || placing || mkDrag) return;
+  const hd=e.target.closest && e.target.closest('.page .marks .mh'); if (!hd) return;
+  const c=view.draft||cases.find(x=>x.id===view.id); if (!c || !isPdf(c)) return; const h=+hd.dataset.h; const m=c.marks[h-1]; if (!m || !m.area || !m.rects || m.rects.length!==1) return;
+  const pageEl=hd.closest('.page'); const pr=pgRect(pageEl); if (!pr.width || !pr.height) return;
+  mhDrag={c, h, hd, pageEl, pr, cn:hd.dataset.cn, id:e.pointerId, r0:m.rects[0].slice(), x0:e.clientX, y0:e.clientY, go:false}; e.preventDefault(); e.stopPropagation();
+}, true);
+document.addEventListener('pointermove', e=>{ const d=mhDrag; if (!d || e.pointerId!==d.id) return; if (!(e.buttons&1)){ mhEnd(e, false); return; }
+  if (!d.go){ if (Math.abs(e.clientX-d.x0)<2 && Math.abs(e.clientY-d.y0)<2) return; d.go=true; document.body.classList.add('mhdrag'); try { d.hd.setPointerCapture(d.id); } catch(_){} }
+  e.preventDefault(); mhPaint(d, mhRect(d, e)); });
+document.addEventListener('pointerup', e=>{ if (mhDrag && e.pointerId===mhDrag.id) mhEnd(e, true); });
+document.addEventListener('pointercancel', e=>{ if (mhDrag && e.pointerId===mhDrag.id) mhEnd(e, false); });
+document.addEventListener('keydown', e=>{ if (e.key==='Escape' && mhDrag) mhEnd(e, false); });
 // ── 메모 상자 옮기기: 번호 딱지를 끌면 그 메모의 상자들이 따라간다(영역 메모든 글자를 잡은 메모든). 다른 쪽 위에 놓으면 그 쪽으로 옮겨진다.
 //    딱지에서 시작하는 까닭: 상자 층(.marks)은 pointer-events:none 이라 상자 자체는 못 잡고, 글자 PDF 에서는 상자 안이 글자 선택 자리이기 때문. 4px 미만이면 전처럼 누름(메모로 이동)이다.
 let mkDrag=null, mkDragAt=0;
-function mkDragEls(d){ return [...d.pageEl.querySelectorAll(`.marks .mbox[data-h="${d.h}"], .marks .mk[data-h="${d.h}"]`)]; }
+function mkDragEls(d){ return [...d.pageEl.querySelectorAll(`.marks .mbox[data-h="${d.h}"], .marks .mk[data-h="${d.h}"], .marks .mh[data-h="${d.h}"]`)]; }
 function mkDragEnd(e, commit){ const d=mkDrag; if (!d) return; mkDrag=null; document.body.classList.remove('mkdrag'); try { d.k.releasePointerCapture(d.id); } catch(_){}
   mkDragEls(d).forEach(el=>{ el.style.transform=''; el.classList.remove('dragging'); });
   if (!d.go) return; mkDragAt=Date.now(); if (!commit) return;
@@ -2184,7 +2212,7 @@ document.addEventListener('pointerdown', e=>{
 }, true);
 document.addEventListener('pointermove', e=>{ const d=mkDrag; if (!d || e.pointerId!==d.id) return; if (!(e.buttons&1)){ mkDragEnd(e, false); return; }
   const dx=e.clientX-d.x0, dy=e.clientY-d.y0; if (!d.go){ if (Math.abs(dx)<4 && Math.abs(dy)<4) return; d.go=true; document.body.classList.add('mkdrag'); try { d.k.setPointerCapture(d.id); } catch(_){} mkDragEls(d).forEach(el=>el.classList.add('dragging')); }
-  e.preventDefault(); mkDragEls(d).forEach(el=>{ el.style.transform=(el.classList.contains('mk') ? 'translate(-40%,-90%) ' : '')+`translate(${dx}px,${dy}px)`; }); });
+  e.preventDefault(); mkDragEls(d).forEach(el=>{ el.style.transform=(el.classList.contains('mk') ? 'translate(-40%,-90%) ' : '')+`translate(${dx}px,${dy}px)`; if (el.classList.contains('mh')) el.classList.add('show'); }); });
 document.addEventListener('pointerup', e=>{ if (mkDrag && e.pointerId===mkDrag.id) mkDragEnd(e, true); });
 document.addEventListener('pointercancel', e=>{ if (mkDrag && e.pointerId===mkDrag.id) mkDragEnd(e, false); });
 document.addEventListener('keydown', e=>{ if (e.key==='Escape' && mkDrag) mkDragEnd(e, false); });
@@ -2842,7 +2870,9 @@ function drawMarks(c, p){
       d.style.left=(r[0]*100)+'%'; d.style.top=(r[1]*100)+'%'; d.style.width=(r[2]*100)+'%'; d.style.height=(r[3]*100)+'%';
       el.appendChild(d);
       if (ri===0){ const k=document.createElement('span'); k.className=`mk ${m.kind}${ex}`; k.dataset.h=h; k.textContent=h;
-        k.style.left=((ia?ia[0]:r[0]+r[2])*100)+'%'; k.style.top=((ia?ia[1]:r[1])*100)+'%'; if (editable() && !ia && !m.free) k.title='누르면 메모로 · 끌면 옮김(다른 쪽으로도)'; k.addEventListener('click', ()=>{ if (Date.now()-mkDragAt<400) return; focusHunk(h); }); el.appendChild(k); }
+        k.style.left=((ia?ia[0]:r[0]+r[2])*100)+'%'; k.style.top=((ia?ia[1]:r[1])*100)+'%'; if (editable() && !ia && !m.free) k.title='누르면 메모로 · 끌면 옮김(다른 쪽으로도)'+(m.area?' · 모서리 손잡이로 크기':''); k.addEventListener('click', ()=>{ if (Date.now()-mkDragAt<400) return; focusHunk(h); }); el.appendChild(k);
+        if (m.area && !ia && m.rects.length===1 && editable()){ ['nw','ne','sw','se'].forEach(cn=>{ const hd=document.createElement('span'); hd.className='mh '+cn+ex; hd.dataset.h=h; hd.dataset.cn=cn; mhPlace(hd, r); el.appendChild(hd); });   // 크기 조절 손잡이 — 딱지나 카드에 마우스를 대면 보인다
+          k.addEventListener('mouseenter', ()=>mhShow(el, h, true)); k.addEventListener('mouseleave', ()=>mhShow(el, h, false)); el.querySelectorAll(`.mh[data-h="${h}"]`).forEach(hd=>{ hd.addEventListener('mouseenter', ()=>mhShow(el, h, true)); hd.addEventListener('mouseleave', ()=>mhShow(el, h, false)); }); } }
     });
   });
 }
