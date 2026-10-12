@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T14:31:15+09:00">
+<meta name="build" content="2026-10-12T14:41:28+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -130,7 +130,7 @@ a{color:var(--ins)}
 .note.done{opacity:.72} .note.fout{display:none} .mbox.fout,.mk.fout{display:none} .mbox.done,.mk.done{opacity:.5}
 .macts .sp{flex:1} .rl.st.on{color:var(--ink);font-weight:700;text-decoration:underline}
 .notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)} .notes-title .tb.danger{color:var(--del);border-color:var(--del-line)} .notes-title .tb.danger:hover{background:var(--del-bg)}
-.note input.ftitle{flex:1;min-width:80px;font:inherit;font-size:calc(13px * var(--ui,1));border:1px solid var(--rule);border-radius:4px;padding:2px 6px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
+.note .ft{font-weight:700;line-height:1.4;margin:-5px 0 5px;font-family:var(--sans)} .note input.ftitle{display:block;width:100%;box-sizing:border-box;margin:-4px 0 6px;font:inherit;font-size:calc(13.5px * var(--ui,1));font-weight:700;border:1px solid var(--rule);border-radius:4px;padding:4px 7px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
 body.placing .page{cursor:crosshair}
 .ask .box.wide{max-width:640px} .ask .row.pick{flex-wrap:wrap} .ask textarea.bulk{display:block;width:100%;box-sizing:border-box;font:13px/1.5 var(--mono);border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper-2);color:var(--ink);margin:0 0 10px;resize:vertical} .ask textarea.bulk:focus{border-color:var(--focus);outline:none} .ask .dim{color:var(--ink-3);font-size:12.5px} .ask code{background:var(--paper-3);padding:0 4px;border-radius:3px}
 .txtdoc .t-ghost{background:repeating-linear-gradient(to right,transparent 0 3px,rgba(127,127,127,.28) 3px 6px) bottom/100% 2px no-repeat;color:inherit;text-decoration:none} .txtdoc .t-ghost.hot{outline:2px solid var(--ink-3)}
@@ -189,7 +189,7 @@ body.zoomed-body .head::before{content:'';position:absolute;left:-20px;top:0;bot
 .hint{font-size:calc(12px * var(--ui,1));color:var(--ink-3)}
 
 /* ── 원고 + 여백 메모 ── */
-.sheet{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) calc(280px * var(--ui,1));gap:28px;position:relative}
+.sheet{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) calc(320px * var(--ui,1));gap:28px;position:relative}
 .doc{font-family:var(--serif);font-size:calc(16.5px * var(--z,1));line-height:1.95;max-width:70ch;padding:22px 26px 22px 30px;background:var(--paper);border:1px solid var(--rule);border-left:2px solid var(--rule-strong);border-radius:2px;
   box-shadow:inset 4px 0 0 var(--paper),inset 5px 0 0 var(--rule)}
 .doc p{margin:0 0 .35em}
@@ -283,9 +283,9 @@ ins{color:var(--ins);text-decoration:underline;text-decoration-thickness:1.5px;t
 .txtdoc .pop{position:absolute}
 
 /* ── PDF 문서형: 쪽을 원본 그대로 그리고 그 위에 표시 ── */
-.sheet.pdf{max-width:1180px;grid-template-columns:minmax(0,1fr) calc(280px * var(--ui,1))}
+.sheet.pdf{max-width:1220px;grid-template-columns:minmax(0,1fr) calc(320px * var(--ui,1))}
 /* 확대 시: 틀이 쪽 크기만큼 넓어지고, 화면을 넘치면 main 이 가로로 움직인다 */
-.sheet.pdf.zoomed{max-width:none;width:max-content;grid-template-columns:auto calc(280px * var(--ui,1))}
+.sheet.pdf.zoomed{max-width:none;width:max-content;grid-template-columns:auto calc(320px * var(--ui,1))}
 .sheet.pdf .txtdoc{width:auto;max-width:none;min-width:0;background:var(--paper-3);padding:14px;border:0;box-shadow:none;border-radius:3px}
 .txtdoc .tpage{background:#fff;color:#1F2430;box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.06);padding:34px 38px;min-height:300px}
 .txtdoc .tpage.hdoc{padding:0;font-family:var(--sans);font-size:16px;line-height:1.5;overflow:hidden;zoom:var(--z,1)}
@@ -411,7 +411,7 @@ body.draw-mode .toast{bottom:calc(var(--inkbar-h, 60px) + 30px)}
 .mlist .none{padding:24px 8px;color:var(--ink-3)}
 
 /* 총평 */
-.overall{max-width:1120px;margin:22px auto 0;display:grid;grid-template-columns:minmax(0,1fr) calc(280px * var(--ui,1));gap:28px}
+.overall{max-width:1160px;margin:22px auto 0;display:grid;grid-template-columns:minmax(0,1fr) calc(320px * var(--ui,1));gap:28px}
 .overall .box{max-width:70ch;border-top:1px solid var(--rule);padding-top:12px}
 .overall h3{font-size:calc(11px * var(--ui,1));letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:0 0 6px;font-weight:600}
 .overall textarea{width:100%;min-height:70px;border:1px solid var(--rule);background:var(--paper-2);padding:8px 10px;border-radius:3px;resize:vertical;line-height:1.5}
@@ -490,7 +490,7 @@ body.draw-mode .toast{bottom:calc(var(--inkbar-h, 60px) + 30px)}
 .ins-by{background:var(--nbg,rgba(45,91,185,.14));text-decoration:underline;text-decoration-color:var(--nc,var(--ins));text-decoration-thickness:2px;text-underline-offset:3px;border-radius:2px;padding:0 2px}
 .ins-by.cont::before{display:none}
 .ins-by::before{content:attr(data-by);font-family:var(--sans);font-size:.72em;font-weight:700;color:var(--nc,var(--ins));margin-right:4px;vertical-align:.15em;user-select:none}
-.note .n .who{color:var(--nc,var(--ink));border:1px solid var(--nc,var(--ink-3));background:transparent}
+.note .n .who{color:var(--nc,var(--ink));border:1px solid var(--nc,var(--ink-3));background:transparent;white-space:nowrap}
 .note .n .who.ed{color:var(--nc,var(--ins));border-color:var(--nc,var(--ins));background:transparent}
 .ask .box.users{max-width:640px}
 .ask .box.users table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px}
@@ -2136,7 +2136,8 @@ function renderPdfNotes(c){
     <div class="note ghost ${m.kind}" data-h="g${g.h}" id="ghost${g.h}"><div class="n"><span class="mk ghost static">${g.h}ʹ</span><span class="chip kd ${m.kind}">${KIND[m.kind]}</span>${m.by?`<span class="who" style="--nc:${col||'var(--ink-3)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${g.lost?'<span class="chip lostc" title="이 버전에서 같은 구절을 못 찾았습니다. 이월하면 자리 없이 목록에 남습니다">자리 못 찾음</span>':''}<span class="chip hint ${/사라짐|있음$/.test(g.hint)&&!/남아/.test(g.hint)?'ok':''}">${esc(g.hint)}</span><span class="spacer"></span>${editable()?`<button class="carry" data-carry="${esc(m.mid)}" title="이 메모를 이 버전에 넣어 이어서 다룹니다">이월</button>`:''}</div>
     <div class="gt">${esc(m.text||'')}${m.kind==='rep'?` <span class="after">→ ${esc(m.after||'')}</span>`:''}</div>${(m.reason||'').trim()?`<div class="txt">${md(m.reason||'', m.segs)}</div>`:''}${(m.replies||[]).length?`<div class="replies ro">${m.replies.map(r=>`<div class="reply"><div class="rh"><span class="who" style="--nc:${userColor(r.by, r.byId)||'var(--ink-3)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span></div><div class="rb">${md(r.t||'')}</div></div>`).join('')}</div>`:''}</div>`; }).join('');
   notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}${filterHtml(c)}${(roVer && artifactNs && c.marks.length)?`<button class="tb danger" id="vdelAll" title="이 옛 버전의 메모를 모두 지웁니다 — 바로 저장되고 되돌리기가 없습니다">이 버전 메모 모두 지우기</button>`:''}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
-    <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${(m.free && canEdit && m._editing)?`<input class="k ftitle" data-i="${i}" data-f="text" value="${esc(m.text||'')}" placeholder="무엇에 대한 메모인지(제목)">`:`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
+    <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${m.free?'':`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
+    ${m.free?((canEdit && m._editing)?`<input class="ftitle" data-i="${i}" data-f="text" value="${esc(m.text||'')}" placeholder="무엇에 대한 메모인지(제목)">`:(m.text?`<div class="ft">${esc(m.text)}</div>`:'')):''}
     ${(()=>{ const ed=canEdit && m._editing; const canDel=canEdit && (!m.byId || (me && (m.byId===me.id || me.role==='admin')));
       const body = ed
         ? `${m.kind==='rep' ? `<textarea rows="1" class="after" data-i="${i}" data-f="after" placeholder="이렇게 바꿈">${esc(m.after||'')}</textarea>` : ''}${mdField(m.reason||'', `data-i="${i}" data-f="reason"`, m.kind==='memo'?'메모':'왜 고쳤는지', 'txt', m.segs)}<div class="mbtns"><button class="btn small primary" data-act="msave" data-i="${i}">저장 <kbd>Ctrl+↵</kbd></button><button class="btn small" data-act="mcancel" data-i="${i}">취소 <kbd>Esc</kbd></button></div>`
