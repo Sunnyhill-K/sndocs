@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T15:46:17+09:00">
+<meta name="build" content="2026-10-12T15:52:38+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -870,7 +870,7 @@ function renderHelp(main){
   <li>「메모 추가 ▾」는 특정 자리에 묶이지 않는 메모입니다 — 이 쪽 전체나 문서 전체에 달고(일정·공통 요구 사항 같은 것), 나중에 「자리 잡기」로 도면 위에 네모를 끌어 자리를 붙일 수 있습니다. 「여러 건 붙여 넣기」는 빈 줄로 나눈 덩어리마다 메모 한 건을 만듭니다(첫 줄이 <code>[전체] 제목</code> · <code>[3쪽] 제목</code> · <code>[총평]</code>).</li>
   <li>메모마다 「반영됨」「보류」를 눌러 상태를 남기고, 메모 목록 위의 「전부 · 남은 것 · 반영됨 · 보류」로 거릅니다(도면 위 상자도 같이 숨습니다). 이슈 기록처럼 쓰는 문서용이고, 한 번도 안 쓴 문서에는 아무것도 나타나지 않습니다.</li>
   <li>옛 버전을 보는 중에도 편집자는 그 버전의 메모를 지울 수 있습니다(카드의 「삭제」, 목록 위의 「이 버전 메모 모두 지우기」). 옛 버전은 되돌리기 기록이 없어 묻고 나서 바로 저장합니다.</li>
-  <li>도구줄의 「찾아 바꾸기」(메모 복사 오른쪽)는 메모 제목·내용·답글·총평에서 글을 한꺼번에 바꿉니다(카톡 이름을 공식 이름으로 고칠 때 등). 원문은 바꾸지 않고, 바꾼 뒤 저장해야 남습니다. 글자 인식·여백 잘라내기·링크 복사는 제목 줄(「정보 수정」 오른쪽)에 있습니다.</li>
+  <li>도구줄의 「찾아 바꾸기」(메모 복사 오른쪽 · Ctrl+H)는 메모 제목·내용·답글·총평에서 글을 한꺼번에 바꿉니다(카톡 이름을 공식 이름으로 고칠 때 등). 원문은 바꾸지 않고, 바꾼 뒤 저장해야 남습니다. 글자 인식·여백 잘라내기·링크 복사는 제목 줄(「정보 수정」 오른쪽)에 있습니다.</li>
   <li>메모의 번호 딱지를 끌면 그 메모의 상자가 옮겨집니다(영역 메모든 글자를 잡은 메모든, 다른 쪽 위에 놓으면 그 쪽으로). 누르기만 하면 전처럼 메모로 갑니다. 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
@@ -1032,7 +1032,7 @@ function verChip(c){
 function versionCase(base, n){
   const v=(base.versions||[]).find(x=>x.n===n); if (!v) return null;
   base._verCache=base._verCache||{}; if (base._verCache[n]) return base._verCache[n];
-  const vc=Object.assign({}, base, JSON.parse(JSON.stringify({src:v.src||'', html:v.html||'', htmlSrc:v.htmlSrc||'', marks:v.marks||[], note:v.note||'', noteSegs:v.noteSegs||[], inks:v.inks||[], ocr:v.ocr||null, pages:v.pages||0, ts:v.ts||''})), {_ver:n, _pdfFile:v.pdfFile||'', pdf:'', loaded:true});
+  const vc=Object.assign({}, base, JSON.parse(JSON.stringify({src:v.src||'', html:v.html||'', htmlSrc:v.htmlSrc||'', marks:v.marks||[], note:v.note||'', noteSegs:v.noteSegs||[], inks:v.inks||[], ocr:v.ocr||null, pages:v.pages||0, srcName:v.srcName||'', ts:v.ts||''})), {_ver:n, _pdfFile:v.pdfFile||'', pdf:'', loaded:true});
   return (base._verCache[n]=vc);
 }
 async function loadVersionPdf(base, vc){ const key=docKeys[base.id]||K; const pe=await ghRead(vc._pdfFile); if (!pe) throw new Error('이 버전의 PDF 파일이 없습니다'); vc.pdf=b64(await decB(key, pe)); }
@@ -1998,8 +1998,8 @@ function refreshPdfHead(c){
      <button class="btn small" id="histBtn" title="되돌리기 이력을 보고 골라서 되돌아가기" ${(hist.undo.length||hist.redo.length)?'':'disabled'}>실행 기록</button>` : ''}
      ${(isPdf(c)&&canEdit)?`<button class="btn small ${areaMode?'on':''}" id="areaBtn" title="켜면 글자가 아닌 부분에서도 영역을 드래그하여 선택할 수 있습니다. 그림 부분은 켜지 않아도 그냥 끌면 됩니다 · Alt+A">${areaMode?'영역 선택 끝':'영역 선택'}</button>`:''}
      ${(isPdf(c)&&canEdit)?`<button class="btn small ${drawMode?'on':''}" id="inkBtn" title="쪽 위에 선과 도형을 긋습니다 — 자유선·직선·이어 그리기·직사각형·원, 색·두께·실선/파선/점선, 고르기·그룹·옮기기 · 그은 선을 우클릭하면 메모 · Alt+P">${drawMode?'선 그리기 끝':'선 그리기'}</button>`:''}
-     ${canEdit?`<button class="btn small" id="freeBtn" title="특정 자리에 묶이지 않는 메모 — 이 쪽 전체나 문서 전체에 답니다. 나중에 「자리 잡기」로 자리를 붙일 수 있고, 여러 건을 한꺼번에 붙여 넣을 수도 있습니다">메모 추가 ▾</button>`:''}<button class="btn small" id="copyList">메모 복사</button>${canEdit?`<button class="btn small" id="findRepBtn" title="메모 제목·내용·답글·총평에서 글을 찾아 한꺼번에 바꿉니다(카톡 이름 → 공식 이름 등). 원문은 바꾸지 않습니다">찾아 바꾸기</button>`:''}<button class="btn small" id="exportBtn" title="문서와 표시·메모를 파일로 — HTML(메모 팝업, 인쇄로 PDF) 또는 주석 PDF">내보내기 ▾</button><button id="exportPdfBtn" hidden></button>`)
-    + `<div class="hint">원본 그대로${canEdit?' · 글자를 드래그하면 삭제·바꾸기·메모, 그림 부분은 네모로 끌면 영역 메모 (Alt+1/2/3)':''} · Ctrl+휠 확대·축소 · 메모 이동 Alt+↑/↓ (Alt+Q/X 도 됨)${isPdf(c)?' · 쪽 이동 Alt+W/S, 번호 Alt+G':''}${(isPdf(c)&&canEdit)?' · 선 그리기 Alt+P(그은 선 우클릭 = 메모)':''}${(isPdf(c)&&c.fromImg)?' · 그림을 누르면 새 탭에 크게':''} · 메모 서식: 굵게 Ctrl+B · 기울임 Ctrl+I · 밑줄 Ctrl+U · 취소선 Ctrl+Shift+X</div>`;
+     ${canEdit?`<button class="btn small" id="freeBtn" title="특정 자리에 묶이지 않는 메모 — 이 쪽 전체나 문서 전체에 답니다. 나중에 「자리 잡기」로 자리를 붙일 수 있고, 여러 건을 한꺼번에 붙여 넣을 수도 있습니다">메모 추가 ▾</button>`:''}<button class="btn small" id="copyList">메모 복사</button>${canEdit?`<button class="btn small" id="findRepBtn" title="메모 제목·내용·답글·총평에서 글을 찾아 한꺼번에 바꿉니다(카톡 이름 → 공식 이름 등). 원문은 바꾸지 않습니다 · Ctrl+H">찾아 바꾸기</button>`:''}<button class="btn small" id="exportBtn" title="문서와 표시·메모를 파일로 — HTML(메모 팝업, 인쇄로 PDF) 또는 주석 PDF">내보내기 ▾</button><button id="exportPdfBtn" hidden></button>`)
+    + `<div class="hint">원본 그대로${canEdit?' · 글자를 드래그하면 삭제·바꾸기·메모, 그림 부분은 네모로 끌면 영역 메모 (Alt+1/2/3)':''} · Ctrl+휠 확대·축소 · 메모 이동 Alt+↑/↓ (Alt+Q/X 도 됨)${isPdf(c)?' · 쪽 이동 Alt+W/S, 번호 Alt+G':''}${(isPdf(c)&&canEdit)?' · 선 그리기 Alt+P(그은 선 우클릭 = 메모)':''}${(isPdf(c)&&c.fromImg)?' · 그림을 누르면 새 탭에 크게':''} · 메모 서식: 굵게 Ctrl+B · 기울임 Ctrl+I · 밑줄 Ctrl+U · 취소선 Ctrl+Shift+X${canEdit?' · 찾아 바꾸기 Ctrl+H':''}</div>`;
   { const dm=$('#docMore'); if (dm) dm.addEventListener('click', ()=>openFold(dm, head, null, '')); }
   { const fb=$('#freeBtn'); if (fb) fb.addEventListener('click', ()=>freeMemoMenu(c)); const fr=$('#findRepBtn'); if (fr) fr.addEventListener('click', ()=>findReplace(c)); }
   $('#toggleMarks').addEventListener('click', ()=>{ document.body.classList.toggle('hide-marks'); if (drawMode && document.body.classList.contains('hide-marks')) setDraw(false); refreshPdfHead(c); });
@@ -2052,6 +2052,7 @@ document.addEventListener('keydown', e=>{
   if (!(e.ctrlKey||e.metaKey)) return;
   const k=e.key.toLowerCase();
   if (k==='s'){ e.preventDefault(); const sb=$('#saveCase')||$('#doCompare'); if (sb && !sb.disabled && editable()){ if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); sb.click(); } return; }
+  if (k==='h' && !e.shiftKey && !e.altKey){ const fr=$('#findRepBtn'); if (fr && view.mode==='case' && editable() && !document.querySelector('.ask')){ e.preventDefault(); fr.click(); } return; }   // Ctrl+H = 찾아 바꾸기(워드·구글 문서와 같은 키) — 문서 안의 편집자에게만, 아니면 브라우저에 맡긴다
   const tag=(e.target.tagName||'').toLowerCase();
   if (tag==='textarea'||tag==='input'||e.target.isContentEditable){
     // 메모칸에 커서가 있어도 아직 아무것도 안 적었으면(되돌릴 글자가 없으면) 표시 되돌리기로 넘긴다
@@ -4021,7 +4022,7 @@ function renderEdit(main){
   const c = view.draft || {id:'', type:'text', title:'', client:'', date:new Date().toISOString().slice(0,10), src:'', html:'', note:'', marks:[]};
   const isNew = !cases.some(x=>x.id===c.id);
   const newVer = !!view.newVer && !isNew; const nextVer=(c.versions||[]).length+2;
-  let type = c.type || 'text'; let pdfB64 = newVer ? '' : (c.pdf || ''); let pdfName = (c.pdf && !newVer) ? '(저장된 PDF 유지)' : (newVer ? '새 버전의 PDF · 그림 파일을 넣어 주세요' : ''); let pdfDirty = !!c.pdfDirty; let fromImg = !!c.fromImg && !newVer;
+  let type = c.type || 'text'; let pdfB64 = newVer ? '' : (c.pdf || ''); let pdfName = (c.pdf && !newVer) ? ('지금 원본: '+(c.srcName||'(이름 기록 없음 — 이 기능 전에 올린 문서)')+' · '+(c.fromImg?'그림 쪽 문서':'PDF')+(c.pages?' · '+fmtN(c.pages)+'쪽':'')+(c.pdf?' · '+fmtN(Math.round(c.pdf.length*3/4/1024))+'KB':'')+' — 그대로 두면 유지, 바꾸려면 새 파일을 넣으세요') : (newVer ? '새 버전의 PDF · 그림 파일을 넣어 주세요' : ''); let pdfDirty = !!c.pdfDirty; let fromImg = !!c.fromImg && !newVer;
   let wordHtml = c.html || ''; let wordName = c.html ? '(저장된 Word 내용 유지)' : '';
   const hasMarks = (c.marks||[]).length>0 && !isNew;
   const edId='wordEd'+(++wordEdSeq); wordEdId=edId;
@@ -4182,11 +4183,11 @@ function renderEdit(main){
     const err=m=>{ $('#editMsg').textContent=m; $('#editMsg').className='msg err'; };
     let d; const id = c.id || ('c'+Date.now().toString(36));
     // 새 버전: 지금 내용을 스냅샷으로 남긴다(PDF 원본은 저장 때 따로 올린다)
-    const snap = newVer ? {n:nextVer-1, ts:c.ts||'', type:c.type||'text', src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:JSON.parse(JSON.stringify(c.marks||[])), inks:JSON.parse(JSON.stringify(liveInks(c))), note:c.note||'', noteSegs:c.noteSegs||[], ocr:c.ocr||null, pages:c.pages||0, pdfFile: isPdf(c)?`docs/${c.id}.v${nextVer-1}.pdf.enc`:''} : null;
+    const snap = newVer ? {n:nextVer-1, ts:c.ts||'', type:c.type||'text', src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:JSON.parse(JSON.stringify(c.marks||[])), inks:JSON.parse(JSON.stringify(liveInks(c))), note:c.note||'', noteSegs:c.noteSegs||[], ocr:c.ocr||null, pages:c.pages||0, srcName:c.srcName||'', pdfFile: isPdf(c)?`docs/${c.id}.v${nextVer-1}.pdf.enc`:''} : null;
     const oldPdf = newVer && isPdf(c) ? c.pdf : '';
     if (type==='pdf'){
       if (!pdfB64) return err('PDF 파일을 넣어 주세요.');
-      d = Object.assign({}, c, base, {type:'pdf', id, pdf: pdfB64, pdfDirty, fromImg, marks: c.marks||[], lockPw, unlockReq, vis:readVis()}); delete d.src; delete d.html;
+      d = Object.assign({}, c, base, {type:'pdf', id, pdf: pdfB64, pdfDirty, fromImg, srcName: pdfDirty ? pdfName : (c.srcName||''), marks: c.marks||[], lockPw, unlockReq, vis:readVis()}); delete d.src; delete d.html;   // srcName: 넣은 파일 이름(그림 여러 장이면 「첫 파일 외 N개」) — 정보 수정 화면에서 지금 원본이 무엇인지 보여 준다
     } else if (type==='html'){
       const src=$('#fHtml').value; if (!src.trim()) return err('HTML 코드를 넣어 주세요.');
       if (src.length>6*1024*1024) return err('HTML 이 6MB 를 넘습니다. 그림을 줄여 주세요.');
@@ -4531,7 +4532,7 @@ async function saveDoc(c, btn){
     let merged=0; try { merged=await mergeRemote(c); } catch(e){ console.warn('merge', e); }
     if (merged) toast(`다른 사람이 저장한 내용 ${fmtN(merged)}건을 합쳤습니다`);
     const cleanMarks=(c.marks||[]).map(m=>{ const o=Object.assign({}, m); delete o._editing; delete o._fresh; return o; });
-    const payload = isPdf(c) ? {marks:cleanMarks, note:c.note||'', pages:c.pages||0, fromImg:!!c.fromImg, inks:cleanInks(c), crop:(hasCrop(c)?cropOf(c):null), noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, ocr:c.ocr||null, ocrAt:c.ocrAt||'', versions:c.versions||[], carried:c.carried||[]} : {src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:cleanMarks, note:c.note||'', noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, versions:c.versions||[], carried:c.carried||[]};
+    const payload = isPdf(c) ? {marks:cleanMarks, note:c.note||'', pages:c.pages||0, fromImg:!!c.fromImg, inks:cleanInks(c), crop:(hasCrop(c)?cropOf(c):null), noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, ocr:c.ocr||null, ocrAt:c.ocrAt||'', srcName:c.srcName||'', versions:c.versions||[], carried:c.carried||[]} : {src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:cleanMarks, note:c.note||'', noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, versions:c.versions||[], carried:c.carried||[]};
     // 문서 열쇠 정하기
     //  · 지정 없음·잠금 없음 = 사이트키 K
     //  · 지정 없음·잠금 = 문서키 Kd 를 문서 비밀번호와 편집자키 Ke 로 각각 감쌈(편집자는 비밀번호 없이 연다)
