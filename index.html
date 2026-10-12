@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-09T00:03:29+09:00">
+<meta name="build" content="2026-10-12T13:13:55+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -126,6 +126,13 @@ a{color:var(--ins)}
 .chip.pdf{background:var(--del-bg);color:var(--del)}
 .chip.last{background:var(--ins-bg);color:var(--ins)}
 .chip.lostc{background:var(--del-bg);color:var(--del)}
+.chip.scope{background:var(--paper-3);color:var(--ink-2)} .chip.st.done{background:var(--memo-bg);color:var(--memo)} .chip.st.hold{background:var(--rep-bg);color:var(--rep)}
+.note.done{opacity:.72} .note.fout{display:none} .mbox.fout,.mk.fout{display:none} .mbox.done,.mk.done{opacity:.5}
+.macts .sp{flex:1} .rl.st.on{color:var(--ink);font-weight:700;text-decoration:underline}
+.notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.note input.ftitle{flex:1;min-width:80px;font:inherit;font-size:calc(13px * var(--ui,1));border:1px solid var(--rule);border-radius:4px;padding:2px 6px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
+body.placing .page{cursor:crosshair}
+.ask .box.wide{max-width:640px} .ask .row.pick{flex-wrap:wrap} .ask textarea.bulk{display:block;width:100%;box-sizing:border-box;font:13px/1.5 var(--mono);border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper-2);color:var(--ink);margin:0 0 10px;resize:vertical} .ask textarea.bulk:focus{border-color:var(--focus);outline:none} .ask .dim{color:var(--ink-3);font-size:12.5px} .ask code{background:var(--paper-3);padding:0 4px;border-radius:3px}
 .txtdoc .t-ghost{background:repeating-linear-gradient(to right,transparent 0 3px,rgba(127,127,127,.28) 3px 6px) bottom/100% 2px no-repeat;color:inherit;text-decoration:none} .txtdoc .t-ghost.hot{outline:2px solid var(--ink-3)}
 .mk.ghost,.marks .mk.ghost{color:var(--ink-3)!important;border-color:var(--ink-3)!important;border-style:dashed!important;background:var(--paper)!important;opacity:.85} .mk.ghost.static{position:static;transform:none;display:inline-block;font-family:var(--mono);font-size:11px;border:1px dashed var(--ink-3);border-radius:8px;padding:2px 5px;color:var(--ink-3)}
 .mbox.ghost{background:transparent!important;border:1.5px dashed rgba(120,120,120,.7);border-radius:2px;box-sizing:border-box}
@@ -654,6 +661,12 @@ body.area-mode .page{touch-action:none}
 const $ = s => document.querySelector(s);
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KIND = {del:'삭제', rep:'바꾸기', memo:'메모'};
+const STATUS = {done:'반영됨', hold:'보류'};   // 메모 상태(없으면 「대기」). 이슈 기록처럼 쓰는 문서용 — 반영됐거나 보류한 메모를 목록에서 거른다
+let noteFilter='all';                            // 메모 목록 거르기: all | open(남은 것) | done | hold — 문서를 바꾸면 all 로
+const inFilter = m => noteFilter==='all' || (noteFilter==='open' ? !m.st : m.st===noteFilter);
+// 자리 없는 메모(free): 쪽 전체(page=N) 또는 문서 전체(page=0). PDF 는 rects 를 [[0,0,0,0]] 으로 둔다 — 옛 판 창이 정렬하다 죽지 않게(빈 배열이면 rects[0][1] 에서 죽는다).
+// 그 대신 그리는 쪽(drawMarks · exportMarks · 주석 PDF · markAt)에서 free 를 거른다. 텍스트·Word·HTML 은 start·end 를 -1 로(감싸는 쪽이 end<=start 면 건너뛴다).
+const scopeLabel = m => m.free ? (m.page ? m.page+'쪽 전체' : '문서 전체') : '';
 const fmtN = n => (Number(n)||0).toLocaleString('ko-KR');   // 화면에 보이는 숫자는 천 단위 쉼표
 
 let cases = [];   // docs/index.json 의 메타. 문서를 열면 복호화된 내용이 같은 객체에 합쳐진다(loaded=true)
@@ -854,6 +867,8 @@ function renderHelp(main){
   <li>도면·사진은 「PDF · 도면 그림」 유형에 그림 파일(JPG·PNG)이나 그림이 든 HTML 파일을 그대로 넣습니다. 그림 한 장이 한 쪽이 되고, 그림을 누르면 새 탭에 크게 열립니다(HTML·Word 문서 속 그림도 누르면 크게 열립니다). 새 탭에서는 오른쪽 위에서 「창에 맞춤 · 가로 맞춤 · 실제 크기」를 고르고, 그림을 누르면 창에 맞춤과 마지막에 고른 크기 사이를 오갑니다. 크게 볼 때는 마우스로 끌어서(오른쪽 단추로도) 화면을 옮깁니다.</li>
   <li>「선 그리기」(Alt+P)를 켜면 쪽 위에 선을 긋습니다. 색 일곱 가지·두께 네 단계·실선/파선/점선, 자유선과 직선(Ctrl 을 누른 채 그으면 수평·수직, Shift 는 45°까지), 이어 그리기(누를 때마다 꼭짓점이 찍히고, 같은 자리를 두 번 누르거나 Enter 로 끝냄 · 첫 점을 누르면 닫힘), 직사각형과 원(Shift = 정사각형·정원, Ctrl = 누른 자리가 가운데). 막대의 화살표 단추로 열린 선의 끝에 화살촉을 달고(끝 · 양쪽), 속 채우기 단추로 닫힌 도형의 속을 연하게·진하게 채웁니다. 지우개는 내가 그은 선만 지우고, 되돌리기(Ctrl+Z)도 됩니다. 선은 「내보내기」와 「주석 PDF」에도 함께 나갑니다.</li>
   <li>그은 선을 누르면 고릅니다(Shift·Ctrl 을 누른 채 누르면 여럿). 고른 선에는 메모 달기·그룹(Ctrl+G)·그룹 풀기(Ctrl+Shift+G)·지우기(Delete)·색과 굵기 바꾸기가 되고, 「선 고르기」 도구로는 끌어서 옮기거나 빈 곳을 끌어 네모에 닿은 선을 한꺼번에 고릅니다. 고른 선 둘레의 손잡이를 끌면 크기가 바뀌고(Shift = 비율 그대로, Ctrl = 한가운데 기준), 곧은 선은 양 끝 손잡이로 끝점을 옮깁니다. 복제는 Ctrl+D, 방향키는 1px 씩(Shift 는 10px) 옮깁니다. 선 위에서 우클릭(폰은 길게 누름)하면 같은 메뉴가 뜹니다 — 선 그리기를 켜지 않아도 됩니다.</li>
+  <li>「메모 추가 ▾」는 특정 자리에 묶이지 않는 메모입니다 — 이 쪽 전체나 문서 전체에 달고(일정·공통 요구 사항 같은 것), 나중에 「자리 잡기」로 도면 위에 네모를 끌어 자리를 붙일 수 있습니다. 「여러 건 붙여 넣기」는 빈 줄로 나눈 덩어리마다 메모 한 건을 만듭니다(첫 줄이 <code>[전체] 제목</code> · <code>[3쪽] 제목</code> · <code>[총평]</code>).</li>
+  <li>메모마다 「반영됨」「보류」를 눌러 상태를 남기고, 메모 목록 위의 「전부 · 남은 것 · 반영됨 · 보류」로 거릅니다(도면 위 상자도 같이 숨습니다). 이슈 기록처럼 쓰는 문서용이고, 한 번도 안 쓴 문서에는 아무것도 나타나지 않습니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
   <li>메모가 있는 문서의 본문을 고쳐 저장하면 메모를 새 글의 같은 구절로 다시 맞춥니다. 구절이 사라진 메모는 「자리 잃음」으로 남습니다.</li>
@@ -1065,17 +1080,17 @@ function bindHead(c, collect){
 // ── 메모 목록(표) + 복사용 텍스트: 텍스트형·PDF형 공통 ──
 function listItems(c){
   const withTags=(t,segs)=>{ if (!segs||!segs.length) return t||''; let out='', pos=0; for (const g of [...segs].sort((x,y)=>x.s-y.s)){ out+=t.slice(pos,g.s)+'['+g.by+'] '+t.slice(g.s,g.e); pos=g.e; } return out+t.slice(pos); };
-  return (c.marks||[]).map((m,i)=>({n:i+1, where: isPdf(c) ? m.page+'쪽' : '', kind:KIND[m.kind], k:m.kind, before:m.text||'', after:m.after||'', reason:withTags(m.reason||'', m.segs), who:(m.by||''), whoId:(m.byId||''), reacts:reactSum(m.reacts||{}), replies:(m.replies||[]).map(r=>'['+(userLabel(r.by, r.byId)||r.by||'')+'] '+(r.t||'')), rreacts:(m.replies||[]).map(r=>reactSum(r.reacts||{}))}));
+  return (c.marks||[]).map((m,i)=>({n:i+1, where: m.free ? (m.page?m.page+'쪽':'문서') : (isPdf(c) ? m.page+'쪽' : ''), st:m.st||'', kind:KIND[m.kind], k:m.kind, before:m.text||'', after:m.after||'', reason:withTags(m.reason||'', m.segs), who:(m.by||''), whoId:(m.byId||''), reacts:reactSum(m.reacts||{}), replies:(m.replies||[]).map(r=>'['+(userLabel(r.by, r.byId)||r.by||'')+'] '+(r.t||'')), rreacts:(m.replies||[]).map(r=>reactSum(r.reacts||{}))}));
 }
 function listHtml(items, withWhere){
   if (!items.length) return `<div class="mlist"><div class="none">표시가 없습니다.</div></div>`;
   return `<div class="mlist"><table><thead><tr><th>#</th>${withWhere?'<th>위치</th>':''}<th>종류</th><th>작성</th><th>원문</th><th>바꿀 문장</th><th>이유</th></tr></thead><tbody>${items.map(it=>`
-    <tr><td class="n"><button class="jump" data-n="${it.n}" title="문서의 이 자리로 이동">${it.n}</button></td>${withWhere?`<td class="w">${esc(it.where)}</td>`:''}<td class="kd"><span class="chip kd ${esc(it.k||'')}">${esc(it.kind)}</span>${it.n===items.length?' <span class="chip last">마지막</span>':''}</td><td class="w who" style="${userColor(it.who, it.whoId)?`color:${userColor(it.who, it.whoId)}`:''}">${esc(userLabel(it.who, it.whoId)||it.who)}</td><td class="before">${esc(it.before)}</td><td class="after">${esc(it.after)}</td><td class="reason">${md(it.reason)}${it.reacts?` <span class="chip">${esc(it.reacts)}</span>`:''}${(it.replies||[]).length?`<div class="lreps">${it.replies.map((r,k)=>`<div>↳ ${md(r)}${(it.rreacts||[])[k]?` <span class="chip">${esc(it.rreacts[k])}</span>`:''}</div>`).join('')}</div>`:''}</td></tr>`).join('')}</tbody></table></div>`;
+    <tr><td class="n"><button class="jump" data-n="${it.n}" title="문서의 이 자리로 이동">${it.n}</button></td>${withWhere?`<td class="w">${esc(it.where)}</td>`:''}<td class="kd"><span class="chip kd ${esc(it.k||'')}">${esc(it.kind)}</span>${it.n===items.length?' <span class="chip last">마지막</span>':''}${it.st?` <span class="chip st ${it.st}">${STATUS[it.st]}</span>`:''}</td><td class="w who" style="${userColor(it.who, it.whoId)?`color:${userColor(it.who, it.whoId)}`:''}">${esc(userLabel(it.who, it.whoId)||it.who)}</td><td class="before">${esc(it.before)}</td><td class="after">${esc(it.after)}</td><td class="reason">${md(it.reason)}${it.reacts?` <span class="chip">${esc(it.reacts)}</span>`:''}${(it.replies||[]).length?`<div class="lreps">${it.replies.map((r,k)=>`<div>↳ ${md(r)}${(it.rreacts||[])[k]?` <span class="chip">${esc(it.rreacts[k])}</span>`:''}</div>`).join('')}</div>`:''}</td></tr>`).join('')}</tbody></table></div>`;
 }
 // 메모 한 건만 글로 옮긴다. 전체 복사(listText)와 같은 꼴이라 섞어 붙여도 어색하지 않다.
 function markText(c, i){
   const it=listItems(c)[i]; if (!it) return '';
-  return `${it.n}. ${it.who?'['+it.who+'] ':''}${it.where?'['+it.where+'] ':''}${it.kind}`
+  return `${it.n}. ${it.who?'['+it.who+'] ':''}${it.where?'['+it.where+'] ':''}${it.kind}${it.st?' ['+STATUS[it.st]+']':''}`
     + (it.before ? ' · '+it.before : '')
     + (it.after ? '\n   → '+it.after : '')
     + (it.reason ? '\n   이유: '+it.reason : '')
@@ -1084,7 +1099,7 @@ function markText(c, i){
 function listText(c, items){
   const head = `${c.title||''} · 퇴고 메모 ${fmtN(items.length)}곳 (${c.date||''})`;
   const plain = t => t||'';
-  return head + '\n' + items.map(it=>`${it.n}. ${it.who?'['+it.who+'] ':''}${it.where?'['+it.where+'] ':''}${it.kind}${it.before?' · '+it.before:''}${it.after?'\n   → '+it.after:''}${it.reason?'\n   이유: '+plain(it.reason):''}${(it.replies||[]).map(r=>'\n   ↳ '+r).join('')}`).join('\n');
+  return head + '\n' + items.map(it=>`${it.n}. ${it.who?'['+it.who+'] ':''}${it.where?'['+it.where+'] ':''}${it.kind}${it.st?' ['+STATUS[it.st]+']':''}${it.before?' · '+it.before:''}${it.after?'\n   → '+it.after:''}${it.reason?'\n   이유: '+plain(it.reason):''}${(it.replies||[]).map(r=>'\n   ↳ '+r).join('')}`).join('\n');
 }
 // ══════════════ 주석 PDF: 원본 PDF 에 표시를 PDF 주석으로 박는다(pdf-lib 저수준 객체) ══════════════
 // 좌표: 우리 표시는 pdf.js 뷰포트 기준 0-1 비율(왼쪽 위 원점) → viewport.convertToPdfPoint 로 PDF 좌표(회전·크롭 반영)
@@ -1095,7 +1110,7 @@ async function exportPdfAnnots(c){
   const {PDFDocument, PDFName, PDFArray, PDFHexString, PDFString}=window.PDFLib;
   const pdfDoc=await PDFDocument.load(b64ToBytes(c.pdf), {ignoreEncryption:true}); const ctx=pdfDoc.context; const pages=pdfDoc.getPages();
   let n=0;
-  for (let i=0;i<c.marks.length;i++){ const m=c.marks[i]; if (!m.page || !m.rects || !m.rects.length) continue; const page=pages[m.page-1]; if (!page) continue;
+  for (let i=0;i<c.marks.length;i++){ const m=c.marks[i]; if (!m.page || m.free || !m.rects || !m.rects.length) continue; const page=pages[m.page-1]; if (!page) continue;
     const pg=await st.doc.getPage(m.page); const vp=pg.getViewport({scale:1});
     const boxes=m.rects.map(r=>{ const pts=[[r[0],r[1]],[r[0]+r[2],r[1]],[r[0],r[1]+r[3]],[r[0]+r[2],r[1]+r[3]]].map(([x,y])=>vp.convertToPdfPoint(x*vp.width, y*vp.height));
       const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; });   // 회전·크롭은 convertToPdfPoint 가 처리
@@ -1217,13 +1232,13 @@ async function exportPdfPages(onProg){
   return out;
 }
 function exportMarks(c, p){
-  return c.marks.map((m,i)=>{ if (m.page!==p) return ''; const h=i+1; const ia=inkAnchor(c, m);
+  return c.marks.map((m,i)=>{ if (m.page!==p || m.free) return ''; const h=i+1; const ia=inkAnchor(c, m);
     return (m.rects||[]).map((r,ri)=>`<div class="mbox ${m.kind} hunk${m.area?' area':''}${ia?' inkbox':''}" style="left:${r[0]*100}%;top:${r[1]*100}%;width:${r[2]*100}%;height:${r[3]*100}%"></div>`
       + (ri===0?`<a class="mk ${m.kind}" id="xm${h}" href="#xn${h}" style="left:${(ia?ia[0]:r[0]+r[2])*100}%;top:${(ia?ia[1]:r[1])*100}%" data-h="${h}">${h}</a>`:'')).join(''); }).join('');
 }
 function exportNote(c, m, i){
   const h=i+1; const col=userColor(m.by, m.byId);
-  return `<div class="xn ${m.kind}" id="xn${h}"><div class="xh">${(m.lost||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
+  return `<div class="xn ${m.kind}" id="xn${h}"><div class="xh">${(m.lost||m.free||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip">${STATUS[m.st]}</span>`:''}${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||m.free||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
     + (m.text?`<div class="xsrc">${esc(m.text)}</div>`:'') + (m.kind==='rep'?`<div class="xafter">→ ${esc(m.after||'')}</div>`:'')
     + ((m.reason||'').trim()?`<div class="xtxt">${md(m.reason||'', m.segs)}</div>`:'') + (m.reacts?`<div class="xtxt" style="color:var(--ink-3)">${esc(reactKeys(m.reacts).map(e=>e+' '+m.reacts[e].length).join('  '))}</div>`:'') + ((m.replies||[]).length?`<div class="xreps">${m.replies.map(r=>`<div class="xrep"><b style="color:${userColor(r.by, r.byId)||'inherit'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</b> ${md(r.t||'')}${r.reacts?` <span style="color:var(--ink-3)">${esc(reactSum(r.reacts))}</span>`:''}</div>`).join('')}</div>`:'') + `</div>`;
 }
@@ -1476,7 +1491,9 @@ function layoutNotes(){
   const stacked = isMob();
   if (stacked){ notes.style.height=''; notes.querySelectorAll('.note').forEach(n=>n.style.top=''); return; }
   const base = notes.getBoundingClientRect().top; const tt=notes.querySelector('.notes-title'); let bottom = tt ? tt.offsetHeight + 8 : 0;   // 제목 줄(교정 메모 N · 직전 버전 메모) 아래부터
-  const items=[...notes.querySelectorAll('.note')].map((n,i)=>{ const h=n.dataset.h; const target=doc.querySelector(`.hunk[data-h="${h}"]`); const isG=n.classList.contains('ghost'); if (isG && !ghostsOn){ n.style.display='none'; return null; } n.style.display=''; return {n, i, want: target ? target.getBoundingClientRect().top - base - 2 : null}; }).filter(Boolean);
+  const items=[...notes.querySelectorAll('.note')].map((n,i)=>{ const h=n.dataset.h; const target=doc.querySelector(`.hunk[data-h="${h}"]`); const isG=n.classList.contains('ghost'); if ((isG && !ghostsOn) || n.classList.contains('fout')){ n.style.display='none'; return null; } n.style.display=''; let want = target ? target.getBoundingClientRect().top - base - 2 : null;
+    if (want==null && n.classList.contains('free')){ const p=+n.dataset.p; if (p>0){ const pe=doc.querySelector(`.page[data-p="${p}"]`); if (pe) want=pe.getBoundingClientRect().top - base + 2; } else want=-1e9; }   // 쪽 메모는 그 쪽 머리에, 문서 메모는 맨 위에
+    return {n, i, want}; }).filter(Boolean);
   // 문서 위 자리 순으로 놓되(현재 메모와 직전 버전 메모가 섞여도 위치대로), 자리 없는 것은 맨 아래
   items.sort((a,b)=>{ if (a.want==null && b.want==null) return a.i-b.i; if (a.want==null) return 1; if (b.want==null) return -1; return (a.want-b.want) || (a.i-b.i); });
   items.forEach(({n, want})=>{ let top = want!=null ? want : bottom; top = Math.max(top, bottom); n.style.top = top+'px'; bottom = top + n.offsetHeight + 10; });
@@ -1513,7 +1530,7 @@ function mountNotePop(h){
   const c=view.draft||cases.find(x=>x.id===view.id); el.querySelector('.npop-title').textContent=`메모 ${h} / ${c?fmtN(c.marks.length):'?'}`;
   const total=(c && c.marks) ? c.marks.length : 0; el.querySelector('.npop-nav[data-d="-1"]').disabled=(h<=1); el.querySelector('.npop-nav[data-d="1"]').disabled=(h>=total);   // 이웃 판정은 메모 개수로
   placeNpop(h); el.classList.add('open'); npop.back.classList.add('open'); document.body.classList.add('npop-open'); hot(h,true); pinOverlays('force'); requestAnimationFrame(()=>{ if (npop.h===h) pinOverlays('force'); });
-  const t=n.querySelector('textarea:not([hidden]), .md[contenteditable]'); if (t){ t.focus({preventScroll:true}); if (t.isContentEditable){ const r=document.createRange(); r.selectNodeContents(t); r.collapse(false); const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r); } }
+  const t=n.querySelector('input.ftitle, textarea:not([hidden]), .md[contenteditable]'); if (t){ t.focus({preventScroll:true}); if (t.isContentEditable){ const r=document.createRange(); r.selectNodeContents(t); r.collapse(false); const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r); } }
 }
 function ensureHunkVisible(h){
   const t=document.querySelector(`#doc .hunk[data-h="${h}"]:not(.t-ghost), .page .hunk[data-h="${h}"]:not(.ghost)`); if (!t || !npop.el) return;
@@ -1539,7 +1556,7 @@ function focusHunk(h){
   if (isMob()){ openNotePop(h); return; }
   const n = document.getElementById('note'+h); if (!n) return;
   n.scrollIntoView({block:'center', behavior:'smooth'});
-  const t=n.querySelector('textarea:not([hidden]), .md[contenteditable]');
+  const t=n.querySelector('input.ftitle, textarea:not([hidden]), .md[contenteditable]');
   if (t){ t.focus({preventScroll:true}); if (t.isContentEditable){ const r=document.createRange(); r.selectNodeContents(t); r.collapse(false); const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r); } }
   hot(h,true); setTimeout(()=>hot(h,false), 1500);
 }
@@ -1946,7 +1963,7 @@ const redoMarks = c => applyHist(c, hist.redo, hist.undo);
 function renderDocCase(main, c){ if (renderDocCase._last!==c.id){ jumpCur=null; renderDocCase._last=c.id; }
   c.marks = c.marks || [];
   if (drawMode && (hist.id!==c.id || !isPdf(c) || !editable())) setDraw(false);   // 다른 문서·읽기 전용으로 넘어가면 선 그리기를 끈다
-  if (hist.id!==c.id){ hist={id:c.id, undo:[], redo:[]}; pdfListMode=false; textRevMode=false; areaMode=false; document.body.classList.remove('area-mode'); }
+  if (hist.id!==c.id){ hist={id:c.id, undo:[], redo:[]}; pdfListMode=false; textRevMode=false; areaMode=false; document.body.classList.remove('area-mode'); noteFilter='all'; stopPlacing(); }
   const head = document.createElement('div'); head.className='head';
   main.appendChild(head);
   const sheet=document.createElement('div'); sheet.className='sheet pdf'; sheet.id='pdfSheet';
@@ -1979,9 +1996,10 @@ function refreshPdfHead(c){
      <button class="btn small" id="histBtn" title="되돌리기 이력을 보고 골라서 되돌아가기" ${(hist.undo.length||hist.redo.length)?'':'disabled'}>실행 기록</button>` : ''}
      ${(isPdf(c)&&canEdit)?`<button class="btn small ${areaMode?'on':''}" id="areaBtn" title="켜면 글자가 아닌 부분에서도 영역을 드래그하여 선택할 수 있습니다. 그림 부분은 켜지 않아도 그냥 끌면 됩니다 · Alt+A">${areaMode?'영역 선택 끝':'영역 선택'}</button>`:''}
      ${(isPdf(c)&&canEdit)?`<button class="btn small ${drawMode?'on':''}" id="inkBtn" title="쪽 위에 선과 도형을 긋습니다 — 자유선·직선·이어 그리기·직사각형·원, 색·두께·실선/파선/점선, 고르기·그룹·옮기기 · 그은 선을 우클릭하면 메모 · Alt+P">${drawMode?'선 그리기 끝':'선 그리기'}</button>`:''}
-     <button class="btn small" id="copyList">메모 복사</button><button class="btn small" id="exportBtn" title="문서와 표시·메모를 파일로 — HTML(메모 팝업, 인쇄로 PDF) 또는 주석 PDF">내보내기 ▾</button><button id="exportPdfBtn" hidden></button>${(isPdf(c)&&canEdit)?`<button class="btn small" id="ocrBtn" title="캡처본 PDF 처럼 글자층이 없는 문서의 글자를 인식해 드래그할 수 있게 합니다">${c.ocr?'글자 다시 인식':'글자 인식(OCR)'}</button><button class="btn small" id="cropBtn" title="캡처 PDF 의 좌우·위아래 빈 여백을 덜어내고 가운데만 보여 줍니다. 원본 파일과 메모 자리는 그대로입니다">여백 잘라내기${hasCrop(c)?' ✓':''}</button>`:''}`)
+     ${canEdit?`<button class="btn small" id="freeBtn" title="특정 자리에 묶이지 않는 메모 — 이 쪽 전체나 문서 전체에 답니다. 나중에 「자리 잡기」로 자리를 붙일 수 있고, 여러 건을 한꺼번에 붙여 넣을 수도 있습니다">메모 추가 ▾</button>`:''}<button class="btn small" id="copyList">메모 복사</button><button class="btn small" id="exportBtn" title="문서와 표시·메모를 파일로 — HTML(메모 팝업, 인쇄로 PDF) 또는 주석 PDF">내보내기 ▾</button><button id="exportPdfBtn" hidden></button>${(isPdf(c)&&canEdit)?`<button class="btn small" id="ocrBtn" title="캡처본 PDF 처럼 글자층이 없는 문서의 글자를 인식해 드래그할 수 있게 합니다">${c.ocr?'글자 다시 인식':'글자 인식(OCR)'}</button><button class="btn small" id="cropBtn" title="캡처 PDF 의 좌우·위아래 빈 여백을 덜어내고 가운데만 보여 줍니다. 원본 파일과 메모 자리는 그대로입니다">여백 잘라내기${hasCrop(c)?' ✓':''}</button>`:''}`)
     + `<div class="hint">원본 그대로${canEdit?' · 글자를 드래그하면 삭제·바꾸기·메모, 그림 부분은 네모로 끌면 영역 메모 (Alt+1/2/3)':''} · Ctrl+휠 확대·축소 · 메모 이동 Alt+↑/↓ (Alt+Q/X 도 됨)${isPdf(c)?' · 쪽 이동 Alt+W/S, 번호 Alt+G':''}${(isPdf(c)&&canEdit)?' · 선 그리기 Alt+P(그은 선 우클릭 = 메모)':''}${(isPdf(c)&&c.fromImg)?' · 그림을 누르면 새 탭에 크게':''} · 메모 서식: 굵게 Ctrl+B · 기울임 Ctrl+I · 밑줄 Ctrl+U · 취소선 Ctrl+Shift+X</div>`;
   { const dm=$('#docMore'); if (dm) dm.addEventListener('click', ()=>openFold(dm, head, null, '')); }
+  { const fb=$('#freeBtn'); if (fb) fb.addEventListener('click', ()=>freeMemoMenu(c)); }
   $('#toggleMarks').addEventListener('click', ()=>{ document.body.classList.toggle('hide-marks'); if (drawMode && document.body.classList.contains('hide-marks')) setDraw(false); refreshPdfHead(c); });
   $('#modeDoc').addEventListener('click', ()=>{ pdfListMode=false; textRevMode=false; refreshPdfHead(c); });
   $('#modeList').addEventListener('click', ()=>{ collectMarks(c); pdfListMode=true; textRevMode=false; refreshPdfHead(c); });
@@ -2044,6 +2062,59 @@ document.addEventListener('keydown', e=>{
   if (k==='z' && !e.shiftKey){ e.preventDefault(); undoMarks(c); }
   else if (k==='z' && e.shiftKey){ e.preventDefault(); redoMarks(c); }
 });
+// ── 메모 상태 · 거르기 · 자리 없는 메모 · 묶음 붙여 넣기 (이슈 기록처럼 쓰는 문서용 · 2026-10-12) ──
+function filterHtml(c){ const cnt={all:c.marks.length, open:0, done:0, hold:0}; c.marks.forEach(m=>{ cnt[m.st||'open']++; });
+  if (!cnt.done && !cnt.hold && noteFilter==='all') return '';   // 상태를 한 번도 안 쓴 문서는 전처럼 아무것도 안 보인다
+  return `<span class="nfl">${[['all','전부'],['open','남은 것'],['done','반영됨'],['hold','보류']].map(([k,l])=>`<button class="tb ${noteFilter===k?'on':''}" data-nf="${k}">${l} ${fmtN(cnt[k])}</button>`).join('')}</span>`; }
+function setStatus(c, i, st){ const m=c.marks[i]; if (!m || !editable()) return; const nv=(m.st===st)?'':st;
+  pushHist(c, `메모 ${i+1} ${nv?STATUS[nv]:'대기로'}`); if (nv){ m.st=nv; m.stBy=me?me.name:''; m.stById=me?me.id:''; m.stAt=Date.now(); } else { delete m.st; delete m.stBy; delete m.stById; delete m.stAt; }
+  m.mt=Date.now(); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); refreshPdfHead(c); if (isPdf(c)) drawAllMarks(c); }
+function jumpToScope(p, h){ const el = p ? document.querySelector(`.page[data-p="${p}"]`) : $('#doc'); if (!el) return false;
+  window.scrollTo({top:Math.max(0, el.getBoundingClientRect().top + window.scrollY - headLine() - 20), behavior:'smooth'}); hot(h,true); setTimeout(()=>hot(h,false), 1500); return true; }
+function newFreeMark(c, page, title, body, mt){ const m={kind:'memo', free:true, text:title||'', after:'', reason:body||'', by: me ? me.name : '', byId: me ? me.id : '', mid:newMid(), mt:mt||Date.now()};
+  if (isPdf(c)){ m.page=page||0; m.rects=[[0,0,0,0]]; } else { m.start=-1; m.end=-1; } return m; }
+function sortMarks(c){ if (isPdf(c)) c.marks.sort(markSort); else c.marks.sort((a,b)=>a.start-b.start); }
+function addFreeMemo(c, page){ if (!editable()) return; const m=newFreeMark(c, page); m._editing=true; m._fresh=true;
+  pushHist(c, page?`${page}쪽 메모 추가`:'문서 메모 추가'); c.marks.push(m); sortMarks(c); view.dirty=true; drawAllMarks(c); refreshPdfHead(c); const idx=c.marks.indexOf(m); setTimeout(()=>focusHunk(idx+1), 50); }
+async function freeMemoMenu(c){ const p=isPdf(c) ? (currentPage()||1) : 0;
+  const v=await askPick('어디에 다는 메모인가요?', [...(isPdf(c)?[{l:`${p}쪽 전체`, v:p}]:[]), {l:'문서 전체', v:0}, {l:'여러 건 붙여 넣기', v:'bulk'}]);
+  if (v===null || v===undefined) return; if (v==='bulk') bulkPaste(c); else addFreeMemo(c, v); }
+// 자리 잡기: 자리 없는 메모에 쪽 위 네모를 붙인다 — 다음 한 번의 영역 끌기가 새 메모 대신 이 메모의 자리가 된다(영역 끌기 처리기 안에서 placing 을 본다)
+let placing=null;
+function startPlacing(c, i){ const m=c.marks[i]; if (!m || !isPdf(c) || !editable()) return; placing={id:c.id, mid:m.mid, auto:false}; document.body.classList.add('placing'); if (drawMode) setDraw(false); if (npop.h!=null) closeNotePop();   // 폰: 메모 창을 닫아야 쪽 위를 끌 수 있다
+  if (!areaMode && (!c.fromImg || coarsePointer())){ areaMode=true; placing.auto=true; document.body.classList.add('area-mode'); refreshPdfHead(c); }   // 글자가 있는 PDF 나 손가락은 「영역 선택」이 켜져야 네모가 그려진다
+  toast(`${i+1}번 메모의 자리: 쪽 위에 네모를 끌어 주세요 (Esc 취소)`); }
+function stopPlacing(c){ if (!placing) return; const auto=placing.auto; placing=null; document.body.classList.remove('placing');
+  if (auto){ areaMode=false; document.body.classList.remove('area-mode'); if (c) refreshPdfHead(c); } }
+document.addEventListener('keydown', e=>{ if (e.key==='Escape' && placing){ stopPlacing(view.draft||cases.find(x=>x.id===view.id)); toast('자리 잡기를 취소했습니다'); } });
+function askPick(msg, opts){ return new Promise(res=>{ const ov=document.createElement('div'); ov.className='ask';
+    ov.innerHTML=`<div class="box" role="dialog" aria-modal="true"><p>${esc(msg)}</p><div class="row pick">${opts.map((o,i)=>`<button class="btn ${i===0?'primary':''}" data-v="${i}">${esc(o.l)}</button>`).join('')}<button class="btn" data-v="x">취소</button></div></div>`;
+    const done=v=>{ ov.remove(); document.removeEventListener('keydown', onKey); res(v); }; const onKey=e=>{ if (e.key==='Escape') done(null); };
+    ov.querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>done(b.dataset.v==='x' ? null : opts[+b.dataset.v].v)));
+    ov.addEventListener('mousedown', e=>{ if (e.target===ov) done(null); }); document.addEventListener('keydown', onKey); document.body.appendChild(ov); ov.querySelector('.primary').focus(); }); }
+// 묶음 붙여 넣기: 빈 줄로 나눈 덩어리마다 메모 한 건. 첫 줄 = [전체] 제목 | [N쪽] 제목 | [총평]. 카톡 같은 데서 정리한 글을 한 번에 옮길 때
+function parseBulk(c, raw){ const out=[], bad=[]; raw.replace(/\r/g,'').split(/\n[ \t]*\n+/).map(b=>b.trim()).filter(Boolean).forEach(b=>{ const lines=b.split('\n'); const m=/^\[([^\]]+)\]\s*(.*)$/.exec(lines[0].trim()); if (!m){ bad.push(lines[0].slice(0,24)); return; }
+    const tag=m[1].trim(), title=m[2].trim(), body=lines.slice(1).join('\n').trim();
+    if (tag==='총평'){ out.push({note:[title, body].filter(Boolean).join('\n')}); return; }
+    if (tag==='전체' || tag==='문서'){ out.push({page:0, title, body}); return; }
+    const pm=/^(\d+)\s*쪽$/.exec(tag); if (pm && isPdf(c) && +pm[1]>=1 && +pm[1]<=(c.pages||0)) out.push({page:+pm[1], title, body}); else bad.push(lines[0].slice(0,24)); });
+  return {out, bad}; }
+function bulkPaste(c){ if (!editable()) return; const ov=document.createElement('div'); ov.className='ask';
+  ov.innerHTML=`<div class="box wide" role="dialog" aria-modal="true"><p><b>메모 묶음 붙여 넣기</b><br><span class="dim">빈 줄로 나눈 덩어리마다 메모 한 건이 됩니다. 첫 줄이 자리와 제목: <code>[전체] 제목</code>${isPdf(c)?' · <code>[3쪽] 제목</code>':''} · <code>[총평]</code> 은 총평 칸 끝에 덧붙입니다. 둘째 줄부터가 내용입니다.</span></p><textarea class="bulk" rows="12" placeholder="[전체] 각 층 상수도·퇴수구&#10;층마다 상수도와 퇴수구(로봇청소기용)&#10;&#10;[총평]&#10;10/12 카톡 요약 …"></textarea><div class="row"><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok">넣기</button></div></div>`;
+  const ta=ov.querySelector('textarea'), sum=ov.querySelector('.bsum');
+  const show=()=>{ const {out, bad}=parseBulk(c, ta.value); const n=out.filter(x=>!x.note).length, k=out.filter(x=>x.note).length; sum.textContent = ta.value.trim() ? `메모 ${fmtN(n)}건${k?' · 총평 '+fmtN(k)+'덩어리':''}${bad.length?' · 못 읽음 '+fmtN(bad.length)+'('+bad[0]+'…)':''}` : ''; };
+  ta.addEventListener('input', show);
+  const done=()=>{ ov.remove(); document.removeEventListener('keydown', onKey); }; const onKey=e=>{ if (e.key==='Escape') done(); };
+  ov.querySelector('[data-v="x"]').addEventListener('click', done); ov.addEventListener('mousedown', e=>{ if (e.target===ov) done(); });
+  ov.querySelector('[data-v="ok"]').addEventListener('click', ()=>{ const {out, bad}=parseBulk(c, ta.value); const memos=out.filter(x=>!x.note), notes=out.filter(x=>x.note);
+    if (!memos.length && !notes.length){ toast(bad.length ? '첫 줄이 「[전체] 제목」 꼴이 아닙니다: '+bad[0] : '넣을 것이 없습니다'); return; }
+    pushHist(c, `메모 묶음 ${fmtN(memos.length)}건 붙여 넣기`); const now=Date.now();
+    memos.forEach((x,j)=>c.marks.push(newFreeMark(c, x.page, x.title, x.body, now+j))); sortMarks(c);
+    if (notes.length){ const bef=c.note||''; const aft=(bef?bef+'\n\n':'')+notes.map(x=>x.note).join('\n\n'); c.noteSegs=updSegs(c.noteSegs, bef, aft, (me && c.owner && c.owner!==me.id) ? me.name : null, me ? me.id : ''); c.note=aft; c.noteMt=Date.now();
+      const na=$('#noteAll'); if (na){ na.value=aft; const f=na.closest('.fld'); const nf=f && f.querySelector('.md'); if (nf) nf.innerHTML=md(aft, c.noteSegs); } }
+    view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); done();
+    toast(`메모 ${fmtN(memos.length)}건${notes.length?' · 총평에 덧붙임':''} — 저장(Ctrl+S)하세요${bad.length?' · 못 읽은 덩어리 '+fmtN(bad.length):''}`); });
+  document.addEventListener('keydown', onKey); document.body.appendChild(ov); ta.focus(); }
 function renderPdfNotes(c){
   const notes=$('#notes'); if (!notes) return;
   const canEdit = editable();
@@ -2052,29 +2123,32 @@ function renderPdfNotes(c){
   const ghostNotes = gs.map(g=>{ const m=g.m; const col=userColor(m.by, m.byId); return `
     <div class="note ghost ${m.kind}" data-h="g${g.h}" id="ghost${g.h}"><div class="n"><span class="mk ghost static">${g.h}ʹ</span><span class="chip kd ${m.kind}">${KIND[m.kind]}</span>${m.by?`<span class="who" style="--nc:${col||'var(--ink-3)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${g.lost?'<span class="chip lostc" title="이 버전에서 같은 구절을 못 찾았습니다. 이월하면 자리 없이 목록에 남습니다">자리 못 찾음</span>':''}<span class="chip hint ${/사라짐|있음$/.test(g.hint)&&!/남아/.test(g.hint)?'ok':''}">${esc(g.hint)}</span><span class="spacer"></span>${editable()?`<button class="carry" data-carry="${esc(m.mid)}" title="이 메모를 이 버전에 넣어 이어서 다룹니다">이월</button>`:''}</div>
     <div class="gt">${esc(m.text||'')}${m.kind==='rep'?` <span class="after">→ ${esc(m.after||'')}</span>`:''}</div>${(m.reason||'').trim()?`<div class="txt">${md(m.reason||'', m.segs)}</div>`:''}${(m.replies||[]).length?`<div class="replies ro">${m.replies.map(r=>`<div class="reply"><div class="rh"><span class="who" style="--nc:${userColor(r.by, r.byId)||'var(--ink-3)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span></div><div class="rb">${md(r.t||'')}</div></div>`).join('')}</div>`:''}</div>`; }).join('');
-  notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
-    <div class="note ${m.kind}" data-h="${h}" id="note${h}"><div class="n"><span class="nn" title="원문의 이 자리로">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}<span class="k">${esc(m.text)}</span><span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
+  notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}${filterHtml(c)}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
+    <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${(m.free && canEdit && m._editing)?`<input class="k ftitle" data-i="${i}" data-f="text" value="${esc(m.text||'')}" placeholder="무엇에 대한 메모인지(제목)">`:`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
     ${(()=>{ const ed=canEdit && m._editing; const canDel=canEdit && (!m.byId || (me && (m.byId===me.id || me.role==='admin')));
       const body = ed
         ? `${m.kind==='rep' ? `<textarea rows="1" class="after" data-i="${i}" data-f="after" placeholder="이렇게 바꿈">${esc(m.after||'')}</textarea>` : ''}${mdField(m.reason||'', `data-i="${i}" data-f="reason"`, m.kind==='memo'?'메모':'왜 고쳤는지', 'txt', m.segs)}<div class="mbtns"><button class="btn small primary" data-act="msave" data-i="${i}">저장 <kbd>Ctrl+↵</kbd></button><button class="btn small" data-act="mcancel" data-i="${i}">취소 <kbd>Esc</kbd></button></div>`
-        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div><div class="macts"><button class="rl" data-act="mcopy" data-i="${i}" title="이 메모 한 건을 글로 복사합니다">복사</button>${canEdit?`<button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}`:''}</div>`;
+        : `${m.kind==='rep' ? `<div class="txt after">${esc(m.after||'')}</div>` : ''}<div class="txt">${md(m.reason||'', m.segs)}</div><div class="macts">${canEdit?`<button class="rl st ${m.st==='done'?'on':''}" data-act="mst" data-st="done" data-i="${i}" title="반영됐으면 표시 — 다시 누르면 대기로">반영됨</button><button class="rl st ${m.st==='hold'?'on':''}" data-act="mst" data-st="hold" data-i="${i}" title="보류 — 다시 누르면 대기로">보류</button><span class="sp"></span>${(m.free&&isPdf(c))?`<button class="rl" data-act="mplace" data-i="${i}" title="쪽 위에 네모를 끌어 이 메모의 자리를 붙입니다">자리 잡기</button>`:''}`:''}<button class="rl" data-act="mcopy" data-i="${i}" title="이 메모 한 건을 글로 복사합니다">복사</button>${canEdit?`<button class="rl" data-act="medit" data-i="${i}">수정</button>${canDel?`<button class="rl" data-act="mdel" data-i="${i}">삭제</button>`:''}`:''}</div>`;
       return body; })()}${reactsHtml(m, i)}${repliesHtml(m, i)}</div>`; }).join('');
-  notes.querySelectorAll('.nn').forEach(b=>b.addEventListener('click', ()=>{ const n=b.closest('.note'); if (n){ jumpCur=n.dataset.h; if (pdfListMode){ pdfListMode=false; textRevMode=false; refreshPdfHead(c); setTimeout(()=>jumpToHunk(+n.dataset.h), 60); } else jumpToHunk(+n.dataset.h); } }));
+  notes.querySelectorAll('.nn').forEach(b=>b.addEventListener('click', ()=>{ const n=b.closest('.note'); if (!n) return; jumpCur=n.dataset.h; const go=()=>{ if (n.classList.contains('free')) jumpToScope(+n.dataset.p, +n.dataset.h); else jumpToHunk(+n.dataset.h); }; if (pdfListMode){ pdfListMode=false; textRevMode=false; refreshPdfHead(c); setTimeout(go, 60); } else go(); }));
   notes.querySelectorAll('.nvb').forEach(b=>b.addEventListener('click', e=>{ e.preventDefault(); const n=b.closest('.note'); if (n) jumpCur=n.dataset.h; jumpMemo(+b.dataset.d); }));
   notes.querySelectorAll('[data-act="mdel"]').forEach(b=>b.addEventListener('click', async ()=>{ const i=+b.dataset.i; if (!(await ask(`${i+1}번 메모를 삭제하시겠습니까? 본문의 표시와 답글도 함께 지워집니다.`, '삭제'))) return;
     pushHist(c, `메모 ${i+1} 삭제`); c.marks.splice(i,1); view.dirty=true; drawAllMarks(c); refreshPdfHead(c); layoutNotes(); }));
   notes.querySelectorAll('[data-act="mcopy"]').forEach(b=>b.addEventListener('click', ()=>{
     const i=+b.dataset.i; collectMarks(c); const t=markText(c, i);
     if (t) copyText(t, `${i+1}번 메모를 복사했습니다`); }));
-  notes.querySelectorAll('[data-act="medit"]').forEach(b=>b.addEventListener('click', ()=>{ const i=+b.dataset.i; const m=c.marks[i]; m._editing=true; m._snap={after:m.after||'', reason:m.reason||'', segs:JSON.parse(JSON.stringify(m.segs||null))}; renderPdfNotes(c); setTimeout(()=>focusHunk(i+1), 30); }));
+  notes.querySelectorAll('[data-act="mst"]').forEach(b=>b.addEventListener('click', ()=>setStatus(c, +b.dataset.i, b.dataset.st)));
+  notes.querySelectorAll('[data-act="mplace"]').forEach(b=>b.addEventListener('click', ()=>startPlacing(c, +b.dataset.i)));
+  notes.querySelectorAll('[data-nf]').forEach(b=>b.addEventListener('click', ()=>{ noteFilter=b.dataset.nf; refreshPdfHead(c); if (isPdf(c)) drawAllMarks(c); }));
+  notes.querySelectorAll('[data-act="medit"]').forEach(b=>b.addEventListener('click', ()=>{ const i=+b.dataset.i; const m=c.marks[i]; m._editing=true; m._snap={text:m.text||'', after:m.after||'', reason:m.reason||'', segs:JSON.parse(JSON.stringify(m.segs||null))}; renderPdfNotes(c); setTimeout(()=>focusHunk(i+1), 30); }));
   const commitEdit=async (i)=>{ const m=c.marks[i]; const n=document.getElementById('note'+(i+1)); if (!m || !n) return;
-    const ta=n.querySelector('textarea[data-f="after"]'); const tr=n.querySelector('textarea[data-f="reason"]');
+    const ta=n.querySelector('textarea[data-f="after"]'); const tr=n.querySelector('textarea[data-f="reason"]'); const ti=n.querySelector('input[data-f="text"]');
     const after=ta?ta.value.trim():(m.after||''); const reason=tr?tr.value.trim():(m.reason||''); const bef=(m._snap&&m._snap.reason!=null)?m._snap.reason:(m.reason||''); const befA=(m._snap&&m._snap.after!=null)?m._snap.after:(m.after||'');
-    const changed = after!==befA || reason!==bef;
+    const title=ti?ti.value.trim():(m.text||''); const befT=(m._snap&&m._snap.text!=null)?m._snap.text:(m.text||''); const changed = after!==befA || reason!==bef || title!==befT;
     if (changed && !m._fresh){ if (!(await ask(`${i+1}번 메모를 수정하시겠습니까?`, '수정'))) return; }
-    if (changed){ pushHist(c, `메모 ${i+1} ${m._fresh?'작성':'수정'}`); if (reason!==bef) m.segs=updSegs(m._snap&&m._snap.segs?m._snap.segs:(m.segs||null), bef, reason, (me && m.by && !sameUser(m, me)) ? me.name : null, me ? me.id : ''); m.after=after; m.reason=reason; m.mt=Date.now(); if (!m._fresh) m.edited=Date.now(); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); }
+    if (changed){ pushHist(c, `메모 ${i+1} ${m._fresh?'작성':'수정'}`); if (reason!==bef) m.segs=updSegs(m._snap&&m._snap.segs?m._snap.segs:(m.segs||null), bef, reason, (me && m.by && !sameUser(m, me)) ? me.name : null, me ? me.id : ''); m.after=after; m.reason=reason; if (ti) m.text=title; m.mt=Date.now(); if (!m._fresh) m.edited=Date.now(); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); }
     delete m._editing; delete m._fresh; delete m._snap; renderPdfNotes(c); };
-  const cancelEdit=(i)=>{ const m=c.marks[i]; if (!m) return; if (m._snap){ m.after=m._snap.after; m.reason=m._snap.reason; m.segs=m._snap.segs; } delete m._editing; delete m._snap; if (m._fresh){ delete m._fresh; } renderPdfNotes(c); };
+  const cancelEdit=(i)=>{ const m=c.marks[i]; if (!m) return; if (m._snap){ m.after=m._snap.after; m.reason=m._snap.reason; m.segs=m._snap.segs; if (m._snap.text!=null) m.text=m._snap.text; } delete m._editing; delete m._snap; if (m._fresh){ delete m._fresh; } renderPdfNotes(c); };
   notes.querySelectorAll('[data-act="msave"]').forEach(b=>b.addEventListener('click', ()=>commitEdit(+b.dataset.i)));
   notes.querySelectorAll('[data-act="mcancel"]').forEach(b=>b.addEventListener('click', ()=>cancelEdit(+b.dataset.i)));
   notes.querySelectorAll('.note').forEach(n=>{ const i=+n.dataset.h-1; n.addEventListener('keydown', e=>{ if (!c.marks[i] || !c.marks[i]._editing) return; if ((e.ctrlKey||e.metaKey) && e.key==='Enter'){ e.preventDefault(); commitEdit(i); } else if (e.key==='Escape' && (e.target.closest('.fld')||e.target.matches('textarea.after'))){ e.preventDefault(); cancelEdit(i); } }); });
@@ -2100,7 +2174,7 @@ function markKey(m){ return 'k'+hashStr([m.kind, m.text||'', m.page||'', m.start
 function ensureMids(c){ (c.marks||[]).forEach(m=>{ if (!m.mid) m.mid=markKey(m); if (!m.mt) m.mt=0; }); }
 const newMid=()=>'m'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function collectMarks(c){
-  document.querySelectorAll('.note textarea[data-i]').forEach(t=>{ const m=c.marks[+t.dataset.i]; if (!m) return; const v=t.value.trim();
+  document.querySelectorAll('.note textarea[data-i], .note input[data-i][data-f]').forEach(t=>{ const m=c.marks[+t.dataset.i]; if (!m) return; const v=t.value.trim();
     if (v!==(m[t.dataset.f]||'')){ m.mt=Date.now(); if (me && m.by && !sameUser(m, me)){ m.editedBy=me.name; m.editedById=me.id; } if (t.dataset.f==='reason'){ const bef=(m._snap&&m._snap.reason!=null)?m._snap.reason:(m.reason||''); m.segs=updSegs(m._snap&&m._snap.segs?m._snap.segs:(m.segs||null), bef, v, (me && m.by && !sameUser(m, me)) ? me.name : null, me ? me.id : ''); } if (!m._fresh) m.edited=Date.now(); }   // 편집 중인 채로 문서를 저장하면 그 값으로 확정
     m[t.dataset.f]=v; });
   const na=$('#noteAll'); if (na){ const v=na.value.trim(); if (v!==(c.note||'')) c.noteMt=Date.now(); c.note=v; }
@@ -2127,7 +2201,7 @@ async function mergeRemote(c){
     else { if (!b){ out.push(rm); changed++; } }                  // 원격에서 새로 생긴 것은 받음(내가 지운 건 안 살림)
   }
   if ((remote.noteMt||0)>(c.noteMt||0) && remote.note!==c.note){ c.note=remote.note; c.noteSegs=remote.noteSegs||[]; c.noteMt=remote.noteMt; changed++; }
-  c.marks=out; if (isPdf(c)) c.marks.sort((a,b)=>a.page-b.page || a.rects[0][1]-b.rects[0][1] || a.rects[0][0]-b.rects[0][0]); else c.marks.sort((a,b)=>a.start-b.start);
+  c.marks=out; if (isPdf(c)) c.marks.sort(markSort); else c.marks.sort((a,b)=>a.start-b.start);
   c._base=new Set((remote.marks||[]).map(m=>m.mid)); c._baseTs=r.ts;   // 이제 기준은 방금 본 깃헙 상태
   // 그은 선은 메모와 따로 합친다(기준 시점 없이 id·시각만으로 — mergeInks). 위의 메모 합치기에는 손대지 않는다.
   let inkCh=0; if (isPdf(c)){ const kb=snapK(c); c.inks=mergeInks(c.inks, remote.inks); if (snapK(c)!==kb) inkCh=1; }
@@ -2680,12 +2754,12 @@ function addEoc(tl){ if (BARE || !tl) return; let e=tl.querySelector(':scope > .
 function drawMarks(c, p){
   const el = document.querySelector(`.page[data-p="${p}"] .marks`); if (!el) return;
   el.innerHTML='';
-  c.marks.forEach((m,i)=>{ if (m.page!==p) return; const h=i+1; const ia=inkAnchor(c, m);   // 선에 단 메모면 상자 대신 선 곁에 번호를 단다
+  c.marks.forEach((m,i)=>{ if (m.page!==p || m.free) return; const h=i+1; const ia=inkAnchor(c, m); const ex=(inFilter(m)?'':' fout')+(m.st?' '+m.st:'');   // 선에 단 메모면 상자 대신 선 곁에 번호를 단다 · 자리 없는 메모는 안 그린다
     m.rects.forEach((r,ri)=>{
-      const d=document.createElement('div'); d.className=`mbox ${m.kind} hunk${m.area?' area':''}${ia?' inkbox':''}`; d.dataset.h=h;
+      const d=document.createElement('div'); d.className=`mbox ${m.kind} hunk${m.area?' area':''}${ia?' inkbox':''}${ex}`; d.dataset.h=h;
       d.style.left=(r[0]*100)+'%'; d.style.top=(r[1]*100)+'%'; d.style.width=(r[2]*100)+'%'; d.style.height=(r[3]*100)+'%';
       el.appendChild(d);
-      if (ri===0){ const k=document.createElement('span'); k.className=`mk ${m.kind}`; k.dataset.h=h; k.textContent=h;
+      if (ri===0){ const k=document.createElement('span'); k.className=`mk ${m.kind}${ex}`; k.dataset.h=h; k.textContent=h;
         k.style.left=((ia?ia[0]:r[0]+r[2])*100)+'%'; k.style.top=((ia?ia[1]:r[1])*100)+'%'; k.addEventListener('click', ()=>focusHunk(h)); el.appendChild(k); }
     });
   });
@@ -3510,7 +3584,7 @@ function openImgBig(img){
   try { w.__show(src, fileSafe(name)+(ext?'.'+ext:''), /^(data|blob):/i.test(src)); } catch(e){ try { w.close(); } catch(_){} toast('그림을 열지 못했습니다'); }
 }
 function markAt(c, pageEl, x, y){ const pr=pgRect(pageEl); if (!pr.width || !pr.height) return -1; const fx=(x-pr.left)/pr.width, fy=(y-pr.top)/pr.height, p=+pageEl.dataset.p, pad=3/pr.height;
-  return (c.marks||[]).findIndex(m=>{ if (m.page!==p) return false;
+  return (c.marks||[]).findIndex(m=>{ if (m.page!==p || m.free) return false;
     const L=inkOf(c, m); if (L.length) return L.some(k=>inkDist(k, x-pr.left, y-pr.top, pr.width, pr.height)-inkW(k.w)*pr.width/2<=14);   // 선에 단 메모: 두른 상자 안이 아니라 선 가까이를 눌렀을 때만
     return (m.rects||[]).some(r=>fx>=r[0] && fx<=r[0]+r[2] && fy>=r[1]-pad && fy<=r[1]+r[3]+pad); }); }
 { let bigDown=null, bigAt=0;
@@ -3616,13 +3690,14 @@ function computeGhosts(c){
   const carried=new Set(c.carried||[]); const cur=docText(c);
   const list=[];
   (pv.marks||[]).forEach((m,i)=>{ if (!m.mid) m.mid=markKey(m); if (carried.has(m.mid)) return; const g={m, h:i+1, lost:true, hint:''};
-    if (isPdf(c)){ const hit=findInPdfLines(c.ocr, m.text||''); if (hit){ g.page=hit.page; g.rects=hit.rects; g.lost=false; } }
+    if (m.free){ g.lost=false; g.free=true; g.page=m.page||0; g.rects=[]; g.start=-1; g.end=-1; } else if (isPdf(c)){ const hit=findInPdfLines(c.ocr, m.text||''); if (hit){ g.page=hit.page; g.rects=hit.rects; g.lost=false; } }
     else { const rm=remapMarks([Object.assign({}, m)], verText(pv), cur)[0]; if (rm && !rm.lost){ g.start=rm.start; g.end=rm.end; g.lost=false; } }
     // 자동 힌트: 삭제·바꾸기는 구절이 남았는지로 짐작. 메모(의견)는 사람이 판단
     const curN = isPdf(c) ? normT(pdfLinesText(c.ocr)) : normT(cur); const has = m.text && curN.includes(normT(m.text));
     if (m.kind==='del') g.hint = has ? '아직 남아 있음' : '구절 사라짐';
     else if (m.kind==='rep') g.hint = (m.after && curN.includes(normT(m.after))) ? '바꾼 문장 있음' : (has ? '아직 그대로' : '다르게 고침?');
     else g.hint = has ? '구절 그대로' : '구절 바뀜';
+    if (m.free) g.hint=scopeLabel(m);
     list.push(g); });
   c._ghosts=list; return list;
 }
@@ -3634,7 +3709,7 @@ function drawGhostsText(c, cont){
 }
 function drawGhostsPdf(c, p){
   const el=document.querySelector(`.page[data-p="${p}"] .marks`); if (!el) return; el.querySelectorAll('.ghost').forEach(x=>x.remove()); if (!ghostsOn) return;
-  (c._ghosts||[]).forEach(g=>{ if (g.lost || g.page!==p) return; g.rects.forEach((r,ri)=>{ const d=document.createElement('div'); d.className='mbox ghost'+(ri===0?' hunk':''); d.dataset.h='g'+g.h; d.style.left=(r[0]*100)+'%'; d.style.top=(r[1]*100)+'%'; d.style.width=(r[2]*100)+'%'; d.style.height=(r[3]*100)+'%'; el.appendChild(d);
+  (c._ghosts||[]).forEach(g=>{ if (g.lost || g.free || g.page!==p) return; g.rects.forEach((r,ri)=>{ const d=document.createElement('div'); d.className='mbox ghost'+(ri===0?' hunk':''); d.dataset.h='g'+g.h; d.style.left=(r[0]*100)+'%'; d.style.top=(r[1]*100)+'%'; d.style.width=(r[2]*100)+'%'; d.style.height=(r[3]*100)+'%'; el.appendChild(d);
     if (ri===0){ const k=document.createElement('span'); k.className='mk ghost'; k.dataset.h='g'+g.h; k.textContent=g.h+'ʹ'; k.style.left=((r[0]+r[2])*100)+'%'; k.style.top=(r[1]*100)+'%'; k.addEventListener('click', ()=>{ const e2=document.getElementById('ghost'+g.h); if (e2){ e2.scrollIntoView({block:'center', behavior:'smooth'}); e2.classList.add('hot'); setTimeout(()=>e2.classList.remove('hot'),1500); } }); el.appendChild(k); } }); });
 }
 // 화면 아래 「직전 버전 메모」 목록(흐림) + 이월
@@ -3656,7 +3731,8 @@ function renderGhostBox(c){
 }
 function carryGhost(c, g, silent){
   const m=JSON.parse(JSON.stringify(g.m)); delete m.mt; m.mid=newMid(); m.from=(prevVersion(c)||{}).n||0; m.fromNo=g.h;
-  if (isPdf(c)){ if (g.lost){ m.page=0; m.rects=[]; m.lost=true; } else { m.page=g.page; m.rects=g.rects; delete m.lost; } }
+  if (g.free){ m.free=true; delete m.lost; if (isPdf(c)){ m.page=g.page||0; m.rects=[[0,0,0,0]]; } else { m.start=-1; m.end=-1; } }
+  else if (isPdf(c)){ if (g.lost){ m.page=0; m.rects=[]; m.lost=true; } else { m.page=g.page; m.rects=g.rects; delete m.lost; } }
   else { if (g.lost){ m.start=-1; m.end=-1; m.lost=true; } else { m.start=g.start; m.end=g.end; delete m.lost; } }
   c.marks=c.marks||[]; c.marks.push(m); c.carried=c.carried||[]; c.carried.push(g.m.mid);
 }
@@ -3693,7 +3769,7 @@ function bindSelection(cont, c0){
         const c = cur(); pushHist(c, `${KIND[b.dataset.k]} 추가 · ${text.slice(0,18)}${text.length>18?'…':''}`);
         c.marks.push({page:+pageEl.dataset.p, rects:merged.map(r=>r.map(v=>+v.toFixed(4))), kind:b.dataset.k, text, after:'', reason:'', by: me ? me.name : '', byId: me ? me.id : '', _editing:true, _fresh:true, mid:newMid(), mt:Date.now()});
         // 쪽·위치 순으로 번호 유지
-        c.marks.sort((a,b)=>a.page-b.page || a.rects[0][1]-b.rects[0][1] || a.rects[0][0]-b.rects[0][0]);
+        c.marks.sort(markSort);
         view.dirty=true; sel.removeAllRanges(); kill();
         drawAllMarks(c); refreshPdfHead(c);
         const idx = c.marks.findIndex(m=>m.text===text && m.page===+pageEl.dataset.p && m.kind===b.dataset.k);
@@ -3730,12 +3806,15 @@ function bindSelection(cont, c0){
     if (!rb){ rbActive=false; return; } const r=rb._r, pageEl=rbPage; rb.remove(); rb=null; rbPage=null; setTimeout(()=>{ rbActive=false; }, 0);
     const prr=pgRect(pageEl); if (!r || r[2]*prr.width<8 || r[3]*prr.height<8) return;   // 8px 미만 네모는 무시(쪽 크기와 무관)
     const c=cur(); const rect=r.map(v=>+v.toFixed(4)); const text='[영역] '+pageEl.dataset.p+'쪽';
+    if (placing && placing.id===c.id){ const pi=c.marks.findIndex(m=>m.mid===placing.mid); stopPlacing(c); if (pi<0){ toast('그 메모가 없습니다'); return; } const m=c.marks[pi];   // 자리 잡기: 새 메모 대신 이 메모의 자리
+      pushHist(c, `메모 ${pi+1} 자리 잡기 · ${pageEl.dataset.p}쪽`); m.page=+pageEl.dataset.p; m.rects=[rect]; m.area=true; delete m.free; if (!m.text) m.text=text; m.mt=Date.now(); sortMarks(c);
+      view.dirty=true; kill(); drawAllMarks(c); refreshPdfHead(c); const ni=c.marks.indexOf(m); setTimeout(()=>focusHunk(ni+1), 50); return; }
     pop=document.createElement('div'); pop.className='pop'; pop.style.left=((rect[0]+rect[2]/2)*100)+'%'; pop.style.top=((rect[1]+rect[3])*100)+'%';
     pop.innerHTML = `<span class="popsel">${esc(text.length>80 ? text.slice(0,80)+'…' : text)}</span><button class="d" data-k="del">삭제 <kbd>Alt+1</kbd></button><button class="r" data-k="rep">바꾸기 <kbd>Alt+2</kbd></button><button class="m" data-k="memo">메모 <kbd>Alt+3</kbd></button>`;
     pop.querySelectorAll('button').forEach(b=>b.addEventListener('mousedown', ev=>{ ev.preventDefault(); ev.stopPropagation();
       const c=cur(); pushHist(c, `${KIND[b.dataset.k]} 영역 추가 · ${pageEl.dataset.p}쪽`);
       c.marks.push({page:+pageEl.dataset.p, rects:[rect], area:true, kind:b.dataset.k, text, after:'', reason:'', by: me ? me.name : '', byId: me ? me.id : '', mid:newMid(), mt:Date.now(), _editing:true, _fresh:true});
-      c.marks.sort((a,b)=>a.page-b.page || a.rects[0][1]-b.rects[0][1] || a.rects[0][0]-b.rects[0][0]);
+      c.marks.sort(markSort);
       view.dirty=true; kill(); drawAllMarks(c); refreshPdfHead(c);
       const idx=c.marks.findIndex(m=>m.area && m.page===+pageEl.dataset.p && m.rects[0][0]===rect[0] && m.rects[0][1]===rect[1]); setTimeout(()=>focusHunk(idx+1), 50);
     }));
@@ -3802,7 +3881,7 @@ document.addEventListener('contextmenu', e=>{
 // ── 메모 이동: 화면 위쪽 선을 기준으로 위/아래에서 가장 가까운 표시로 ──
 let jumpCur=null;   // 마지막으로 다녀간 메모 번호(Alt+Q/X 한 칸씩 이동의 기준)
 function jumpMemo(dir){
-  const line=headLine()+6; const hunks=[...document.querySelectorAll('#doc .hunk[data-h]:not(.t-ghost), .page .hunk[data-h]:not(.ghost)')];
+  const line=headLine()+6; const hunks=[...document.querySelectorAll('#doc .hunk[data-h]:not(.t-ghost), .page .hunk[data-h]:not(.ghost)')].filter(el=>!el.classList.contains('fout'));
   const seen=new Set(); const items=[]; hunks.forEach(el=>{ const h=el.dataset.h; if (seen.has(h)) return; seen.add(h); items.push({h, top:el.getBoundingClientRect().top}); });
   if (!items.length){ toast('메모가 없습니다'); return; }
   items.sort((a,b)=>a.top-b.top);   // 문서 위치 순(번호 순이 아니라 글 순서)
@@ -4039,7 +4118,9 @@ function renderEdit(main){
       const src=$('#fOrig').value; if (!src.trim()) return err('원문을 넣어 주세요.');
       d = Object.assign({}, c, base, {type:'text', id, src, marks: (hasMarks?remapMarks(c.marks, c.src||'', src):[]), lockPw, unlockReq, vis:readVis()}); delete d.pdf; delete d.pages; delete d.html;
     }
-    if (snap){ d.versions=[...(c.versions||[]), snap]; delete d._verCache; d.marks=[]; restoreInks(d, '[]'); d.carried=[]; d._ghosts=null; d.note=''; d.noteSegs=[];
+    if (snap){ d.versions=[...(c.versions||[]), snap]; delete d._verCache; restoreInks(d, '[]'); d.carried=[]; d._ghosts=null; d.note=''; d.noteSegs=[];
+      // 자리 없는 메모(문서·쪽 전체)만 새 버전으로 따라간다 — 자리가 없으니 새 도면에서도 그대로 뜻이 통한다(일정·공통 요구 같은 것). 자리 있는 메모는 전처럼 옛 버전에 남는다(2026-10-12).
+      d.marks=(c.marks||[]).filter(m=>m.free).map(m=>{ const x=JSON.parse(JSON.stringify(m)); delete x._editing; delete x._fresh; delete x._snap; x.mid=newMid(); x.mt=Date.now(); x.from=snap.n||((c.versions||[]).length+1); x.fromNo=(c.marks.indexOf(m)+1); return x; });
       if (isPdf(d)){ if (!oldPdf) return err('이전 버전의 PDF 가 메모리에 없습니다. 문서를 다시 열어 주세요'); d._snapPdf={file:snap.pdfFile, b64:oldPdf}; d.ocr=null; d.ocrAt=''; } }
     view = {mode:'case', id:d.id, draft:d, dirty:true, show:'side', newVer:false};
     const btn=$('#doCompare'); const msgEl=$('#editMsg'); msgEl.className='msg'; msgEl.id='saveMsg';
@@ -4055,7 +4136,7 @@ function remapMarks(marks, oldText, newText){
   const overlaps=(a,b)=>used.some(([x,y])=>a<y && b>x);
   const compact=(t)=>{ const map=[]; let out=''; for (let i=0;i<t.length;i++){ if (/\s/.test(t[i])) continue; map.push(i); out+=t[i]; } return {out, map}; };
   const cNew=compact(newText);
-  const out=marks.map(m0=>{ const m=Object.assign({}, m0); if (m.page!=null || m.rects) return m;   // PDF 표시는 그대로
+  const out=marks.map(m0=>{ const m=Object.assign({}, m0); if (m.page!=null || m.rects || m.free) return m;   // PDF 표시는 그대로
     const t=m.text || (m.start>=0 ? oldText.slice(m.start, m.end) : ''); if (!t){ m.lost=true; m.start=m.end=-1; lost++; return m; }
     const before=oldText.slice(Math.max(0,m.start-CTX), m.start), after=oldText.slice(m.end, m.end+CTX);
     let cands=[]; let i=newText.indexOf(t); while (i>=0){ cands.push([i, i+t.length]); i=newText.indexOf(t, i+1); }
