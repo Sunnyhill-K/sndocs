@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T16:06:31+09:00">
+<meta name="build" content="2026-10-12T16:35:28+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -131,6 +131,7 @@ a{color:var(--ins)}
 .macts .sp{flex:1} .rl.st.on{color:var(--ink);font-weight:700;text-decoration:underline}
 .notes-title .nfl{display:inline-flex;gap:3px;margin-left:4px} .notes-title .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)} .notes-title .tb.danger{color:var(--del);border-color:var(--del-line)} .notes-title .tb.danger:hover{background:var(--del-bg)}
 .note .ft{font-weight:700;line-height:1.4;margin:-5px 0 5px;font-family:var(--sans)} .note input.ftitle{display:block;width:100%;box-sizing:border-box;margin:-4px 0 6px;font:inherit;font-size:calc(13.5px * var(--ui,1));font-weight:700;border:1px solid var(--rule);border-radius:4px;padding:4px 7px;background:var(--paper-2);color:var(--ink)} .note input.ftitle:focus{border-color:var(--focus);outline:none}
+.marks .mbox.area:not(.ghost){pointer-events:auto;cursor:move} body.draw-mode .marks .mbox.area:not(.ghost),body.placing .marks .mbox.area:not(.ghost){pointer-events:none}   /* 영역 메모 상자는 손잡이: 안을 끌면 옮기고 누르면 메모로. 글자 메모 상자는 통과(글자 선택 자리) */
 .marks .mh{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border:1.5px solid #C4342D;background:#fff;border-radius:2px;box-sizing:border-box;pointer-events:auto;z-index:5;opacity:0;transition:opacity .12s;touch-action:none} .marks .mh.nw,.marks .mh.se{cursor:nwse-resize} .marks .mh.ne,.marks .mh.sw{cursor:nesw-resize} .marks .mh.ne{margin-top:7px}   /* 오른쪽 위 손잡이는 번호 딱지 자리라 살짝 아래로 — 딱지(옮기기)와 겹치지 않게 */ .marks .mh.show,.marks .mh.hot,.marks .mh:hover,body.area-mode .marks .mh,body.mhdrag .marks .mh{opacity:1} .marks .mh.fout{display:none} body.mhdrag .marks .mbox{transition:none}
 body.placing .page{cursor:crosshair} body.mkdrag,body.mkdrag .page,body.mkdrag .marks .mk{cursor:grabbing} .marks .mk.dragging{pointer-events:none;opacity:.85} .marks .mbox.dragging{opacity:.7;transition:none}
 .ask .fr label{display:block;font-size:12.5px;color:var(--ink-3);margin:8px 0 3px} .ask .fr input{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:4px;padding:6px 8px;background:var(--paper-2);color:var(--ink)} .ask .fr input:focus{border-color:var(--focus);outline:none} .ask .fr .cnt{margin:8px 0 4px;min-height:1.4em;font-size:12.5px;color:var(--ink-2)} .ask .box.wide{max-width:640px} .ask .row.pick{flex-wrap:wrap} .ask textarea.bulk{display:block;width:100%;box-sizing:border-box;font:13px/1.5 var(--mono);border:1px solid var(--rule);border-radius:4px;padding:8px;background:var(--paper-2);color:var(--ink);margin:0 0 10px;resize:vertical} .ask textarea.bulk:focus{border-color:var(--focus);outline:none} .ask .dim{color:var(--ink-3);font-size:12.5px} .ask code{background:var(--paper-3);padding:0 4px;border-radius:3px}
@@ -872,7 +873,7 @@ function renderHelp(main){
   <li>메모마다 「반영됨」「보류」를 눌러 상태를 남기고, 메모 목록 위의 「전부 · 남은 것 · 반영됨 · 보류」로 거릅니다(도면 위 상자도 같이 숨습니다). 이슈 기록처럼 쓰는 문서용이고, 한 번도 안 쓴 문서에는 아무것도 나타나지 않습니다.</li>
   <li>옛 버전을 보는 중에도 편집자는 그 버전의 메모를 지울 수 있습니다(카드의 「삭제」, 목록 위의 「이 버전 메모 모두 지우기」). 옛 버전은 되돌리기 기록이 없어 묻고 나서 바로 저장합니다.</li>
   <li>도구줄의 「찾아 바꾸기」(메모 복사 오른쪽 · Ctrl+H)는 메모 제목·내용·답글·총평에서 글을 한꺼번에 바꿉니다(카톡 이름을 공식 이름으로 고칠 때 등). 원문은 바꾸지 않고, 바꾼 뒤 저장해야 남습니다. 글자 인식·여백 잘라내기·링크 복사는 제목 줄(「정보 수정」 오른쪽)에 있습니다.</li>
-  <li>메모의 번호 딱지를 끌면 그 메모의 상자가 옮겨집니다(영역 메모든 글자를 잡은 메모든, 다른 쪽 위에 놓으면 그 쪽으로). 누르기만 하면 전처럼 메모로 갑니다. 영역 메모는 딱지나 카드에 마우스를 대면 네 모서리에 손잡이가 떠서 끌면 크기가 바뀝니다(폰은 「영역 선택」을 켜면 늘 보입니다). 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
+  <li>영역 메모는 상자 안을 끌면 옮겨지고(다른 쪽 위에 놓으면 그 쪽으로), 누르기만 하면 그 메모로 갑니다. 상자나 카드에 마우스를 대면 네 모서리에 손잡이가 떠서 끌면 크기가 바뀝니다(폰은 「영역 선택」을 켜면 늘 보이고, 손가락으로 끕니다). 글자를 잡은 메모는 번호 딱지를 끌어 옮깁니다. 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
   <li>메모가 있는 문서의 본문을 고쳐 저장하면 메모를 새 글의 같은 구절로 다시 맞춥니다. 구절이 사라진 메모는 「자리 잃음」으로 남습니다.</li>
@@ -2205,8 +2206,9 @@ function mkDragEnd(e, commit){ const d=mkDrag; if (!d) return; mkDrag=null; docu
   sortMarks(c); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); const ni=c.marks.indexOf(m); setTimeout(()=>{ hot(ni+1, true); setTimeout(()=>hot(ni+1, false), 1200); }, 60); }
 document.addEventListener('pointerdown', e=>{
   if (e.button!==0 || e.isPrimary===false || drawMode || cropUI || view.mode!=='case' || !editable() || placing) return;
-  const k=e.target.closest && e.target.closest('.page .marks .mk:not(.ghost)'); if (!k) return;
+  const k=e.target.closest && e.target.closest('.page .marks .mk:not(.ghost), .page .marks .mbox.area:not(.ghost)'); if (!k) return;
   const c=view.draft||cases.find(x=>x.id===view.id); if (!c || !isPdf(c)) return; const h=+k.dataset.h; const m=c.marks[h-1]; if (!m || m.free || (m.ink&&m.ink.length) || !m.rects || !m.rects.length) return;
+  if (k.classList.contains('mbox')){ if (!m.area) return; e.stopPropagation(); }   // 상자 안에서 시작: 새 영역 네모·글자 선택으로 새지 않게
   const pageEl=k.closest('.page'); const pr=pgRect(pageEl); if (!pr.width) return;
   mkDrag={c, h, k, pageEl, id:e.pointerId, x0:e.clientX, y0:e.clientY, gx:e.clientX-(pr.left+m.rects[0][0]*pr.width), gy:e.clientY-(pr.top+m.rects[0][1]*pr.height), go:false};
 }, true);
@@ -2869,6 +2871,7 @@ function drawMarks(c, p){
       const d=document.createElement('div'); d.className=`mbox ${m.kind} hunk${m.area?' area':''}${ia?' inkbox':''}${ex}`; d.dataset.h=h;
       d.style.left=(r[0]*100)+'%'; d.style.top=(r[1]*100)+'%'; d.style.width=(r[2]*100)+'%'; d.style.height=(r[3]*100)+'%';
       el.appendChild(d);
+      if (m.area && !ia && editable()){ d.addEventListener('mouseenter', ()=>mhShow(el, h, true)); d.addEventListener('mouseleave', ()=>mhShow(el, h, false)); d.addEventListener('click', ()=>{ if (isMob() || Date.now()-mkDragAt<400) return; focusHunk(h); }); d.title='끌면 옮김 · 누르면 메모로 · 모서리 손잡이로 크기'; }
       if (ri===0){ const k=document.createElement('span'); k.className=`mk ${m.kind}${ex}`; k.dataset.h=h; k.textContent=h;
         k.style.left=((ia?ia[0]:r[0]+r[2])*100)+'%'; k.style.top=((ia?ia[1]:r[1])*100)+'%'; if (editable() && !ia && !m.free) k.title='누르면 메모로 · 끌면 옮김(다른 쪽으로도)'+(m.area?' · 모서리 손잡이로 크기':''); k.addEventListener('click', ()=>{ if (Date.now()-mkDragAt<400) return; focusHunk(h); }); el.appendChild(k);
         if (m.area && !ia && m.rects.length===1 && editable()){ ['nw','ne','sw','se'].forEach(cn=>{ const hd=document.createElement('span'); hd.className='mh '+cn+ex; hd.dataset.h=h; hd.dataset.cn=cn; mhPlace(hd, r); el.appendChild(hd); });   // 크기 조절 손잡이 — 딱지나 카드에 마우스를 대면 보인다
