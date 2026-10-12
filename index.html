@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T13:13:55+09:00">
+<meta name="build" content="2026-10-12T13:54:37+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2097,10 +2097,12 @@ function parseBulk(c, raw){ const out=[], bad=[]; raw.replace(/\r/g,'').split(/\
     const tag=m[1].trim(), title=m[2].trim(), body=lines.slice(1).join('\n').trim();
     if (tag==='총평'){ out.push({note:[title, body].filter(Boolean).join('\n')}); return; }
     if (tag==='전체' || tag==='문서'){ out.push({page:0, title, body}); return; }
-    const pm=/^(\d+)\s*쪽$/.exec(tag); if (pm && isPdf(c) && +pm[1]>=1 && +pm[1]<=(c.pages||0)) out.push({page:+pm[1], title, body}); else bad.push(lines[0].slice(0,24)); });
+    const pm=/^(\d+)\s*쪽(?:\s*@\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+))?$/.exec(tag); if (!(pm && isPdf(c) && +pm[1]>=1 && +pm[1]<=(c.pages||0))){ bad.push(lines[0].slice(0,24)); return; }
+    const o={page:+pm[1], title, body}; if (pm[2]!=null){ const r=[+pm[2],+pm[3],+pm[4],+pm[5]]; if (r.every(v=>v>=0 && v<=1) && r[2]>0 && r[3]>0 && r[0]+r[2]<=1.0001 && r[1]+r[3]<=1.0001) o.rect=r.map(v=>+v.toFixed(4)); else { bad.push(lines[0].slice(0,24)); return; } }   // [2쪽 @왼쪽,위,폭,높이] = 쪽 대비 0-1 비율의 네모 자리까지
+    out.push(o); });
   return {out, bad}; }
 function bulkPaste(c){ if (!editable()) return; const ov=document.createElement('div'); ov.className='ask';
-  ov.innerHTML=`<div class="box wide" role="dialog" aria-modal="true"><p><b>메모 묶음 붙여 넣기</b><br><span class="dim">빈 줄로 나눈 덩어리마다 메모 한 건이 됩니다. 첫 줄이 자리와 제목: <code>[전체] 제목</code>${isPdf(c)?' · <code>[3쪽] 제목</code>':''} · <code>[총평]</code> 은 총평 칸 끝에 덧붙입니다. 둘째 줄부터가 내용입니다.</span></p><textarea class="bulk" rows="12" placeholder="[전체] 각 층 상수도·퇴수구&#10;층마다 상수도와 퇴수구(로봇청소기용)&#10;&#10;[총평]&#10;10/12 카톡 요약 …"></textarea><div class="row"><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok">넣기</button></div></div>`;
+  ov.innerHTML=`<div class="box wide" role="dialog" aria-modal="true"><p><b>메모 묶음 붙여 넣기</b><br><span class="dim">빈 줄로 나눈 덩어리마다 메모 한 건이 됩니다. 첫 줄이 자리와 제목: <code>[전체] 제목</code>${isPdf(c)?' · <code>[3쪽] 제목</code> · <code>[3쪽 @0.2,0.1,0.3,0.15] 제목</code>(쪽 대비 왼쪽·위·폭·높이 비율로 네모 자리까지)':''} · <code>[총평]</code> 은 총평 칸 끝에 덧붙입니다. 둘째 줄부터가 내용입니다.</span></p><textarea class="bulk" rows="12" placeholder="[전체] 각 층 상수도·퇴수구&#10;층마다 상수도와 퇴수구(로봇청소기용)&#10;&#10;[총평]&#10;10/12 카톡 요약 …"></textarea><div class="row"><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok">넣기</button></div></div>`;
   const ta=ov.querySelector('textarea'), sum=ov.querySelector('.bsum');
   const show=()=>{ const {out, bad}=parseBulk(c, ta.value); const n=out.filter(x=>!x.note).length, k=out.filter(x=>x.note).length; sum.textContent = ta.value.trim() ? `메모 ${fmtN(n)}건${k?' · 총평 '+fmtN(k)+'덩어리':''}${bad.length?' · 못 읽음 '+fmtN(bad.length)+'('+bad[0]+'…)':''}` : ''; };
   ta.addEventListener('input', show);
@@ -2109,7 +2111,7 @@ function bulkPaste(c){ if (!editable()) return; const ov=document.createElement(
   ov.querySelector('[data-v="ok"]').addEventListener('click', ()=>{ const {out, bad}=parseBulk(c, ta.value); const memos=out.filter(x=>!x.note), notes=out.filter(x=>x.note);
     if (!memos.length && !notes.length){ toast(bad.length ? '첫 줄이 「[전체] 제목」 꼴이 아닙니다: '+bad[0] : '넣을 것이 없습니다'); return; }
     pushHist(c, `메모 묶음 ${fmtN(memos.length)}건 붙여 넣기`); const now=Date.now();
-    memos.forEach((x,j)=>c.marks.push(newFreeMark(c, x.page, x.title, x.body, now+j))); sortMarks(c);
+    memos.forEach((x,j)=>{ const m=newFreeMark(c, x.page, x.title, x.body, now+j); if (x.rect){ delete m.free; m.area=true; m.rects=[x.rect]; } c.marks.push(m); }); sortMarks(c);
     if (notes.length){ const bef=c.note||''; const aft=(bef?bef+'\n\n':'')+notes.map(x=>x.note).join('\n\n'); c.noteSegs=updSegs(c.noteSegs, bef, aft, (me && c.owner && c.owner!==me.id) ? me.name : null, me ? me.id : ''); c.note=aft; c.noteMt=Date.now();
       const na=$('#noteAll'); if (na){ na.value=aft; const f=na.closest('.fld'); const nf=f && f.querySelector('.md'); if (nf) nf.innerHTML=md(aft, c.noteSegs); } }
     view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); done();
