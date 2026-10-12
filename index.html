@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T15:29:23+09:00">
+<meta name="build" content="2026-10-12T15:41:29+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -2129,21 +2129,23 @@ async function deleteVerMarks(idx){ const base=cases.find(x=>x.id===view.id); if
   const nv=roVer; await saveDoc(base, null);
   if (view.ver===nv) render(); }   // saveDoc 은 현재 버전 기준으로 화면을 손보므로, 옛 버전 화면은 통째로 다시 그린다
 // 찾아 바꾸기: 메모 제목(자리 없는 메모)·내용·바꿀 문장·답글·총평에서 글을 한꺼번에 바꾼다. 카톡 이름을 공식 이름으로 고칠 때 등. 본문(원문)은 건드리지 않는다
-function countRep(c, a){ if (!a) return {n:0, memos:0, note:0}; const cnt=t=>t ? t.split(a).length-1 : 0; let n=0, memos=0;
+// 찾을 말을 정규식으로: 「…」과 「...」은 서로 같은 것으로 본다(카톡 이름 끝의 말줄임표가 어느 쪽인지 눈으로는 모른다). 그 밖의 글자는 그대로(정규식 아님)
+function repRegex(a){ const esc=t=>t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); return new RegExp(a.split(/\u2026|\.\.\./).map(esc).join('(?:\u2026|\\.\\.\\.)'), 'g'); }
+function countRep(c, a){ if (!a) return {n:0, memos:0, note:0}; const re=repRegex(a); const cnt=t=>t ? (t.match(re)||[]).length : 0; let n=0, memos=0;
   (c.marks||[]).forEach(m=>{ const k=(m.free?cnt(m.text):0)+cnt(m.reason)+cnt(m.after)+(m.replies||[]).reduce((s,r)=>s+cnt(r.t), 0); if (k){ n+=k; memos++; } });
   const note=cnt(c.note); return {n:n+note, memos, note}; }
-function applyRep(c, a, b){ const rep=t=>t.split(a).join(b); let n=0; const now=Date.now(); const uid=me?me.id:'';
+function applyRep(c, a, b){ const re=repRegex(a); const has=t=>!!t && t.search(re)>=0; const cnt=t=>(t.match(re)||[]).length; const rep=t=>t.replace(re, ()=>b); let n=0; const now=Date.now(); const uid=me?me.id:'';
   (c.marks||[]).forEach(m=>{ let ch=false;
-    if (m.free && m.text && m.text.includes(a)){ n+=m.text.split(a).length-1; m.text=rep(m.text); ch=true; }
-    if (m.reason && m.reason.includes(a)){ n+=m.reason.split(a).length-1; const nv=rep(m.reason); m.segs=updSegs(m.segs||null, m.reason, nv, null, uid); m.reason=nv; ch=true; }
-    if (m.after && m.after.includes(a)){ n+=m.after.split(a).length-1; m.after=rep(m.after); ch=true; }
-    (m.replies||[]).forEach(r=>{ if (r.t && r.t.includes(a)){ n+=r.t.split(a).length-1; r.t=rep(r.t); ch=true; } });
+    if (m.free && has(m.text)){ n+=cnt(m.text); m.text=rep(m.text); ch=true; }
+    if (has(m.reason)){ n+=cnt(m.reason); const nv=rep(m.reason); m.segs=updSegs(m.segs||null, m.reason, nv, null, uid); m.reason=nv; ch=true; }
+    if (has(m.after)){ n+=cnt(m.after); m.after=rep(m.after); ch=true; }
+    (m.replies||[]).forEach(r=>{ if (has(r.t)){ n+=cnt(r.t); r.t=rep(r.t); ch=true; } });
     if (ch) m.mt=now; });
-  if (c.note && c.note.includes(a)){ n+=c.note.split(a).length-1; const nv=rep(c.note); c.noteSegs=updSegs(c.noteSegs, c.note, nv, null, uid); c.note=nv; c.noteMt=now;
+  if (has(c.note)){ n+=cnt(c.note); const nv=rep(c.note); c.noteSegs=updSegs(c.noteSegs, c.note, nv, null, uid); c.note=nv; c.noteMt=now;
     const na=$('#noteAll'); if (na){ na.value=nv; const f=na.closest('.fld'); const nf=f && f.querySelector('.md'); if (nf) nf.innerHTML=md(nv, c.noteSegs); } }
   return n; }
 function findReplace(c){ if (!editable()) return; const ov=document.createElement('div'); ov.className='ask';
-  ov.innerHTML=`<div class="box" role="dialog" aria-modal="true"><p><b>찾아 바꾸기</b><br><span class="dim">메모 제목·내용·바꿀 문장·답글·총평에서 찾습니다. 원문(본문)은 바꾸지 않습니다.</span></p><div class="fr"><label>찾을 말</label><input class="fa" autocomplete="off"><label>바꿀 말</label><input class="fb" autocomplete="off"><div class="cnt"></div></div><div class="row"><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok" disabled>모두 바꾸기</button></div></div>`;
+  ov.innerHTML=`<div class="box" role="dialog" aria-modal="true"><p><b>찾아 바꾸기</b><br><span class="dim">메모 제목·내용·바꿀 문장·답글·총평에서 찾습니다. 원문(본문)은 바꾸지 않습니다. 「…」과 「...」은 같은 것으로 찾습니다.</span></p><div class="fr"><label>찾을 말</label><input class="fa" autocomplete="off"><label>바꿀 말</label><input class="fb" autocomplete="off"><div class="cnt"></div></div><div class="row"><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok" disabled>모두 바꾸기</button></div></div>`;
   const fa=ov.querySelector('.fa'), fb=ov.querySelector('.fb'), cnt=ov.querySelector('.cnt'), ok=ov.querySelector('[data-v="ok"]');
   const show=()=>{ const a=fa.value; const r=countRep(c, a); cnt.textContent = !a ? '' : (r.n ? `${fmtN(r.n)}곳 — 메모 ${fmtN(r.memos)}건${r.note?' · 총평 '+fmtN(r.note)+'곳':''}` : '찾은 곳이 없습니다'); ok.disabled=!(a && r.n && fb.value!==a); };
   fa.addEventListener('input', show); fb.addEventListener('input', show);
