@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T12:33:45+09:00">
+<meta name="build" content="2026-10-13T12:39:58+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1233,13 +1233,15 @@ function exportCssPrint(){
 body.lay-full .page,body.lay-side .page{--resv:0mm;--slack:6mm}
 .xhead{margin:0 0 2mm}.xhead h1{display:inline;font-size:15px;margin:0}.xhead h1::after{content:" · "}.xmeta{display:inline;font-size:11px}
 .xhead + .xpage .page{--hd:16mm}
-.xn{border:1px solid #e3e3e3;border-left-width:3px}}
+.xn{border:1px solid #e3e3e3;border-left-width:3px}
+.marks .mbox,.marks .mk{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 @page{margin:12mm}
 `;
 }
 // 쪽 하나가 종이 한 장을 넘지 않게: 인쇄 땐 100vh 가 종이 안쪽 높이라, 거기서 여유 18mm · 그 쪽 메모 자리(--res) · 머리글(--hd) 을 뺀 높이 × 가로세로비(--ar) 를 너비 상한으로 둔다.
 // 메모 자리(도구줄 고르기, redpen.xlay → body.lay-side / body.lay-full): side=쪽 오른쪽에 겹쳐서(기본) · below=쪽 아래(쪽을 줄여 메모 한두 건을 같은 장에) · full=쪽 아래(쪽은 꽉, 메모는 다음 장). side·full 은 메모 자리를 안 남기고 여유만 6mm. --res 는 인라인이라 class 로 못 덮어 --resv 를 한 번 거친다.
 // 인쇄 머리글은 한 줄(≈8mm, 길면 두 줄)로 줄여 첫 장 쪽도 거의 꽉 차게 — --hd 16mm
+// 표시 상자·번호 딱지는 print-color-adjust:exact — 크롬 「배경 그래픽」이 꺼진 기본 인쇄에서 그라데이션 배경 상자가 투명이 아니라 흰색으로 찍혀 밑의 글자를 지웠다(쑤닐님 캡처 ① 자리 빈 줄, 2026-10-13)
 // 세로 쪽을 종이 너비에 맞추면 한 장보다 길어져 break-inside:avoid 가 쪽을 다음 장으로 밀고(첫 장이 머리글만 남고 빈다) 거기서도 잘렸다(쑤닐님 2026-10-13)
 // PDF 쪽을 그림(JPEG)으로 다시 찍는다 — 화면에 아직 안 그린 쪽도 전부
 async function exportPdfPages(onProg){
