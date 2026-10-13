@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T11:09:39+09:00">
+<meta name="build" content="2026-10-13T12:06:53+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1201,7 +1201,7 @@ function exportCss(){
 function exportCssBase(){
   return `:root{--ui:1;--z:1;--pz:1;--rep:#B8860B;--rep-bg:#FBF1CF;--rep-line:#E1C468;--paper:#FAFAF7;--paper-2:#F1F2ED;--paper-3:#E6E8E1;--ink:#1F2430;--ink-2:#5B6270;--ink-3:#8A909B;--rule:#C3D6CA;--rule-strong:#5E8F72;--del:#C4342D;--del-bg:#FBE9E7;--del-line:#E39A95;--ins:#2D5BB9;--ins-bg:#E7EEFB;--ins-line:#9DB6EA;--memo:#2E7D4F;--memo-bg:#E4F1E8;--serif:"Noto Serif KR",AppleMyungjo,"Nanum Myeongjo",Batang,serif;--sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--mono:"IBM Plex Mono",Consolas,monospace}
 body{margin:0;background:#EEF0EA;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6}
-.xbar{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:8px 16px;background:#1F2430;color:#FAFAF7;z-index:10;font-size:14px}.xbar .sp{flex:1}.xbar button{font:inherit;padding:5px 12px;border:1px solid #FAFAF7;background:transparent;color:#FAFAF7;border-radius:4px;cursor:pointer}.xbar button:hover{background:#FAFAF7;color:#1F2430}
+.xbar{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:8px 16px;background:#1F2430;color:#FAFAF7;z-index:10;font-size:14px}.xbar .sp{flex:1}.xbar button{font:inherit;padding:5px 12px;border:1px solid #FAFAF7;background:transparent;color:#FAFAF7;border-radius:4px;cursor:pointer}.xbar button:hover{background:#FAFAF7;color:#1F2430}.xbar .xopt{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;user-select:none;white-space:nowrap}.xbar .xopt small{opacity:.75;font-size:12px}.xbar .xopt input{margin:0}
 .xhead{max-width:960px;margin:22px auto 12px;padding:0 20px}.xhead h1{font-size:22px;margin:0 0 4px}.xmeta{color:var(--ink-2);font-size:13px}
 .xpage{max-width:960px;margin:0 auto 26px;padding:0 20px}
 .page{margin:0 0 12px;break-inside:avoid}.page img{display:block;width:100%;height:auto}
@@ -1223,13 +1223,15 @@ a.mk{cursor:pointer}.mk.tipon{background:var(--del);color:#fff}.mk.memo.tipon{ba
 // 인쇄 규칙 — 앱 CSS 뒤에 붙여야 .page{width:100%} 같은 화면 규칙에 덮이지 않는다
 function exportCssPrint(){
   return `@media print{.no-print{display:none}.xtip{display:none}body{background:#fff}.xpage,.xhead,.xoverall{padding:0}
-.page{width:min(100%,calc((100vh - 18mm - var(--res,0mm) - var(--hd,0mm)) * var(--ar,1)));margin:0 auto 12px;box-shadow:none;border:1px solid #ddd}
+.page{--resv:var(--res,0mm);width:min(100%,calc((100vh - var(--slack,18mm) - var(--resv,0mm) - var(--hd,0mm)) * var(--ar,1)));margin:0 auto 12px;box-shadow:none;border:1px solid #ddd}
+body.xfull .page{--resv:0mm;--slack:6mm}
 .xhead + .xpage .page{--hd:28mm}
 .xn{border:1px solid #e3e3e3;border-left-width:3px}}
 @page{margin:12mm}
 `;
 }
 // 쪽 하나가 종이 한 장을 넘지 않게: 인쇄 땐 100vh 가 종이 안쪽 높이라, 거기서 여유 18mm · 그 쪽 메모 자리(--res) · 머리글(--hd) 을 뺀 높이 × 가로세로비(--ar) 를 너비 상한으로 둔다.
+// 「쪽을 꽉 채우기」(body.xfull, 기본 켬): 메모 자리를 안 남기고 여유만 6mm — 쪽이 종이에 거의 꽉 차고 그 쪽의 메모는 다음 장으로 간다. --res 는 인라인이라 class 로 못 덮어 --resv 를 한 번 거친다.
 // 세로 쪽을 종이 너비에 맞추면 한 장보다 길어져 break-inside:avoid 가 쪽을 다음 장으로 밀고(첫 장이 머리글만 남고 빈다) 거기서도 잘렸다(쑤닐님 2026-10-13)
 // PDF 쪽을 그림(JPEG)으로 다시 찍는다 — 화면에 아직 안 그린 쪽도 전부
 async function exportPdfPages(onProg){
@@ -1284,10 +1286,12 @@ async function exportDoc(c){
     const fname=((c.title||'퇴고').replace(/[\\/:*?"<>|]/g,'_'))+' 퇴고메모.html';
     const typeName=isPdf(c)?'PDF':(c.type==='word'?'Word':(isHtmlDoc(c)?'HTML':'텍스트'));
     const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}${exportCssPrint()}</style></head><body>
-<div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span><button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
+<div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span>${isPdf(c)?`<label class="xopt" title="끄면 쪽을 줄여 그 쪽의 메모 한두 건을 같은 장에 둡니다"><input type="checkbox" id="xfull" checked> 인쇄 때 쪽을 꽉 채우기 <small>(메모는 다음 장)</small></label>`:''}<button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
 <header class="xhead"><h1>${esc(c.title||'')}</h1><div class="xmeta">${c.client?esc(c.client)+' · ':''}${typeName} · 저장 ${esc(fmtWhen(c))} · 메모 ${fmtN(c.marks.length)}곳 (삭제 ${fmtN(n('del'))} · 바꾸기 ${fmtN(n('rep'))} · 메모만 ${fmtN(n('memo'))}) · <span class="xbrand"><svg class="mark" style="vertical-align:-3px" width="16" height="16" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 3.5v5h5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 13h8M9 17h8" stroke="#8A909B" stroke-width="1.5" stroke-linecap="round"/><path d="M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0" stroke="#C4342D" stroke-width="1.8" stroke-linecap="round"/></svg> SN Docs (Beta)</span>에서 내보냄</div></header>
 ${body}
 <script>document.getElementById('dl').addEventListener('click',function(){var t=document.querySelector('.xtip');if(t)t.remove();var b=new Blob(['<!doctype html>'+document.documentElement.outerHTML],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=this.dataset.fn;document.body.appendChild(a);a.click();a.remove();});
+(function(){ var cb=document.getElementById('xfull'); if (!cb) return; var v=null; try { v=localStorage.getItem('redpen.xfull'); } catch(e){} if (v==='0') cb.checked=false; document.body.classList.toggle('xfull', cb.checked);
+  cb.addEventListener('change', function(){ document.body.classList.toggle('xfull', cb.checked); try { localStorage.setItem('redpen.xfull', cb.checked?'1':'0'); } catch(e){} }); })();
 // 번호 딱지에 마우스를 올리면 그 메모가 팝업으로 뜬다(나무위키 각주처럼). 딱지를 누르면 아래 메모로, 메모의 ↩ 본문을 누르면 되돌아온다
 (function(){ var tip=null, cur=null, hideT=null;
   function hide(){ if (tip){ tip.remove(); tip=null; } if (cur){ cur.classList.remove('tipon'); cur=null; } }
