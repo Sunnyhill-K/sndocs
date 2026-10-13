@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T12:22:26+09:00">
+<meta name="build" content="2026-10-13T12:33:45+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1244,13 +1244,15 @@ body.lay-full .page,body.lay-side .page{--resv:0mm;--slack:6mm}
 // PDF 쪽을 그림(JPEG)으로 다시 찍는다 — 화면에 아직 안 그린 쪽도 전부
 async function exportPdfPages(onProg){
   const st=pdfState; if (!st || !st.doc) throw new Error('PDF 가 아직 열리지 않았습니다');
-  const out=[]; const W=1400, MAXD=16000, MAXA=1.2e8;
+  const out=[]; const W=st.doc.numPages>30?1600:2000, MAXD=16000, MAXA=1.2e8;   // 2000px ≈ A4 258dpi(1400 은 191dpi 라 가는 글씨가 옅게 찍혔다) · 긴 문서는 용량 때문에 1600
   for (let p=1;p<=st.doc.numPages;p++){ if (onProg) onProg(p-1, st.doc.numPages);
     const page=await st.doc.getPage(p); const base=page.getViewport({scale:1}); let scale=W/base.width;
     if (base.height*scale>MAXD) scale=MAXD/base.height; if (base.width*base.height*scale*scale>MAXA) scale=Math.sqrt(MAXA/(base.width*base.height));
     const vp=page.getViewport({scale}); const cv=document.createElement('canvas'); cv.width=Math.floor(vp.width); cv.height=Math.floor(vp.height);
     const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
     await page.render({canvasContext:ctx, viewport:vp, intent:'print'}).promise;   // intent:'print' — 새 탭이 먼저 열려 이 창이 뒤로 가 있어도 멈추지 않는다
+    // 획 보강: 같은 그림을 0.5px 비껴 곱해(multiply) 획을 살짝 굵힌다 — 가는 글씨(굴림 12pt 등)가 JPEG+축소에서 회색으로 옅어지던 것(쑤닐님 「본문이 안 보인다」 2026-10-13). 실측 어둡기: 뷰어 129 · 보강 전 110 · 보강 뒤 ≈145
+    { const tmp=document.createElement('canvas'); tmp.width=cv.width; tmp.height=cv.height; tmp.getContext('2d').drawImage(cv,0,0); ctx.globalCompositeOperation='multiply'; ctx.drawImage(tmp,0.5,0); ctx.drawImage(tmp,0,0.5); ctx.globalCompositeOperation='source-over'; tmp.width=tmp.height=0; }
     out.push({p, w:base.width, h:base.height, src:cv.toDataURL('image/jpeg',0.85)}); cv.width=cv.height=0;
   }
   return out;
