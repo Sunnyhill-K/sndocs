@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T10:57:07+09:00">
+<meta name="build" content="2026-10-13T11:09:39+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1218,10 +1218,19 @@ a.mk{cursor:pointer}.mk.tipon{background:var(--del);color:#fff}.mk.memo.tipon{ba
 :target.xn{outline:2px solid var(--ins-line);outline-offset:2px}
 .xoverall{max-width:960px;margin:0 auto 40px;padding:0 20px}.xoverall h3{margin:0 0 6px;font-size:13px;letter-spacing:.12em;color:var(--ink-3)}.xoverall .xtxt{background:#fff;padding:10px 14px;border-radius:4px}
 .doc.txtdoc{max-width:none;padding:0;background:transparent;border:0;box-shadow:none}.tpage{min-height:0}
-@media print{.no-print{display:none}.xtip{display:none}body{background:#fff}.xpage,.xhead,.xoverall{padding:0}.page{box-shadow:none;border:1px solid #ddd}.xn{border:1px solid #e3e3e3;border-left-width:3px}}
+`;
+}
+// 인쇄 규칙 — 앱 CSS 뒤에 붙여야 .page{width:100%} 같은 화면 규칙에 덮이지 않는다
+function exportCssPrint(){
+  return `@media print{.no-print{display:none}.xtip{display:none}body{background:#fff}.xpage,.xhead,.xoverall{padding:0}
+.page{width:min(100%,calc((100vh - 18mm - var(--res,0mm) - var(--hd,0mm)) * var(--ar,1)));margin:0 auto 12px;box-shadow:none;border:1px solid #ddd}
+.xhead + .xpage .page{--hd:28mm}
+.xn{border:1px solid #e3e3e3;border-left-width:3px}}
 @page{margin:12mm}
 `;
 }
+// 쪽 하나가 종이 한 장을 넘지 않게: 인쇄 땐 100vh 가 종이 안쪽 높이라, 거기서 여유 18mm · 그 쪽 메모 자리(--res) · 머리글(--hd) 을 뺀 높이 × 가로세로비(--ar) 를 너비 상한으로 둔다.
+// 세로 쪽을 종이 너비에 맞추면 한 장보다 길어져 break-inside:avoid 가 쪽을 다음 장으로 밀고(첫 장이 머리글만 남고 빈다) 거기서도 잘렸다(쑤닐님 2026-10-13)
 // PDF 쪽을 그림(JPEG)으로 다시 찍는다 — 화면에 아직 안 그린 쪽도 전부
 async function exportPdfPages(onProg){
   const st=pdfState; if (!st || !st.doc) throw new Error('PDF 가 아직 열리지 않았습니다');
@@ -1258,8 +1267,8 @@ async function exportDoc(c){
     if (isPdf(c)){
       const pages=await exportPdfPages((p,n)=>Prog.set(p/n*0.9, `쪽 그리는 중 ${p}/${n}`));
       const docNotes=c.marks.map((m,i)=>(!m.page)?exportNote(c,m,i):'').join('');   // 문서 전체 메모(자리 없음)는 맨 앞에
-      body=(docNotes?`<section class="xpage"><div class="xnotes"><div class="xsec">문서 전체 메모</div>${docNotes}</div></section>`:'')+pages.map(pg=>{ const notes=c.marks.map((m,i)=>m.page===pg.p?exportNote(c,m,i):'').join('');
-        return `<section class="xpage"><div class="page" style="aspect-ratio:${pg.w} / ${pg.h}"><img src="${pg.src}" alt="${pg.p}쪽">${exportInks(c,pg)}<div class="marks">${exportMarks(c,pg.p)}</div><div class="pno">${pg.p} / ${pages.length}</div></div>${notes?`<div class="xnotes">${notes}</div>`:''}</section>`; }).join('');
+      body=(docNotes?`<section class="xpage"><div class="xnotes"><div class="xsec">문서 전체 메모</div>${docNotes}</div></section>`:'')+pages.map(pg=>{ const nn=c.marks.filter(m=>m.page===pg.p).length; const notes=c.marks.map((m,i)=>m.page===pg.p?exportNote(c,m,i):'').join('');
+        return `<section class="xpage"><div class="page" style="aspect-ratio:${pg.w} / ${pg.h};--ar:${(pg.w/pg.h).toFixed(5)}${nn?`;--res:${Math.min(nn,2)*26}mm`:''}"><img src="${pg.src}" alt="${pg.p}쪽">${exportInks(c,pg)}<div class="marks">${exportMarks(c,pg.p)}</div><div class="pno">${pg.p} / ${pages.length}</div></div>${notes?`<div class="xnotes">${notes}</div>`:''}</section>`; }).join('');
     } else {
       // 임시 틀에 원문을 깔고 표시를 감싼 뒤 그 HTML 을 가져온다(화면이 목록만 보기여도 무관)
       const tmp=document.createElement('div'); tmp.className='doc txtdoc'+(c.type==='word'?' word':'')+(isHtmlDoc(c)?' html':''); tmp.style.cssText='position:absolute;left:-99999px;top:0;width:860px'; tmp.innerHTML=`<div class="${tpageCls(c)}">${baseHtml(c)}</div>`; document.body.appendChild(tmp);
@@ -1274,7 +1283,7 @@ async function exportDoc(c){
     const n=k=>c.marks.filter(m=>m.kind===k).length;
     const fname=((c.title||'퇴고').replace(/[\\/:*?"<>|]/g,'_'))+' 퇴고메모.html';
     const typeName=isPdf(c)?'PDF':(c.type==='word'?'Word':(isHtmlDoc(c)?'HTML':'텍스트'));
-    const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}</style></head><body>
+    const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}${exportCssPrint()}</style></head><body>
 <div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span><button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
 <header class="xhead"><h1>${esc(c.title||'')}</h1><div class="xmeta">${c.client?esc(c.client)+' · ':''}${typeName} · 저장 ${esc(fmtWhen(c))} · 메모 ${fmtN(c.marks.length)}곳 (삭제 ${fmtN(n('del'))} · 바꾸기 ${fmtN(n('rep'))} · 메모만 ${fmtN(n('memo'))}) · <span class="xbrand"><svg class="mark" style="vertical-align:-3px" width="16" height="16" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 3.5v5h5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 13h8M9 17h8" stroke="#8A909B" stroke-width="1.5" stroke-linecap="round"/><path d="M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0" stroke="#C4342D" stroke-width="1.8" stroke-linecap="round"/></svg> SN Docs (Beta)</span>에서 내보냄</div></header>
 ${body}
