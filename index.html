@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T12:39:58+09:00">
+<meta name="build" content="2026-10-13T13:30:31+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1202,10 +1202,10 @@ function exportCssBase(){
   return `:root{--ui:1;--z:1;--pz:1;--rep:#B8860B;--rep-bg:#FBF1CF;--rep-line:#E1C468;--paper:#FAFAF7;--paper-2:#F1F2ED;--paper-3:#E6E8E1;--ink:#1F2430;--ink-2:#5B6270;--ink-3:#8A909B;--rule:#C3D6CA;--rule-strong:#5E8F72;--del:#C4342D;--del-bg:#FBE9E7;--del-line:#E39A95;--ins:#2D5BB9;--ins-bg:#E7EEFB;--ins-line:#9DB6EA;--memo:#2E7D4F;--memo-bg:#E4F1E8;--serif:"Noto Serif KR",AppleMyungjo,"Nanum Myeongjo",Batang,serif;--sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--mono:"IBM Plex Mono",Consolas,monospace}
 body{margin:0;background:#EEF0EA;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6}
 .xbar{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:8px 16px;background:#1F2430;color:#FAFAF7;z-index:10;font-size:14px}.xbar .sp{flex:1}.xbar button{font:inherit;padding:5px 12px;border:1px solid #FAFAF7;background:transparent;color:#FAFAF7;border-radius:4px;cursor:pointer}.xbar button:hover{background:#FAFAF7;color:#1F2430}.xbar .xopt{display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}.xbar .xopt select{font:inherit;font-size:13px;padding:3px 6px;border:1px solid #FAFAF7;background:#1F2430;color:#FAFAF7;border-radius:4px}
-/* 메모를 쪽 오른쪽에 겹쳐서(body.lay-side — 컨테이너 .xside 와 이름이 같으면 body 가 절대 배치돼 쪼그라든다): 카드는 .page 안 .xside 에 절대 배치. 크기·글자를 cqw(쪽 너비 비율)로 잡아 화면·인쇄 어느 너비든 같은 자리에 온다. 배경은 인쇄 때 「배경 그래픽」을 꺼도 찍히게(print-color-adjust) */
+/* 메모를 쪽 오른쪽에 겹쳐서(body.lay-side — 컨테이너 .xside 와 이름이 같으면 body 가 절대 배치돼 쪼그라든다): 카드는 반투명(.68)이라 밑의 원본 글이 옅게 비치고(쑤닐님 「메모 뒤는 옅게라도 원본 글이 뭔지」 2026-10-13), 카드 글자는 흰 테두리(text-shadow)로 밑글과 섞이지 않게. .page 안 .xside 에 절대 배치. 크기·글자를 cqw(쪽 너비 비율)로 잡아 화면·인쇄 어느 너비든 같은 자리에 온다. 배경은 인쇄 때 「배경 그래픽」을 꺼도 찍히게(print-color-adjust) */
 .page{container-type:inline-size}
 .xside{position:absolute;right:1cqw;top:0;width:34cqw;height:100%;z-index:5;pointer-events:none}
-.xside .xn{position:absolute;left:0;right:0;pointer-events:auto;box-sizing:border-box;font-size:1.5cqw;line-height:1.45;padding:.5cqw .9cqw;background:rgba(255,255,255,.95);border:1px solid #d6d6d6;border-left:.4cqw solid var(--del-line);border-radius:0 .5cqw .5cqw 0;box-shadow:0 .3cqw 1cqw rgba(0,0,0,.14);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.xside .xn{position:absolute;left:0;right:0;pointer-events:auto;box-sizing:border-box;font-size:1.5cqw;line-height:1.45;padding:.5cqw .9cqw;background:rgba(255,255,255,.68);text-shadow:0 0 1.5px #fff,0 0 1.5px #fff,0 0 1.5px #fff;border:1px solid #d6d6d6;border-left:.4cqw solid var(--del-line);border-radius:0 .5cqw .5cqw 0;box-shadow:0 .3cqw 1cqw rgba(0,0,0,.14);-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .xside .xn.memo{border-left-color:var(--memo)}.xside .xn.rep{border-left-color:var(--rep-line)}
 .xside .xh{font-size:1.3cqw;gap:.5cqw;margin-bottom:.2cqw}.xside .chip{font-size:1.2cqw;padding:0 .4cqw;line-height:1.5}.xside .xwho{font-size:1.2cqw;padding:0 .4cqw}.xside .xpg{font-size:1.2cqw}.xside .xsrc{font-size:1.4cqw}.xside .xback{display:none}
 .xhead{max-width:960px;margin:22px auto 12px;padding:0 20px}.xhead h1{font-size:22px;margin:0 0 4px}.xmeta{color:var(--ink-2);font-size:13px}
