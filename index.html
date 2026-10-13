@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T12:06:53+09:00">
+<meta name="build" content="2026-10-13T12:22:26+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -859,7 +859,7 @@ function renderHelp(main){
   <tr><td>「서식까지 복사」 (수정본, Word·HTML 유형)</td><td><ul class="cl"><li>구글 문서</li><li>Word</li><li>Gmail</li><li>네이버 편집기</li></ul></td><td><ul class="cl"><li>굵게·색·표가 따라갑니다.</li><li><b>단 붙여 넣는 쪽이 자기 규칙으로 일부를 걷어냅니다</b>(네이버는 글꼴·자간·표 폭, Gmail 은 표 테두리 등)</li><li>붙여 넣은 뒤 한 번 훑어 주세요.</li></ul></td></tr>
   <tr><td>「수정본 복사」 (글자만)</td><td><ul class="cl"><li>슬랙</li><li>메모장</li><li>카톡</li></ul></td><td>삭제·바꾸기를 반영한 본문이 글자로만 들어갑니다.</td></tr>
   <tr><td><ul class="cl"><li>「HTML 복사」</li><li>「HTML 내려받기」</li></ul></td><td><ul class="cl"><li>홈페이지 HTML 편집기</li><li>블로그 HTML 편집기</li></ul></td><td><ul class="cl"><li>HTML 복사: 수정본을 HTML 코드로</li><li>HTML 내려받기: 혼자 열리는 .html 파일로</li></ul></td></tr>
-  <tr><td>「내보내기 ▾ → HTML 로」</td><td>메모까지 봐야 하는 사람(파일로)</td><td><ul class="cl"><li>HTML 한 파일</li><li>번호 딱지에 마우스를 올리면 메모 팝업</li><li>인쇄로 PDF 저장도 됩니다.</li></ul></td></tr>
+  <tr><td>「내보내기 ▾ → HTML 로」</td><td>메모까지 봐야 하는 사람(파일로)</td><td><ul class="cl"><li>HTML 한 파일</li><li>번호 딱지에 마우스를 올리면 메모 팝업</li><li>「메모 자리」를 고릅니다 — 쪽 오른쪽에 겹쳐서(한 장에) · 쪽 아래(쪽을 줄여 같은 장에) · 쪽 아래(쪽은 꽉 · 메모는 다음 장). 문서별로 기억합니다.</li><li>인쇄로 PDF 저장도 됩니다 — 쪽 하나가 종이 한 장을 넘지 않게 맞춥니다.</li></ul></td></tr>
   <tr><td>「내보내기 ▾ → 주석 PDF 로」</td><td>PDF 로 받아 보는 사람</td><td><ul class="cl"><li>표시가 PDF 주석으로, 메모가 팝업으로 들어갑니다(Acrobat·Edge)</li><li>텍스트·Word·HTML 유형은 쪽이 그림이라 PDF 안 글자 선택은 안 됩니다.</li></ul></td></tr>
   <tr><td>「링크 복사」</td><td>계정이 있는 팀원</td><td><ul class="cl"><li>같은 화면을 열어 이어서 메모할 수 있습니다.</li><li>계정 없는 사람은 못 엽니다.</li></ul></td></tr></table>
   <p class="msg">「수정본」은 삭제·바꾸기 표시를 반영한 결과이고, 메모 글은 들어가지 않습니다. 메모까지 전하려면 「내보내기」나 「주석 PDF」를 쓰세요.</p></section>
@@ -1201,7 +1201,13 @@ function exportCss(){
 function exportCssBase(){
   return `:root{--ui:1;--z:1;--pz:1;--rep:#B8860B;--rep-bg:#FBF1CF;--rep-line:#E1C468;--paper:#FAFAF7;--paper-2:#F1F2ED;--paper-3:#E6E8E1;--ink:#1F2430;--ink-2:#5B6270;--ink-3:#8A909B;--rule:#C3D6CA;--rule-strong:#5E8F72;--del:#C4342D;--del-bg:#FBE9E7;--del-line:#E39A95;--ins:#2D5BB9;--ins-bg:#E7EEFB;--ins-line:#9DB6EA;--memo:#2E7D4F;--memo-bg:#E4F1E8;--serif:"Noto Serif KR",AppleMyungjo,"Nanum Myeongjo",Batang,serif;--sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;--mono:"IBM Plex Mono",Consolas,monospace}
 body{margin:0;background:#EEF0EA;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6}
-.xbar{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:8px 16px;background:#1F2430;color:#FAFAF7;z-index:10;font-size:14px}.xbar .sp{flex:1}.xbar button{font:inherit;padding:5px 12px;border:1px solid #FAFAF7;background:transparent;color:#FAFAF7;border-radius:4px;cursor:pointer}.xbar button:hover{background:#FAFAF7;color:#1F2430}.xbar .xopt{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;user-select:none;white-space:nowrap}.xbar .xopt small{opacity:.75;font-size:12px}.xbar .xopt input{margin:0}
+.xbar{position:sticky;top:0;display:flex;gap:10px;align-items:center;padding:8px 16px;background:#1F2430;color:#FAFAF7;z-index:10;font-size:14px}.xbar .sp{flex:1}.xbar button{font:inherit;padding:5px 12px;border:1px solid #FAFAF7;background:transparent;color:#FAFAF7;border-radius:4px;cursor:pointer}.xbar button:hover{background:#FAFAF7;color:#1F2430}.xbar .xopt{display:flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap}.xbar .xopt select{font:inherit;font-size:13px;padding:3px 6px;border:1px solid #FAFAF7;background:#1F2430;color:#FAFAF7;border-radius:4px}
+/* 메모를 쪽 오른쪽에 겹쳐서(body.lay-side — 컨테이너 .xside 와 이름이 같으면 body 가 절대 배치돼 쪼그라든다): 카드는 .page 안 .xside 에 절대 배치. 크기·글자를 cqw(쪽 너비 비율)로 잡아 화면·인쇄 어느 너비든 같은 자리에 온다. 배경은 인쇄 때 「배경 그래픽」을 꺼도 찍히게(print-color-adjust) */
+.page{container-type:inline-size}
+.xside{position:absolute;right:1cqw;top:0;width:34cqw;height:100%;z-index:5;pointer-events:none}
+.xside .xn{position:absolute;left:0;right:0;pointer-events:auto;box-sizing:border-box;font-size:1.5cqw;line-height:1.45;padding:.5cqw .9cqw;background:rgba(255,255,255,.95);border:1px solid #d6d6d6;border-left:.4cqw solid var(--del-line);border-radius:0 .5cqw .5cqw 0;box-shadow:0 .3cqw 1cqw rgba(0,0,0,.14);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.xside .xn.memo{border-left-color:var(--memo)}.xside .xn.rep{border-left-color:var(--rep-line)}
+.xside .xh{font-size:1.3cqw;gap:.5cqw;margin-bottom:.2cqw}.xside .chip{font-size:1.2cqw;padding:0 .4cqw;line-height:1.5}.xside .xwho{font-size:1.2cqw;padding:0 .4cqw}.xside .xpg{font-size:1.2cqw}.xside .xsrc{font-size:1.4cqw}.xside .xback{display:none}
 .xhead{max-width:960px;margin:22px auto 12px;padding:0 20px}.xhead h1{font-size:22px;margin:0 0 4px}.xmeta{color:var(--ink-2);font-size:13px}
 .xpage{max-width:960px;margin:0 auto 26px;padding:0 20px}
 .page{margin:0 0 12px;break-inside:avoid}.page img{display:block;width:100%;height:auto}
@@ -1224,14 +1230,16 @@ a.mk{cursor:pointer}.mk.tipon{background:var(--del);color:#fff}.mk.memo.tipon{ba
 function exportCssPrint(){
   return `@media print{.no-print{display:none}.xtip{display:none}body{background:#fff}.xpage,.xhead,.xoverall{padding:0}
 .page{--resv:var(--res,0mm);width:min(100%,calc((100vh - var(--slack,18mm) - var(--resv,0mm) - var(--hd,0mm)) * var(--ar,1)));margin:0 auto 12px;box-shadow:none;border:1px solid #ddd}
-body.xfull .page{--resv:0mm;--slack:6mm}
-.xhead + .xpage .page{--hd:28mm}
+body.lay-full .page,body.lay-side .page{--resv:0mm;--slack:6mm}
+.xhead{margin:0 0 2mm}.xhead h1{display:inline;font-size:15px;margin:0}.xhead h1::after{content:" · "}.xmeta{display:inline;font-size:11px}
+.xhead + .xpage .page{--hd:16mm}
 .xn{border:1px solid #e3e3e3;border-left-width:3px}}
 @page{margin:12mm}
 `;
 }
 // 쪽 하나가 종이 한 장을 넘지 않게: 인쇄 땐 100vh 가 종이 안쪽 높이라, 거기서 여유 18mm · 그 쪽 메모 자리(--res) · 머리글(--hd) 을 뺀 높이 × 가로세로비(--ar) 를 너비 상한으로 둔다.
-// 「쪽을 꽉 채우기」(body.xfull, 기본 켬): 메모 자리를 안 남기고 여유만 6mm — 쪽이 종이에 거의 꽉 차고 그 쪽의 메모는 다음 장으로 간다. --res 는 인라인이라 class 로 못 덮어 --resv 를 한 번 거친다.
+// 메모 자리(도구줄 고르기, redpen.xlay → body.lay-side / body.lay-full): side=쪽 오른쪽에 겹쳐서(기본) · below=쪽 아래(쪽을 줄여 메모 한두 건을 같은 장에) · full=쪽 아래(쪽은 꽉, 메모는 다음 장). side·full 은 메모 자리를 안 남기고 여유만 6mm. --res 는 인라인이라 class 로 못 덮어 --resv 를 한 번 거친다.
+// 인쇄 머리글은 한 줄(≈8mm, 길면 두 줄)로 줄여 첫 장 쪽도 거의 꽉 차게 — --hd 16mm
 // 세로 쪽을 종이 너비에 맞추면 한 장보다 길어져 break-inside:avoid 가 쪽을 다음 장으로 밀고(첫 장이 머리글만 남고 빈다) 거기서도 잘렸다(쑤닐님 2026-10-13)
 // PDF 쪽을 그림(JPEG)으로 다시 찍는다 — 화면에 아직 안 그린 쪽도 전부
 async function exportPdfPages(onProg){
@@ -1254,7 +1262,7 @@ function exportMarks(c, p){
 }
 function exportNote(c, m, i){
   const h=i+1; const col=userColor(m.by, m.byId);
-  return `<div class="xn ${m.kind}" id="xn${h}"><div class="xh">${(m.lost||m.free||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip">${STATUS[m.st]}</span>`:''}${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||m.free||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
+  return `<div class="xn ${m.kind}" id="xn${h}" data-y="${(m.rects&&m.rects.length)?Math.min(...m.rects.map(r=>+r[1]||0)).toFixed(4):0}"><div class="xh">${(m.lost||m.free||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip">${STATUS[m.st]}</span>`:''}${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||m.free||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
     + (m.text?`<div class="xsrc">${esc(m.text)}</div>`:'') + (m.kind==='rep'?`<div class="xafter">→ ${esc(m.after||'')}</div>`:'')
     + ((m.reason||'').trim()?`<div class="xtxt">${md(m.reason||'', m.segs)}</div>`:'') + (m.reacts?`<div class="xtxt" style="color:var(--ink-3)">${esc(reactKeys(m.reacts).map(e=>e+' '+m.reacts[e].length).join('  '))}</div>`:'') + ((m.replies||[]).length?`<div class="xreps">${m.replies.map(r=>`<div class="xrep"><b style="color:${userColor(r.by, r.byId)||'inherit'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</b> ${md(r.t||'')}${r.reacts?` <span style="color:var(--ink-3)">${esc(reactSum(r.reacts))}</span>`:''}</div>`).join('')}</div>`:'') + `</div>`;
 }
@@ -1285,13 +1293,29 @@ async function exportDoc(c){
     const n=k=>c.marks.filter(m=>m.kind===k).length;
     const fname=((c.title||'퇴고').replace(/[\\/:*?"<>|]/g,'_'))+' 퇴고메모.html';
     const typeName=isPdf(c)?'PDF':(c.type==='word'?'Word':(isHtmlDoc(c)?'HTML':'텍스트'));
-    const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}${exportCssPrint()}</style></head><body>
-<div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span>${isPdf(c)?`<label class="xopt" title="끄면 쪽을 줄여 그 쪽의 메모 한두 건을 같은 장에 둡니다"><input type="checkbox" id="xfull" checked> 인쇄 때 쪽을 꽉 채우기 <small>(메모는 다음 장)</small></label>`:''}<button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
+    const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}${exportCssPrint()}</style></head><body data-doc="${esc(String(c.id||''))}">
+<div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span>${isPdf(c)?`<label class="xopt">메모 자리 <select id="xlay" title="화면과 인쇄 둘 다에 적용됩니다"><option value="side">쪽 오른쪽에 겹쳐서 (한 장에)</option><option value="below">쪽 아래 (쪽을 줄여 같은 장에)</option><option value="full">쪽 아래 (쪽은 꽉 · 메모는 다음 장)</option></select></label>`:''}<button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
 <header class="xhead"><h1>${esc(c.title||'')}</h1><div class="xmeta">${c.client?esc(c.client)+' · ':''}${typeName} · 저장 ${esc(fmtWhen(c))} · 메모 ${fmtN(c.marks.length)}곳 (삭제 ${fmtN(n('del'))} · 바꾸기 ${fmtN(n('rep'))} · 메모만 ${fmtN(n('memo'))}) · <span class="xbrand"><svg class="mark" style="vertical-align:-3px" width="16" height="16" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 3.5v5h5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 13h8M9 17h8" stroke="#8A909B" stroke-width="1.5" stroke-linecap="round"/><path d="M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0" stroke="#C4342D" stroke-width="1.8" stroke-linecap="round"/></svg> SN Docs (Beta)</span>에서 내보냄</div></header>
 ${body}
 <script>document.getElementById('dl').addEventListener('click',function(){var t=document.querySelector('.xtip');if(t)t.remove();var b=new Blob(['<!doctype html>'+document.documentElement.outerHTML],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=this.dataset.fn;document.body.appendChild(a);a.click();a.remove();});
-(function(){ var cb=document.getElementById('xfull'); if (!cb) return; var v=null; try { v=localStorage.getItem('redpen.xfull'); } catch(e){} if (v==='0') cb.checked=false; document.body.classList.toggle('xfull', cb.checked);
-  cb.addEventListener('change', function(){ document.body.classList.toggle('xfull', cb.checked); try { localStorage.setItem('redpen.xfull', cb.checked?'1':'0'); } catch(e){} }); })();
+// 메모 자리: side 면 카드를 쪽 안 오른쪽(.xside)에 — 세로 자리는 표시의 y(data-y)를 따르되 앞 카드와 겹치면 아래로 밀고, 바닥을 넘치면 위로 당기며, 그래도 안 들어가면 뒷 카드부터 쪽 아래로 보낸다. 자리는 쪽 높이 % 라 인쇄 축소에도 그대로
+(function(){ var sel=document.getElementById('xlay'); if (!sel) return; var KEY='redpen.xlay', DK=KEY+'.'+(document.body.getAttribute('data-doc')||''); var v='side'; try { v=localStorage.getItem(DK)||localStorage.getItem(KEY)||'side'; } catch(e){} if (!/^(side|below|full)$/.test(v)) v='side'; sel.value=v;   // 문서별로 기억, 없으면 마지막에 쓴 것
+  function num(c){ return +c.id.slice(2); }
+  function layout(){ var on=document.body.classList.contains('lay-side');
+    [].slice.call(document.querySelectorAll('.xpage')).forEach(function(sec){ var page=sec.querySelector('.page'); if (!page) return; var cards=[].slice.call(sec.querySelectorAll('.xn')); if (!cards.length) return; cards.sort(function(a,b){ return num(a)-num(b); });
+      var nb=sec.querySelector('.xnotes'); if (!nb){ nb=document.createElement('div'); nb.className='xnotes'; sec.appendChild(nb); } var side=page.querySelector('.xside');
+      if (!on){ if (side) side.remove(); cards.forEach(function(c){ c.style.top=''; nb.appendChild(c); }); return; }
+      if (!side){ side=document.createElement('div'); side.className='xside'; page.appendChild(side); }
+      cards.forEach(function(c){ c.style.top='0'; side.appendChild(c); });
+      var H=page.clientHeight||1, gap=H*0.015; var items=cards.map(function(c){ return {c:c, y:Math.max(0,Math.min(1,+c.dataset.y||0))*H, h:c.offsetHeight}; }); var k=items.length;
+      while (k>0){ var its=items.slice(0,k), prev=-gap; its.forEach(function(it){ it.top=Math.max(it.y, prev+gap); prev=it.top+it.h; });
+        var lim=H; for (var i=k-1;i>=0;i--){ var it=its[i]; if (it.top>lim-it.h) it.top=lim-it.h; lim=it.top-gap; }
+        if (its[0].top>=0) break; k--; }
+      items.forEach(function(it,i){ if (i<k){ it.c.style.top=(it.top/H*100)+'%'; side.appendChild(it.c); } else { it.c.style.top=''; nb.appendChild(it.c); } });
+    }); }
+  function apply(){ document.body.classList.toggle('lay-side', sel.value==='side'); document.body.classList.toggle('lay-full', sel.value==='full'); layout(); }
+  sel.addEventListener('change', function(){ apply(); try { localStorage.setItem(DK, sel.value); localStorage.setItem(KEY, sel.value); } catch(e){} });
+  apply(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout); window.addEventListener('load', layout); var rt=null; window.addEventListener('resize', function(){ clearTimeout(rt); rt=setTimeout(layout, 150); }); if (window.matchMedia) matchMedia('print').addEventListener('change', layout); window.__xlay=layout; })();   // 인쇄 매체로 바뀐 뒤 한 번 더(글자 크기가 달라 줄이 늘 수 있다)
 // 번호 딱지에 마우스를 올리면 그 메모가 팝업으로 뜬다(나무위키 각주처럼). 딱지를 누르면 아래 메모로, 메모의 ↩ 본문을 누르면 되돌아온다
 (function(){ var tip=null, cur=null, hideT=null;
   function hide(){ if (tip){ tip.remove(); tip=null; } if (cur){ cur.classList.remove('tipon'); cur=null; } }
