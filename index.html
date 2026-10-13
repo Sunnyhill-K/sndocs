@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-12T16:58:49+09:00">
+<meta name="build" content="2026-10-13T10:57:07+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -1206,7 +1206,7 @@ body{margin:0;background:#EEF0EA;color:var(--ink);font-family:var(--sans);font-s
 .xpage{max-width:960px;margin:0 auto 26px;padding:0 20px}
 .page{margin:0 0 12px;break-inside:avoid}.page img{display:block;width:100%;height:auto}
 a.mk{text-decoration:none}
-.xnotes{display:grid;gap:8px;margin:0 0 8px}
+.xnotes{display:grid;gap:8px;margin:0 0 8px} .xsec{font-size:12px;letter-spacing:.08em;color:#777;margin:4px 0 -2px}
 .xn{border-left:3px solid var(--del-line);padding:5px 10px;background:#fff;border-radius:0 4px 4px 0;break-inside:avoid}.xn.memo{border-left-color:var(--memo)}.xn.rep{border-left-color:var(--rep-line)}
 .xh{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--del);margin-bottom:3px}.xn.memo .xh{color:var(--memo)}.xn.rep .xh{color:var(--rep)}
 .xn.rep a.xno:hover{background:var(--rep);border-color:var(--rep)}.xno{font-weight:700;display:inline-block;min-width:1.5em;height:1.5em;line-height:1.4em;text-align:center;border:1px solid currentColor;border-radius:50%;padding:0 .25em;text-decoration:none;color:inherit}a.xno:hover{background:var(--del);color:#fff;border-color:var(--del)}.xn.memo a.xno:hover{background:var(--memo);border-color:var(--memo)}.xwho{font-family:var(--sans);color:var(--nc,var(--ink-2));border:1px solid var(--nc,var(--ink-3));border-radius:3px;padding:0 5px;font-size:11px}.xpg{color:var(--ink-3);font-family:var(--sans)}
@@ -1231,7 +1231,7 @@ async function exportPdfPages(onProg){
     if (base.height*scale>MAXD) scale=MAXD/base.height; if (base.width*base.height*scale*scale>MAXA) scale=Math.sqrt(MAXA/(base.width*base.height));
     const vp=page.getViewport({scale}); const cv=document.createElement('canvas'); cv.width=Math.floor(vp.width); cv.height=Math.floor(vp.height);
     const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
-    await page.render({canvasContext:ctx, viewport:vp}).promise;
+    await page.render({canvasContext:ctx, viewport:vp, intent:'print'}).promise;   // intent:'print' — 새 탭이 먼저 열려 이 창이 뒤로 가 있어도 멈추지 않는다
     out.push({p, w:base.width, h:base.height, src:cv.toDataURL('image/jpeg',0.85)}); cv.width=cv.height=0;
   }
   return out;
@@ -1249,13 +1249,16 @@ function exportNote(c, m, i){
 }
 async function exportDoc(c){
   collectMarks(c);
+  // 새 탭은 누른 그 순간에 먼저 연다 — 쪽을 다 그린 뒤(몇 초 뒤) 열면 브라우저가 팝업으로 보고 막아 파일 내려받기로 빠졌다(쑤닐님 「본문이 안 나온다」 2026-10-13)
+  let w=null; try { w=window.open('', '_blank'); if (w){ w.document.open(); w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>내보내기 · SN Docs</title></head><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;font:15px/1.5 sans-serif;color:#444">내보내기를 만드는 중… 쪽을 그리는 동안 잠시 기다려 주세요</body></html>'); w.document.close(); } } catch(e){ w=null; }
   const btn=$('#exportBtn'); if (btn){ btn.disabled=true; btn.textContent='만드는 중…'; }
   Prog.start('내보내기 준비');
   try {
     let body='';
     if (isPdf(c)){
       const pages=await exportPdfPages((p,n)=>Prog.set(p/n*0.9, `쪽 그리는 중 ${p}/${n}`));
-      body=pages.map(pg=>{ const notes=c.marks.map((m,i)=>m.page===pg.p?exportNote(c,m,i):'').join('');
+      const docNotes=c.marks.map((m,i)=>(!m.page)?exportNote(c,m,i):'').join('');   // 문서 전체 메모(자리 없음)는 맨 앞에
+      body=(docNotes?`<section class="xpage"><div class="xnotes"><div class="xsec">문서 전체 메모</div>${docNotes}</div></section>`:'')+pages.map(pg=>{ const notes=c.marks.map((m,i)=>m.page===pg.p?exportNote(c,m,i):'').join('');
         return `<section class="xpage"><div class="page" style="aspect-ratio:${pg.w} / ${pg.h}"><img src="${pg.src}" alt="${pg.p}쪽">${exportInks(c,pg)}<div class="marks">${exportMarks(c,pg.p)}</div><div class="pno">${pg.p} / ${pages.length}</div></div>${notes?`<div class="xnotes">${notes}</div>`:''}</section>`; }).join('');
     } else {
       // 임시 틀에 원문을 깔고 표시를 감싼 뒤 그 HTML 을 가져온다(화면이 목록만 보기여도 무관)
@@ -1293,10 +1296,11 @@ ${body}
 })();<\/script>
 <\/body><\/html>`;
     const blob=new Blob([html],{type:'text/html'}); const url=URL.createObjectURL(blob);
-    const w=window.open(url,'_blank');
-    if (!w){ const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); toast('새 창이 막혀 HTML 파일로 내려받았습니다'); }
+    if (w && w.closed) w=null;
+    if (w){ try { w.location.href=url; } catch(e){ w=null; } }
+    if (!w){ const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); toast('새 창이 막혀 HTML 파일로 내려받았습니다 — 내려받기 폴더를 보세요'); }
     else toast('새 탭에 열었습니다 · 거기서 「PDF로 저장」 또는 「HTML 파일로 내려받기」');
-  } catch(e){ toast('내보내기 실패: '+((e&&e.message)||e)); }
+  } catch(e){ toast('내보내기 실패: '+((e&&e.message)||e)); try { if (w && !w.closed) w.close(); } catch(_){} }
   finally { Prog.done(); if (btn){ btn.disabled=false; btn.textContent='내보내기 ▾'; } }
 }
 function overallHtml(c){
