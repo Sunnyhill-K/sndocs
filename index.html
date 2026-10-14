@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-14T22:56:47+09:00">
+<meta name="build" content="2026-10-14T23:10:45+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -4183,7 +4183,7 @@ function renderEdit(main){
   const hasMarks = (c.marks||[]).length>0 && !isNew;
   const edId='wordEd'+(++wordEdSeq); wordEdId=edId;
   main.innerHTML = `<div class="edit"><h2>${isNew?'새 퇴고(새 글 작성)':(newVer?`이 문서 새 버전 올리기 — ${nextVer}버전`:'정보 수정')}</h2>
-    ${newVer?`<p class="msg" style="margin:-6px 0 12px">지금 내용은 <b>${nextVer-1}버전</b>으로 남고, 저장하는 내용이 <b>${nextVer}버전(현재)</b>이 됩니다. 이전 버전의 메모는 이전 버전에만 남고, 새 버전은 빈 메모로 시작합니다.</p>`:''}
+    ${newVer?`<p class="msg" style="margin:-6px 0 12px">지금 내용은 <b>${nextVer-1}버전</b>으로 남고, 저장하는 내용이 <b>${nextVer}버전(현재)</b>이 됩니다. 이전 버전의 메모는 이전 버전에만 남고, 새 버전은 빈 메모로 시작합니다.</p><label class="rm" style="display:block;margin:-4px 0 12px"><input type="checkbox" id="fCarry"> 자리 없는 메모(문서 전체·쪽 전체)는 새 버전에도 두기 <span class="dim">— 일정·공통 요구처럼 도면이 바뀌어도 뜻이 통하는 것만. 자리 있는 메모는 어느 쪽이든 이전 버전에 남습니다</span></label>`:''}
     <div class="types" ${isNew?'':'hidden'}>
       <label class="${type==='text'?'on':''}"><input type="radio" name="ty" value="text" ${type==='text'?'checked':''}><div><b>텍스트</b><span>슬랙·블로그·붙여넣기. 원문 위에 바로 표시합니다.</span></div></label>
       <label class="${type==='word'?'on':''}"><input type="radio" name="ty" value="word" ${type==='word'?'checked':''}><div><b>Word · 구글 문서</b><span>.docx 파일을 넣거나, 구글 문서·Word 화면에서 복사해 붙여 넣으세요. 제목·굵게·표·그림이 살아 있습니다.</span></div></label>
@@ -4357,8 +4357,9 @@ function renderEdit(main){
       d = Object.assign({}, c, base, {type:'text', id, src, marks: (hasMarks?remapMarks(c.marks, c.src||'', src):[]), lockPw, unlockReq, vis:readVis()}); delete d.pdf; delete d.pages; delete d.html;
     }
     if (snap){ d.versions=[...(c.versions||[]), snap]; delete d._verCache; restoreInks(d, '[]'); d.carried=[]; d._ghosts=null; d.note=''; d.noteSegs=[];
-      // 자리 없는 메모(문서·쪽 전체)만 새 버전으로 따라간다 — 자리가 없으니 새 도면에서도 그대로 뜻이 통한다(일정·공통 요구 같은 것). 자리 있는 메모는 전처럼 옛 버전에 남는다(2026-10-12).
-      d.marks=(c.marks||[]).filter(m=>m.free).map(m=>{ const x=JSON.parse(JSON.stringify(m)); delete x._editing; delete x._fresh; delete x._snap; x.mid=newMid(); x.mt=Date.now(); x.from=snap.n||((c.versions||[]).length+1); x.fromNo=(c.marks.indexOf(m)+1); if (x.page && type==='pdf' && fromImg){ const nm=((c.pnames||[])[x.page-1]||'').trim().toLowerCase(); const k=nm?picNames.findIndex(n=>n && n.trim().toLowerCase()===nm):-1; if (k>=0) x.page=k+1; else if (x.page>picNames.length){ x.text=((x.text||'')+' (이전 '+x.page+'쪽)').trim(); x.page=0; } }   // 쪽 메모는 같은 이름의 쪽으로 따라가고, 이름이 없는데 쪽 수가 줄었으면 문서 전체 메모로(어느 탭에도 안 보이는 고아를 만들지 않게 · 2026-10-14)
+      // 자리 없는 메모(문서·쪽 전체)만 새 버전으로 따라갈 수 있다(체크 선택) — 자리가 없으니 새 도면에서도 그대로 뜻이 통한다(일정·공통 요구 같은 것). 자리 있는 메모는 전처럼 옛 버전에 남는다(2026-10-12). 2026-10-14 부터 기본은 빈 메모.
+      const carry=!!($('#fCarry') && $('#fCarry').checked);   // 기본은 빈 메모로 시작(쑤닐님 2026-10-14 「버전업 하면 메모는 비우는 걸로」) · 체크했을 때만 자리 없는 메모가 따라온다
+      d.marks=!carry ? [] : (c.marks||[]).filter(m=>m.free).map(m=>{ const x=JSON.parse(JSON.stringify(m)); delete x._editing; delete x._fresh; delete x._snap; x.mid=newMid(); x.mt=Date.now(); x.from=snap.n||((c.versions||[]).length+1); x.fromNo=(c.marks.indexOf(m)+1); if (x.page && type==='pdf' && fromImg){ const nm=((c.pnames||[])[x.page-1]||'').trim().toLowerCase(); const k=nm?picNames.findIndex(n=>n && n.trim().toLowerCase()===nm):-1; if (k>=0) x.page=k+1; else if (x.page>picNames.length){ x.text=((x.text||'')+' (이전 '+x.page+'쪽)').trim(); x.page=0; } }   // 쪽 메모는 같은 이름의 쪽으로 따라가고, 이름이 없는데 쪽 수가 줄었으면 문서 전체 메모로(어느 탭에도 안 보이는 고아를 만들지 않게 · 2026-10-14)
       return x; });
       if (isPdf(d)){ if (!oldPdf) return err('이전 버전의 PDF 가 메모리에 없습니다. 문서를 다시 열어 주세요'); d._snapPdf={file:snap.pdfFile, b64:oldPdf}; d.ocr=null; d.ocrAt=''; } }
     view = {mode:'case', id:d.id, draft:d, dirty:true, show:'side', newVer:false};
