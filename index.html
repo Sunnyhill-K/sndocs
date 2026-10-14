@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SN Docs (Beta)</title>
-<meta name="build" content="2026-10-13T13:30:31+09:00">
+<meta name="build" content="2026-10-14T22:56:47+09:00">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2232%22 height=%2232%22 viewBox=%220 0 26 26%22 fill=%22none%22%3E%3Cpath d=%22M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z%22 fill=%22#fff%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M15.5 3.5v5h5%22 stroke=%22#1F2430%22 stroke-width=%221.7%22 stroke-linejoin=%22round%22/%3E%3Cpath d=%22M9 13h8M9 17h8%22 stroke=%22#8A909B%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3Cpath d=%22M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0%22 stroke=%22#C4342D%22 stroke-width=%221.8%22 stroke-linecap=%22round%22/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -167,6 +167,8 @@ body.zoomed-body .top{left:0;width:var(--vw,100vw)}
 /* ── 사건 머리 ── */
 .head{max-width:none;margin:0 0 18px;position:sticky;top:var(--top-h,50px);z-index:4;background:var(--paper);padding-top:16px;padding-bottom:10px;border-bottom:1px solid var(--rule)}
 .head .hint{margin-top:8px}
+.ptabs{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px} .ptabs .tb{border:1px solid var(--rule);background:transparent;color:var(--ink-2);border-radius:4px;padding:2px 10px;font-size:calc(12.5px * var(--ui,1));cursor:pointer;font-family:var(--sans)} .ptabs .tb:hover{border-color:var(--ink-3);color:var(--ink)} .ptabs .tb.on{background:var(--ink);color:var(--paper);border-color:var(--ink)} .ptabs .tb .n{opacity:.7;font-size:.85em;margin-left:4px} .page.tabhide{display:none!important}   /* 쪽 탭: 그 쪽만 */
+.ask .pgrow .pnm{font:inherit;font-size:13px;border:1px solid var(--rule);border-radius:3px;padding:2px 6px;background:var(--paper-2);color:var(--ink);width:150px;max-width:40%;margin-left:6px} .ask .pgrow .pnm:focus{border-color:var(--focus);outline:none}
 body.zoomed-body .head{left:calc(var(--rail-w,240px) + 20px);width:calc(var(--vw,100vw) - var(--rail-w,240px) - 40px);max-width:none}
 body.zoomed-body .head::before{content:'';position:absolute;left:-20px;top:0;bottom:-1px;width:20px;background:var(--paper);border-bottom:1px solid var(--rule)}   /* 가로 스크롤 때 머리는 목록 오른쪽부터 창 끝까지, 그 밑으로 문서가 지나간다 */
 .head .eyebrow{font-size:calc(12px * var(--ui,1));color:var(--ink-3);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -665,10 +667,22 @@ const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':
 const KIND = {del:'삭제', rep:'바꾸기', memo:'메모'};
 const STATUS = {done:'반영됨', hold:'보류'};   // 메모 상태(없으면 「대기」). 이슈 기록처럼 쓰는 문서용 — 반영됐거나 보류한 메모를 목록에서 거른다
 let noteFilter='all';                            // 메모 목록 거르기: all | open(남은 것) | done | hold — 문서를 바꾸면 all 로
-const inFilter = m => noteFilter==='all' || (noteFilter==='open' ? !m.st : m.st===noteFilter);
+let ptab=0;                                       // 쪽 탭: 0=전체 · N=그 쪽만(그림 쪽 문서를 층별로 따로 보기 — 대표님 요청 2026-10-14). 문서마다 localStorage redpen.ptab 에 기억
+const inFilter = m => (noteFilter==='all' || (noteFilter==='open' ? !m.st : m.st===noteFilter)) && (!ptab || !m.page || m.page===ptab);   // 문서 전체 메모(page 0)는 어느 탭에서나
+let curNames=[];                                   // 지금 보는 문서의 쪽 이름(c.pnames) — 탭·칩·내보내기 표시용
+const pgName=p=>(curNames[p-1]||'');
+const pgLabel=p=>pgName(p)||(p+'쪽');
+function hasTabs(c){ return isPdf(c) && (c.pages||0)>1 && (!!c.fromImg || (c.pnames||[]).some(Boolean)); }
+function loadPtab(id){ try { const m=JSON.parse(localStorage.getItem('redpen.ptab')||'{}'); return +m[id]||0; } catch(e){ return 0; } }
+function savePtab(id, p){ try { const m=JSON.parse(localStorage.getItem('redpen.ptab')||'{}'); if (p) m[id]=p; else delete m[id]; localStorage.setItem('redpen.ptab', JSON.stringify(m)); } catch(e){} }
+function applyPtab(){ document.querySelectorAll('#doc .page').forEach(el=>el.classList.toggle('tabhide', !!ptab && +el.dataset.p!==ptab)); layoutNotes(); }
+function setPtab(c, p){ p=+p||0; if (p && p>(c.pages||0)) p=0; ptab=p; savePtab(c.id, p); curNames=c.pnames||[]; refreshPdfHead(c); drawAllMarks(c); applyPtab();
+  const d=$('#doc'); if (d){ const y=d.getBoundingClientRect().top+window.scrollY-headLine(); if (window.scrollY>y) window.scrollTo({top:Math.max(0,y)}); } }   // 탭을 바꾸면 그 쪽 머리로
+function ptabsHtml(c){ if (!hasTabs(c)) return ''; const cnt=p=>c.marks.filter(m=>m.page===p).length;
+  return `<div class="ptabs" id="ptabs" role="tablist"><button class="tb ${ptab?'':'on'}" data-pt="0" title="모든 쪽과 메모">전체<span class="n">${fmtN(c.marks.length)}</span></button>${Array.from({length:c.pages||0},(_,i)=>i+1).map(p=>`<button class="tb ${ptab===p?'on':''}" data-pt="${p}" title="${p}쪽만 보기 — 메모도 이 쪽 것만(문서 전체 메모는 늘 보입니다)">${esc(pgLabel(p))}<span class="n">${fmtN(cnt(p))}</span></button>`).join('')}</div>`; }
 // 자리 없는 메모(free): 쪽 전체(page=N) 또는 문서 전체(page=0). PDF 는 rects 를 [[0,0,0,0]] 으로 둔다 — 옛 판 창이 정렬하다 죽지 않게(빈 배열이면 rects[0][1] 에서 죽는다).
 // 그 대신 그리는 쪽(drawMarks · exportMarks · 주석 PDF · markAt)에서 free 를 거른다. 텍스트·Word·HTML 은 start·end 를 -1 로(감싸는 쪽이 end<=start 면 건너뛴다).
-const scopeLabel = m => m.free ? (m.page ? m.page+'쪽 전체' : '문서 전체') : '';
+const scopeLabel = m => m.free ? (m.page ? pgLabel(m.page)+' 전체' : '문서 전체') : '';
 const fmtN = n => (Number(n)||0).toLocaleString('ko-KR');   // 화면에 보이는 숫자는 천 단위 쉼표
 
 let cases = [];   // docs/index.json 의 메타. 문서를 열면 복호화된 내용이 같은 객체에 합쳐진다(loaded=true)
@@ -874,6 +888,7 @@ function renderHelp(main){
   <li>옛 버전을 보는 중에도 편집자는 그 버전의 메모를 지울 수 있습니다(카드의 「삭제」, 목록 위의 「이 버전 메모 모두 지우기」). 옛 버전은 되돌리기 기록이 없어 묻고 나서 바로 저장합니다.</li>
   <li>도구줄의 「찾아 바꾸기」(메모 복사 오른쪽 · Ctrl+H)는 메모 제목·내용·답글·총평에서 글을 한꺼번에 바꿉니다(카톡 이름을 공식 이름으로 고칠 때 등). 원문은 바꾸지 않고, 바꾼 뒤 저장해야 남습니다. 글자 인식·여백 잘라내기·링크 복사는 제목 줄(「정보 수정」 오른쪽)에 있습니다.</li>
   <li>영역 메모는 상자 안을 끌면 옮겨지고(다른 쪽 위에 놓으면 그 쪽으로), 누르기만 하면 그 메모로 갑니다. 상자나 카드에 마우스를 대면 네 모서리에 손잡이가 떠서 끌면 크기가 바뀝니다(폰은 「영역 선택」을 켜면 늘 보이고, 손가락으로 끕니다). 글자를 잡은 메모는 번호 딱지를 끌어 옮깁니다. 자리 없는 쪽 메모는 카드의 「쪽 바꾸기」로 옮깁니다.</li>
+  <li>그림 쪽 문서에 쪽이 둘 이상이면 제목 줄 아래에 쪽 탭(전체 · 3층 · 4층 …)이 뜹니다. 탭을 누르면 그 쪽과 그 쪽의 메모만 보입니다(문서 전체 메모는 늘 보이고, 쪽 이동 Alt+W/S 도 탭을 따라갑니다). 쪽 이름은 그림 파일 이름에서 오고(앞의 정렬 번호는 뺍니다) 「쪽 관리」에서 고칩니다. 같은 그림을 두 쪽에 쓰려면(3·5층이 한 장일 때) 「복제」. 「여러 건 붙여 넣기」에는 <code>[3층]</code> 처럼 쪽 이름도 됩니다. 내보낸 HTML 에도 같은 탭이 있습니다.</li>
   <li>그림 쪽 문서는 제목 줄의 「쪽 관리」에서 쪽을 더하고(그림 여러 장) 바꾸고 지우고 순서를 바꿉니다. 새 버전이 아니라 지금 버전 안에서 PDF 만 다시 묶이고, 메모·선은 쪽을 따라갑니다. 교체한 쪽의 메모·선은 그 쪽에 남고(자리는 끌어서 맞춤), 지운 쪽의 메모는 「문서 전체」 메모로 내려갑니다. 적용하면 되돌리기 기록이 지워지니 저장 전에 확인하세요. 다른 창에서 같은 문서를 열어 둔 사람은 새로고침해야 새 쪽이 보입니다.</li>
   <li>메모에 슬랙식 서식(*굵게* _기울임_ ~취소~ __밑줄__)과 http·www. 주소 자동 링크. 우클릭으로 링크 만들기·해제.</li>
   <li>남의 메모에 덧붙이면 그 사람 색 띠가 붙습니다. 저장은 Ctrl+S, 되돌리기 Ctrl+Z, 메모 이동 Alt+↑/↓, 쪽 이동 Alt+W/S.</li>
@@ -1035,7 +1050,7 @@ function verChip(c){
 function versionCase(base, n){
   const v=(base.versions||[]).find(x=>x.n===n); if (!v) return null;
   base._verCache=base._verCache||{}; if (base._verCache[n]) return base._verCache[n];
-  const vc=Object.assign({}, base, JSON.parse(JSON.stringify({src:v.src||'', html:v.html||'', htmlSrc:v.htmlSrc||'', marks:v.marks||[], note:v.note||'', noteSegs:v.noteSegs||[], inks:v.inks||[], ocr:v.ocr||null, pages:v.pages||0, srcName:v.srcName||'', ts:v.ts||''})), {_ver:n, _pdfFile:v.pdfFile||'', pdf:'', loaded:true});
+  const vc=Object.assign({}, base, JSON.parse(JSON.stringify({src:v.src||'', html:v.html||'', htmlSrc:v.htmlSrc||'', marks:v.marks||[], note:v.note||'', noteSegs:v.noteSegs||[], inks:v.inks||[], ocr:v.ocr||null, pages:v.pages||0, pnames:v.pnames||[], srcName:v.srcName||'', ts:v.ts||''})), {_ver:n, _pdfFile:v.pdfFile||'', pdf:'', loaded:true});
   return (base._verCache[n]=vc);
 }
 async function loadVersionPdf(base, vc){ const key=docKeys[base.id]||K; const pe=await ghRead(vc._pdfFile); if (!pe) throw new Error('이 버전의 PDF 파일이 없습니다'); vc.pdf=b64(await decB(key, pe)); }
@@ -1049,7 +1064,7 @@ function bindHead(c, collect){
     vd.disabled=true; vd.textContent='되돌리는 중…';
     try {
       if (isPdf(c)){ const key=docKeys[c.id]||K; const pe=await ghRead(last.pdfFile); if (!pe) throw new Error('이전 버전 PDF 파일이 없습니다'); c.pdf=b64(await decB(key, pe)); c.pdfDirty=true; c._dropPdfFile=last.pdfFile; }
-      Object.assign(c, JSON.parse(JSON.stringify({src:last.src||'', html:last.html||'', htmlSrc:last.htmlSrc||'', marks:last.marks||[], note:last.note||'', noteSegs:last.noteSegs||[], ocr:last.ocr||null, pages:last.pages||0})));
+      Object.assign(c, JSON.parse(JSON.stringify({src:last.src||'', html:last.html||'', htmlSrc:last.htmlSrc||'', marks:last.marks||[], note:last.note||'', noteSegs:last.noteSegs||[], ocr:last.ocr||null, pages:last.pages||0, pnames:last.pnames||[]})));
       restoreInks(c, JSON.stringify(last.inks||[]));   // 그은 선도 그 버전의 것으로(저장할 때 합쳐도 되살아나지 않게 묘비·새 시각으로)
       c.versions=vs.slice(0,-1); c.carried=[]; c._ghosts=null; c._verCache={}; view.dirty=true;
       const ok=await saveDoc(c, null); if (ok && c._dropPdfFile){ try { await ghDelete(c._dropPdfFile, 'drop version pdf'); } catch(e){} delete c._dropPdfFile; }
@@ -1212,7 +1227,8 @@ body{margin:0;background:#EEF0EA;color:var(--ink);font-family:var(--sans);font-s
 .xpage{max-width:960px;margin:0 auto 26px;padding:0 20px}
 .page{margin:0 0 12px;break-inside:avoid}.page img{display:block;width:100%;height:auto}
 a.mk{text-decoration:none}
-.xnotes{display:grid;gap:8px;margin:0 0 8px} .xsec{font-size:12px;letter-spacing:.08em;color:#777;margin:4px 0 -2px}
+.xnotes{display:grid;gap:8px;margin:0 0 8px} .xsec{font-size:12px;letter-spacing:.08em;color:#777;margin:4px 0 -2px} .xph{font-size:14px;font-weight:700;margin:0 0 6px}
+.xtabs{max-width:960px;margin:0 auto 10px;padding:0 20px;display:flex;flex-wrap:wrap;gap:4px}.xtabs button{font:inherit;font-size:13px;padding:3px 10px;border:1px solid #cfd4cc;background:#fff;border-radius:4px;cursor:pointer}.xtabs button.on{background:#1F2430;color:#fff;border-color:#1F2430}
 .xn{border-left:3px solid var(--del-line);padding:5px 10px;background:#fff;border-radius:0 4px 4px 0;break-inside:avoid}.xn.memo{border-left-color:var(--memo)}.xn.rep{border-left-color:var(--rep-line)}
 .xh{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:12px;color:var(--del);margin-bottom:3px}.xn.memo .xh{color:var(--memo)}.xn.rep .xh{color:var(--rep)}
 .xn.rep a.xno:hover{background:var(--rep);border-color:var(--rep)}.xno{font-weight:700;display:inline-block;min-width:1.5em;height:1.5em;line-height:1.4em;text-align:center;border:1px solid currentColor;border-radius:50%;padding:0 .25em;text-decoration:none;color:inherit}a.xno:hover{background:var(--del);color:#fff;border-color:var(--del)}.xn.memo a.xno:hover{background:var(--memo);border-color:var(--memo)}.xwho{font-family:var(--sans);color:var(--nc,var(--ink-2));border:1px solid var(--nc,var(--ink-3));border-radius:3px;padding:0 5px;font-size:11px}.xpg{color:var(--ink-3);font-family:var(--sans)}
@@ -1266,12 +1282,12 @@ function exportMarks(c, p){
 }
 function exportNote(c, m, i){
   const h=i+1; const col=userColor(m.by, m.byId);
-  return `<div class="xn ${m.kind}" id="xn${h}" data-y="${(m.rects&&m.rects.length)?Math.min(...m.rects.map(r=>+r[1]||0)).toFixed(4):0}"><div class="xh">${(m.lost||m.free||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip">${STATUS[m.st]}</span>`:''}${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${m.page}쪽</span>`:''}${(m.lost||m.free||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
+  return `<div class="xn ${m.kind}" id="xn${h}" data-y="${(m.rects&&m.rects.length)?Math.min(...m.rects.map(r=>+r[1]||0)).toFixed(4):0}"><div class="xh">${(m.lost||m.free||(m.start<0 && !m.rects))?`<span class="xno">${h}</span>`:`<a class="xno" href="#xm${h}" title="본문의 표시 자리로">${h}</a>`}<span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip">${STATUS[m.st]}</span>`:''}${m.by?`<span class="xwho" ${col?`style="--nc:${col}"`:''}>${esc(userLabel(m.by, m.byId))}</span>`:''}${(isPdf(c)&&m.page)?`<span class="xpg">${esc(pgLabel(m.page))}</span>`:''}${(m.lost||m.free||(m.start<0 && !m.rects))?'':`<a class="xback" href="#xm${h}" title="본문의 표시 자리로 돌아가기">↩ 본문</a>`}</div>`
     + (m.text?`<div class="xsrc">${esc(m.text)}</div>`:'') + (m.kind==='rep'?`<div class="xafter">→ ${esc(m.after||'')}</div>`:'')
     + ((m.reason||'').trim()?`<div class="xtxt">${md(m.reason||'', m.segs)}</div>`:'') + (m.reacts?`<div class="xtxt" style="color:var(--ink-3)">${esc(reactKeys(m.reacts).map(e=>e+' '+m.reacts[e].length).join('  '))}</div>`:'') + ((m.replies||[]).length?`<div class="xreps">${m.replies.map(r=>`<div class="xrep"><b style="color:${userColor(r.by, r.byId)||'inherit'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</b> ${md(r.t||'')}${r.reacts?` <span style="color:var(--ink-3)">${esc(reactSum(r.reacts))}</span>`:''}</div>`).join('')}</div>`:'') + `</div>`;
 }
 async function exportDoc(c){
-  collectMarks(c);
+  collectMarks(c); curNames=c.pnames||[];
   // 새 탭은 누른 그 순간에 먼저 연다 — 쪽을 다 그린 뒤(몇 초 뒤) 열면 브라우저가 팝업으로 보고 막아 파일 내려받기로 빠졌다(쑤닐님 「본문이 안 나온다」 2026-10-13)
   let w=null; try { w=window.open('', '_blank'); if (w){ w.document.open(); w.document.write('<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>내보내기 · SN Docs</title></head><body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;font:15px/1.5 sans-serif;color:#444">내보내기를 만드는 중… 쪽을 그리는 동안 잠시 기다려 주세요</body></html>'); w.document.close(); } } catch(e){ w=null; }
   const btn=$('#exportBtn'); if (btn){ btn.disabled=true; btn.textContent='만드는 중…'; }
@@ -1282,7 +1298,7 @@ async function exportDoc(c){
       const pages=await exportPdfPages((p,n)=>Prog.set(p/n*0.9, `쪽 그리는 중 ${p}/${n}`));
       const docNotes=c.marks.map((m,i)=>(!m.page)?exportNote(c,m,i):'').join('');   // 문서 전체 메모(자리 없음)는 맨 앞에
       body=(docNotes?`<section class="xpage"><div class="xnotes"><div class="xsec">문서 전체 메모</div>${docNotes}</div></section>`:'')+pages.map(pg=>{ const nn=c.marks.filter(m=>m.page===pg.p).length; const notes=c.marks.map((m,i)=>m.page===pg.p?exportNote(c,m,i):'').join('');
-        return `<section class="xpage"><div class="page" style="aspect-ratio:${pg.w} / ${pg.h};--ar:${(pg.w/pg.h).toFixed(5)}${nn?`;--res:${Math.min(nn,2)*26}mm`:''}"><img src="${pg.src}" alt="${pg.p}쪽">${exportInks(c,pg)}<div class="marks">${exportMarks(c,pg.p)}</div><div class="pno">${pg.p} / ${pages.length}</div></div>${notes?`<div class="xnotes">${notes}</div>`:''}</section>`; }).join('');
+        return `<section class="xpage" data-p="${pg.p}">${pgName(pg.p)?`<div class="xph">${esc(pgLabel(pg.p))}</div>`:''}<div class="page" style="aspect-ratio:${pg.w} / ${pg.h};--ar:${(pg.w/pg.h).toFixed(5)}${nn?`;--res:${Math.min(nn,2)*26}mm`:''}"><img src="${pg.src}" alt="${pg.p}쪽">${exportInks(c,pg)}<div class="marks">${exportMarks(c,pg.p)}</div><div class="pno">${pg.p} / ${pages.length}</div></div>${notes?`<div class="xnotes">${notes}</div>`:''}</section>`; }).join('');
     } else {
       // 임시 틀에 원문을 깔고 표시를 감싼 뒤 그 HTML 을 가져온다(화면이 목록만 보기여도 무관)
       const tmp=document.createElement('div'); tmp.className='doc txtdoc'+(c.type==='word'?' word':'')+(isHtmlDoc(c)?' html':''); tmp.style.cssText='position:absolute;left:-99999px;top:0;width:860px'; tmp.innerHTML=`<div class="${tpageCls(c)}">${baseHtml(c)}</div>`; document.body.appendChild(tmp);
@@ -1300,8 +1316,10 @@ async function exportDoc(c){
     const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.title||'퇴고')} · 퇴고 메모</title><style>${exportCssBase()}${exportCss()}${exportCssPrint()}</style></head><body data-doc="${esc(String(c.id||''))}">
 <div class="xbar no-print"><b>${esc(c.title||'')}</b><span>메모 ${fmtN(c.marks.length)}곳</span><span class="sp"></span>${isPdf(c)?`<label class="xopt">메모 자리 <select id="xlay" title="화면과 인쇄 둘 다에 적용됩니다"><option value="side">쪽 오른쪽에 겹쳐서 (한 장에)</option><option value="below">쪽 아래 (쪽을 줄여 같은 장에)</option><option value="full">쪽 아래 (쪽은 꽉 · 메모는 다음 장)</option></select></label>`:''}<button onclick="window.print()">PDF로 저장(인쇄)</button><button id="dl" data-fn="${esc(fname)}">HTML 파일로 내려받기</button></div>
 <header class="xhead"><h1>${esc(c.title||'')}</h1><div class="xmeta">${c.client?esc(c.client)+' · ':''}${typeName} · 저장 ${esc(fmtWhen(c))} · 메모 ${fmtN(c.marks.length)}곳 (삭제 ${fmtN(n('del'))} · 바꾸기 ${fmtN(n('rep'))} · 메모만 ${fmtN(n('memo'))}) · <span class="xbrand"><svg class="mark" style="vertical-align:-3px" width="16" height="16" viewBox="0 0 26 26" fill="none" aria-hidden="true"><path d="M6.5 3.5h9l5 5v14a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-18a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 3.5v5h5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 13h8M9 17h8" stroke="#8A909B" stroke-width="1.5" stroke-linecap="round"/><path d="M8 20.5c1.5-1.4 3-1.4 4.5 0s3 1.4 4.5 0" stroke="#C4342D" stroke-width="1.8" stroke-linecap="round"/></svg> SN Docs (Beta)</span>에서 내보냄</div></header>
+${hasTabs(c)?`<div class="xtabs no-print" id="xtabs"><button class="on" data-pt="0">전체</button>${Array.from({length:c.pages||0},(_,i)=>i+1).map(p=>`<button data-pt="${p}">${esc(pgLabel(p))}</button>`).join('')}</div>`:''}
 ${body}
-<script>document.getElementById('dl').addEventListener('click',function(){var t=document.querySelector('.xtip');if(t)t.remove();var b=new Blob(['<!doctype html>'+document.documentElement.outerHTML],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=this.dataset.fn;document.body.appendChild(a);a.click();a.remove();});
+<script>(function(){ var bar=document.getElementById('xtabs'); if (!bar) return; bar.addEventListener('click', function(e){ var b=e.target.closest('button[data-pt]'); if (!b) return; var p=+b.dataset.pt; bar.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); document.querySelectorAll('.xpage[data-p]').forEach(function(s){ s.style.display=(!p || +s.dataset.p===p)?'':'none'; }); if (window.__xlay) window.__xlay(); }); })();
+document.getElementById('dl').addEventListener('click',function(){var t=document.querySelector('.xtip');if(t)t.remove();var b=new Blob(['<!doctype html>'+document.documentElement.outerHTML],{type:'text/html'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=this.dataset.fn;document.body.appendChild(a);a.click();a.remove();});
 // 메모 자리: side 면 카드를 쪽 안 오른쪽(.xside)에 — 세로 자리는 표시의 y(data-y)를 따르되 앞 카드와 겹치면 아래로 밀고, 바닥을 넘치면 위로 당기며, 그래도 안 들어가면 뒷 카드부터 쪽 아래로 보낸다. 자리는 쪽 높이 % 라 인쇄 축소에도 그대로
 (function(){ var sel=document.getElementById('xlay'); if (!sel) return; var KEY='redpen.xlay', DK=KEY+'.'+(document.body.getAttribute('data-doc')||''); var v='side'; try { v=localStorage.getItem(DK)||localStorage.getItem(KEY)||'side'; } catch(e){} if (!/^(side|below|full)$/.test(v)) v='side'; sel.value=v;   // 문서별로 기억, 없으면 마지막에 쓴 것
   function num(c){ return +c.id.slice(2); }
@@ -2013,7 +2031,7 @@ const redoMarks = c => applyHist(c, hist.redo, hist.undo);
 function renderDocCase(main, c){ if (renderDocCase._last!==c.id){ jumpCur=null; renderDocCase._last=c.id; }
   c.marks = c.marks || [];
   if (drawMode && (hist.id!==c.id || !isPdf(c) || !editable())) setDraw(false);   // 다른 문서·읽기 전용으로 넘어가면 선 그리기를 끈다
-  if (hist.id!==c.id){ hist={id:c.id, undo:[], redo:[]}; pdfListMode=false; textRevMode=false; areaMode=false; document.body.classList.remove('area-mode'); noteFilter='all'; stopPlacing(); }
+  if (hist.id!==c.id){ hist={id:c.id, undo:[], redo:[]}; pdfListMode=false; textRevMode=false; areaMode=false; document.body.classList.remove('area-mode'); noteFilter='all'; ptab=loadPtab(c.id); stopPlacing(); }
   const head = document.createElement('div'); head.className='head';
   main.appendChild(head);
   const sheet=document.createElement('div'); sheet.className='sheet pdf'; sheet.id='pdfSheet';
@@ -2030,7 +2048,7 @@ function renderDocCase(main, c){ if (renderDocCase._last!==c.id){ jumpCur=null; 
   else { pdfState=null; if (editable()) bindTextSelection($('#doc'), c); }
 }
 function refreshPdfHead(c){
-  const head=$('.head'); if (!head) return;
+  const head=$('.head'); if (!head) return; curNames=c.pnames||[]; if (ptab>(c.pages||0)) ptab=0;
   const n=k=>c.marks.filter(m=>m.kind===k).length;
   const hidden = document.body.classList.contains('hide-marks');
   const canEdit = editable();
@@ -2048,6 +2066,7 @@ function refreshPdfHead(c){
      ${(isPdf(c)&&canEdit)?`<button class="btn small ${drawMode?'on':''}" id="inkBtn" title="쪽 위에 선과 도형을 긋습니다 — 자유선·직선·이어 그리기·직사각형·원, 색·두께·실선/파선/점선, 고르기·그룹·옮기기 · 그은 선을 우클릭하면 메모 · Alt+P">${drawMode?'선 그리기 끝':'선 그리기'}</button>`:''}
      ${canEdit?`<button class="btn small" id="freeBtn" title="특정 자리에 묶이지 않는 메모 — 이 쪽 전체나 문서 전체에 답니다. 나중에 「자리 잡기」로 자리를 붙일 수 있고, 여러 건을 한꺼번에 붙여 넣을 수도 있습니다">메모 추가 ▾</button>`:''}<button class="btn small" id="copyList">메모 복사</button>${canEdit?`<button class="btn small" id="findRepBtn" title="메모 제목·내용·답글·총평에서 글을 찾아 한꺼번에 바꿉니다(카톡 이름 → 공식 이름 등). 원문은 바꾸지 않습니다 · Ctrl+H">찾아 바꾸기</button>`:''}<button class="btn small" id="exportBtn" title="문서와 표시·메모를 파일로 — HTML(메모 팝업, 인쇄로 PDF) 또는 주석 PDF">내보내기 ▾</button><button id="exportPdfBtn" hidden></button>`)
     + `<div class="hint">원본 그대로${canEdit?' · 글자를 드래그하면 삭제·바꾸기·메모, 그림 부분은 네모로 끌면 영역 메모 (Alt+1/2/3)':''} · Ctrl+휠 확대·축소 · 메모 이동 Alt+↑/↓ (Alt+Q/X 도 됨)${isPdf(c)?' · 쪽 이동 Alt+W/S, 번호 Alt+G':''}${(isPdf(c)&&canEdit)?' · 선 그리기 Alt+P(그은 선 우클릭 = 메모)':''}${(isPdf(c)&&c.fromImg)?' · 그림을 누르면 새 탭에 크게':''} · 메모 서식: 굵게 Ctrl+B · 기울임 Ctrl+I · 밑줄 Ctrl+U · 취소선 Ctrl+Shift+X${canEdit?' · 찾아 바꾸기 Ctrl+H':''}</div>`;
+  if (hasTabs(c)){ head.insertAdjacentHTML('beforeend', ptabsHtml(c)); head.querySelectorAll('#ptabs [data-pt]').forEach(b=>b.addEventListener('click', ()=>setPtab(c, +b.dataset.pt))); }   // 쪽 탭(층별)
   { const dm=$('#docMore'); if (dm) dm.addEventListener('click', ()=>openFold(dm, head, null, '')); }
   { const fb=$('#freeBtn'); if (fb) fb.addEventListener('click', ()=>freeMemoMenu(c)); const fr=$('#findRepBtn'); if (fr) fr.addEventListener('click', ()=>findReplace(c)); const pm=$('#pgMgr'); if (pm) pm.addEventListener('click', ()=>pageManager(c)); }
   $('#toggleMarks').addEventListener('click', ()=>{ document.body.classList.toggle('hide-marks'); if (drawMode && document.body.classList.contains('hide-marks')) setDraw(false); refreshPdfHead(c); });
@@ -2148,12 +2167,13 @@ function parseBulk(c, raw){ const out=[], bad=[]; raw.replace(/\r/g,'').split(/\
     const tag=m[1].trim(), title=m[2].trim(), body=lines.slice(1).join('\n').trim();
     if (tag==='총평'){ out.push({note:[title, body].filter(Boolean).join('\n')}); return; }
     if (tag==='전체' || tag==='문서'){ out.push({page:0, title, body}); return; }
-    const pm=/^(\d+)\s*쪽(?:\s*@\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+))?$/.exec(tag); if (!(pm && isPdf(c) && +pm[1]>=1 && +pm[1]<=(c.pages||0))){ bad.push(lines[0].slice(0,24)); return; }
+    let tag2=tag; { const nm=/^(.+?)(?:\s*@\s*([\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+))?$/.exec(tag); if (nm && isPdf(c)){ const want=nm[1].trim().toLowerCase(); const k=(c.pnames||[]).findIndex(x=>x && x.trim().toLowerCase()===want); if (k>=0) tag2=(k+1)+'쪽'+(nm[2]?' @'+nm[2]:''); } }   // [3층] · [3층 @x,y,w,h] = 쪽 이름으로
+    const pm=/^(\d+)\s*쪽(?:\s*@\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+))?$/.exec(tag2); if (!(pm && isPdf(c) && +pm[1]>=1 && +pm[1]<=(c.pages||0))){ bad.push(lines[0].slice(0,24)); return; }
     const o={page:+pm[1], title, body}; if (pm[2]!=null){ const r=[+pm[2],+pm[3],+pm[4],+pm[5]]; if (r.every(v=>v>=0 && v<=1) && r[2]>0 && r[3]>0 && r[0]+r[2]<=1.0001 && r[1]+r[3]<=1.0001) o.rect=r.map(v=>+v.toFixed(4)); else { bad.push(lines[0].slice(0,24)); return; } }   // [2쪽 @왼쪽,위,폭,높이] = 쪽 대비 0-1 비율의 네모 자리까지
     out.push(o); });
   return {out, bad}; }
 function bulkPaste(c){ if (!editable()) return; const ov=document.createElement('div'); ov.className='ask';
-  ov.innerHTML=`<div class="box wide" role="dialog" aria-modal="true"><p><b>메모 묶음 붙여 넣기</b><br><span class="dim">빈 줄로 나눈 덩어리마다 메모 한 건이 됩니다. 첫 줄이 자리와 제목: <code>[전체] 제목</code>${isPdf(c)?' · <code>[3쪽] 제목</code> · <code>[3쪽 @0.2,0.1,0.3,0.15] 제목</code>(쪽 대비 왼쪽·위·폭·높이 비율로 네모 자리까지)':''} · <code>[총평]</code> 은 총평 칸 끝에 덧붙입니다. 둘째 줄부터가 내용입니다.</span></p><textarea class="bulk" rows="12" placeholder="[전체] 각 층 상수도·퇴수구&#10;층마다 상수도와 퇴수구(로봇청소기용)&#10;&#10;[총평]&#10;10/12 카톡 요약 …"></textarea><div class="row"><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok">넣기</button></div></div>`;
+  ov.innerHTML=`<div class="box wide" role="dialog" aria-modal="true"><p><b>메모 묶음 붙여 넣기</b><br><span class="dim">빈 줄로 나눈 덩어리마다 메모 한 건이 됩니다. 첫 줄이 자리와 제목: <code>[전체] 제목</code>${isPdf(c)?' · <code>[3쪽] 제목</code>'+((c.pnames||[]).some(Boolean)?' · <code>['+esc((c.pnames||[]).find(Boolean))+'] 제목</code>(쪽 이름으로)':'')+' · <code>[3쪽 @0.2,0.1,0.3,0.15] 제목</code>(쪽 대비 왼쪽·위·폭·높이 비율로 네모 자리까지)':''} · <code>[총평]</code> 은 총평 칸 끝에 덧붙입니다. 둘째 줄부터가 내용입니다.</span></p><textarea class="bulk" rows="12" placeholder="[전체] 각 층 상수도·퇴수구&#10;층마다 상수도와 퇴수구(로봇청소기용)&#10;&#10;[총평]&#10;10/12 카톡 요약 …"></textarea><div class="row"><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok">넣기</button></div></div>`;
   const ta=ov.querySelector('textarea'), sum=ov.querySelector('.bsum');
   const show=()=>{ const {out, bad}=parseBulk(c, ta.value); const n=out.filter(x=>!x.note).length, k=out.filter(x=>x.note).length; sum.textContent = ta.value.trim() ? `메모 ${fmtN(n)}건${k?' · 총평 '+fmtN(k)+'덩어리':''}${bad.length?' · 못 읽음 '+fmtN(bad.length)+'('+bad[0]+'…)':''}` : ''; };
   ta.addEventListener('input', show);
@@ -2266,22 +2286,23 @@ document.addEventListener('pointercancel', e=>{ if (mkDrag && e.pointerId===mkDr
 document.addEventListener('keydown', e=>{ if (e.key==='Escape' && mkDrag) mkDragEnd(e, false); });
 // 자리 없는 쪽 메모를 다른 쪽(또는 문서 전체)으로
 async function movePageMemo(c, i){ const m=c.marks[i]; if (!m || !m.free || !isPdf(c) || !editable()) return; const n=c.pages||0;
-  const opts=[{l:'문서 전체', v:0}]; for (let p=1;p<=n;p++) opts.push({l:p+'쪽 전체', v:p});
-  const v=await askPick(`${i+1}번 메모를 어디로 옮길까요? (지금 ${m.page?m.page+'쪽 전체':'문서 전체'})`, opts.filter(o=>o.v!==(m.page||0))); if (v===null || v===undefined) return;
+  const opts=[{l:'문서 전체', v:0}]; for (let p=1;p<=n;p++) opts.push({l:pgLabel(p)+' 전체', v:p});
+  const v=await askPick(`${i+1}번 메모를 어디로 옮길까요? (지금 ${m.page?pgLabel(m.page)+' 전체':'문서 전체'})`, opts.filter(o=>o.v!==(m.page||0))); if (v===null || v===undefined) return;
   pushHist(c, `메모 ${i+1} → ${v?v+'쪽':'문서 전체'}`); m.page=v; m.mt=Date.now(); sortMarks(c); view.dirty=true; const ub=$('#undoBtn'); if (ub) ub.disabled=false; syncTopActs(); drawAllMarks(c); refreshPdfHead(c); const ni=c.marks.indexOf(m); setTimeout(()=>focusHunk(ni+1), 50); }
 // ══════════════ 쪽 관리(그림 쪽 문서): 쪽 추가 · 교체 · 삭제 · 순서 — 새 버전 없이 지금 PDF 를 다시 묶는다 ══════════════
 // 그림 한 장을 쪽 하나로(picsToPdf 와 같은 규칙: 긴 변 1190pt · 이름표 · 안 보이는 표식 한 줄)
-async function addPicPage(out, bytes, name, guardFont){ const LONG=1190; const ji=jpegInfo(bytes); let em;
-  if (ji && ji.n<=3) em=await out.embedJpg(bytes); else if (isPngBytes(bytes) && bytes.length<=4*1024*1024) em=await out.embedPng(bytes); else em=await out.embedJpg(await rasterJpeg(bytes, 0.92));
+function cleanPicName(fn){ return (fn||'').replace(/\.[^.]+$/,'').replace(/^\d{1,2}[\s_\-.]+/,'').replace(/_/g,' ').trim(); }   // 「01_3층.jpg」→「3층」: 앞의 정렬용 번호는 빼고 _ 는 공백(쪽 이름·이름표)
+async function addPicPage(out, bytes, name, guardFont, cache){ const LONG=1190; const ji=jpegInfo(bytes); let em=cache&&cache.get(bytes);
+  if (!em){ if (ji && ji.n<=3) em=await out.embedJpg(bytes); else if (isPngBytes(bytes) && bytes.length<=4*1024*1024) em=await out.embedPng(bytes); else em=await out.embedJpg(await rasterJpeg(bytes, 0.92)); if (cache) cache.set(bytes, em); }   // 같은 그림을 두 쪽에(복제) 쓰면 한 번만 넣는다
   const k=LONG/Math.max(em.width, em.height), W=em.width*k, H=em.height*k; const cap = name ? await captionPng(name, W) : null; const capImg = cap ? await out.embedPng(cap.bytes) : null, capH = cap ? cap.h : 0;
   const pg=out.addPage([W, H+capH]); pg.drawImage(em, {x:0, y:0, width:W, height:H}); if (capImg) pg.drawImage(capImg, {x:0, y:H, width:W, height:capH});
   pg.drawText(PICS_GUARD, {x:1, y:1, size:1, font:guardFont, opacity:0}); return pg; }
 // entries: [{old:쪽번호}] 그대로 · [{old, rep:{bytes,name}}] 그 자리를 새 그림으로 · [{img:{bytes,name}}] 새 쪽
 async function rebuildPics(c, entries, say){ if (!window.PDFLib) await loadScript('vendor/pdf-lib.min.js'); const L=window.PDFLib;
   const srcDoc=await L.PDFDocument.load(b64ToBytes(c.pdf)); const out=await L.PDFDocument.create(); out.setCreator(PICS_MARK); const guardFont=await out.embedFont(L.StandardFonts.Helvetica);
-  const keep=entries.filter(e=>e.old && !e.rep).map(e=>e.old-1); const copied=keep.length ? await out.copyPages(srcDoc, keep) : []; let ci=0;
+  const keep=entries.filter(e=>e.old && !e.rep).map(e=>e.old-1); const copied=keep.length ? await out.copyPages(srcDoc, keep) : []; let ci=0; const cache=new Map();
   for (let i=0;i<entries.length;i++){ const e=entries[i]; if (say) say(`쪽 묶는 중 ${i+1}/${entries.length}`, i/Math.max(1,entries.length));
-    if (e.old && !e.rep) out.addPage(copied[ci++]); else { const im=e.rep||e.img; await addPicPage(out, im.bytes, im.name, guardFont); } }
+    if (e.old && !e.rep) out.addPage(copied[ci++]); else { const im=e.rep||e.img; await addPicPage(out, im.bytes, (e.name!=null?e.name:im.name), guardFont, cache); } }   // 이름표는 쪽 이름으로
   return await out.save({useObjectStreams:true}); }
 // 묶은 PDF 를 문서에 넣고 메모·선의 쪽 번호를 옮긴다. 지운 쪽의 메모는 「문서 전체」 메모로 내려 두고(답글·반응 그대로), 선은 지운다
 function applyPageOps(c, entries, bytes){ const map={}; entries.forEach((e,i)=>{ if (e.old) map[e.old]=i+1; }); let moved=0, freed=0, inkDel=0; const now=Date.now();
@@ -2289,33 +2310,34 @@ function applyPageOps(c, entries, bytes){ const map={}; entries.forEach((e,i)=>{
     const was=m.page; m.page=0; m.free=true; m.rects=[[0,0,0,0]]; delete m.area; delete m.ink; delete m.lost; let t=(m.text||'').replace(/^\[(영역|선)\] \d+쪽$/, '').trim(); m.text=(t?t+' ':'')+`(지운 ${was}쪽)`; m.mt=now; freed++; });
   (c.inks||[]).forEach(k=>{ if (!k || k.del) return; const np=map[k.p]; if (np){ if (np!==k.p){ k.p=np; k.mt=inkBump(k); } } else { k.del=true; k.mt=inkBump(k); inkDel++; } });
   const added=entries.filter(e=>e.img||e.rep).map(e=>(e.img||e.rep).name).filter(Boolean);
-  c.pdf=b64(bytes); c.pdfDirty=true; c.pages=entries.length; c.ocr=null; c.ocrAt=''; delete c._ghosts; if (added.length) c.srcName=((c.srcName||'')+(c.srcName?' + ':'')+(added.length===1?added[0]:added[0]+' 외 '+fmtN(added.length-1)+'개')).slice(0,200);
+  c.pdf=b64(bytes); c.pdfDirty=true; c.pages=entries.length; c.pnames=entries.map(e=>e.name||''); if (ptab>c.pages) ptab=0; c.ocr=null; c.ocrAt=''; delete c._ghosts; if (added.length) c.srcName=((c.srcName||'')+(c.srcName?' + ':'')+(added.length===1?added[0]:added[0]+' 외 '+fmtN(added.length-1)+'개')).slice(0,200);
   sortMarks(c); hist={id:c.id, undo:[], redo:[]}; view.dirty=true;   // PDF 가 바뀌어 되돌리기 기록은 뜻이 없다
   return {moved, freed, inkDel}; }
 async function pageManager(c){ if (!isPdf(c) || !c.fromImg || !editable() || roVer) return; if (!c.pdf){ toast('PDF 가 메모리에 없습니다. 문서를 다시 열어 주세요'); return; }
   if (hist.id===c.id && hist.undo.length && !(await ask('쪽을 바꾸면 지금까지의 되돌리기 기록이 지워집니다(저장은 아직 안 됩니다). 계속할까요?', '계속'))) return;
-  const n=c.pages||0; let entries=[]; for (let p=1;p<=n;p++) entries.push({old:p});
+  const n=c.pages||0; let entries=[]; for (let p=1;p<=n;p++) entries.push({old:p, name:(c.pnames||[])[p-1]||''});
   const thumb=p=>{ const cv=document.querySelector(`.page[data-p="${p}"] canvas`); if (!cv || !cv.width) return ''; try { const t=document.createElement('canvas'); const w=96, h=Math.max(1, Math.round(cv.height*w/cv.width)); t.width=w; t.height=h; t.getContext('2d').drawImage(cv, 0, 0, w, h); return t.toDataURL('image/jpeg', .6); } catch(e){ return ''; } };
   const thumbs={}; for (let p=1;p<=n;p++) thumbs[p]=thumb(p);
   const cnt=p=>({m:(c.marks||[]).filter(m=>m.page===p && !m.free).length, f:(c.marks||[]).filter(m=>m.page===p && m.free).length, k:liveInks(c, p).length});
   const ov=document.createElement('div'); ov.className='ask';
   ov.innerHTML=`<div class="box wide pgm" role="dialog" aria-modal="true"><p><b>쪽 관리</b><br><span class="dim">쪽을 더하고 바꾸고 지우고 순서를 바꿉니다. 메모·선은 쪽을 따라가고, 교체한 쪽의 메모·선은 그 쪽에 남습니다(자리는 끌어서 맞추세요). 지운 쪽의 메모는 「문서 전체」 메모로 내려갑니다. 적용하면 되돌리기 기록이 지워지고, 저장(Ctrl+S)해야 남습니다.</span></p><div class="pgl"></div><div class="row"><input type="file" class="pgf" accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,image/*" multiple hidden><button class="btn" data-v="add">쪽 추가(그림 고르기)</button><button class="btn" data-v="reset">처음으로</button><span class="bsum dim"></span><span class="spacer"></span><button class="btn" data-v="x">취소</button><button class="btn primary" data-v="ok" disabled>적용</button></div></div>`;
   const list=ov.querySelector('.pgl'), fin=ov.querySelector('.pgf'), sum=ov.querySelector('.bsum'), okb=ov.querySelector('[data-v="ok"]'); let mode={kind:'add', at:-1};
-  const changed=()=>entries.length!==n || entries.some((e,i)=>e.old!==i+1 || e.rep);
+  const changed=()=>entries.length!==n || entries.some((e,i)=>e.old!==i+1 || e.rep || (e.name||'')!==((c.pnames||[])[i]||''));
   const draw=()=>{ list.innerHTML=entries.map((e,i)=>{ const k=e.old?cnt(e.old):null; const info=k?[k.m?'메모 '+fmtN(k.m):'', k.f?'쪽 메모 '+fmtN(k.f):'', k.k?'선 '+fmtN(k.k):''].filter(Boolean).join(' · '):'';
       const th = e.rep ? `<img class="th" src="${e.rep.url}" alt="">` : (e.old ? (thumbs[e.old]?`<img class="th" src="${thumbs[e.old]}" alt="">`:`<span class="th txt">${e.old}쪽</span>`) : `<img class="th" src="${e.img.url}" alt="">`);
       const lab = e.old ? (e.rep ? `${e.old}쪽 → <b class="rep">${esc(e.rep.name)}</b> 로 교체` : `${e.old}쪽`) : `새 그림 · ${esc(e.img.name)}`;
-      return `<div class="pgrow" data-i="${i}">${th}<span class="nm"><b>${i+1}쪽</b> ← ${lab}${info?`<br><span class="dim">${info}</span>`:''}</span><span class="acts"><button class="tb" data-act="up" title="위로" ${i?'':'disabled'}>↑</button><button class="tb" data-act="down" title="아래로" ${i<entries.length-1?'':'disabled'}>↓</button>${e.old?`<button class="tb" data-act="rep">${e.rep?'다른 그림':'교체'}</button>`:''}<button class="tb danger" data-act="del">삭제</button></span></div>`; }).join('') || '<div class="dim">쪽이 없습니다 — 「쪽 추가」로 그림을 넣어 주세요</div>';
+      return `<div class="pgrow" data-i="${i}">${th}<span class="nm"><b>${i+1}쪽</b> ← ${lab}<input class="pnm" data-i="${i}" value="${esc(e.name||'')}" placeholder="쪽 이름(예: 3층)" title="탭과 메모 칩에 보이는 이름 — 「여러 건 붙여 넣기」의 [이름] 에도 씁니다">${info?`<br><span class="dim">${info}</span>`:''}</span><span class="acts"><button class="tb" data-act="up" title="위로" ${i?'':'disabled'}>↑</button><button class="tb" data-act="down" title="아래로" ${i<entries.length-1?'':'disabled'}>↓</button>${e.old?`<button class="tb" data-act="rep">${e.rep?'다른 그림':'교체'}</button>`:''}<button class="tb" data-act="dup" title="이 쪽을 하나 더 — 같은 그림을 두 쪽에 쓸 때(예: 3·5층이 한 장)">복제</button><button class="tb danger" data-act="del">삭제</button></span></div>`; }).join('') || '<div class="dim">쪽이 없습니다 — 「쪽 추가」로 그림을 넣어 주세요</div>';
     const ch=changed(); sum.textContent=`쪽 ${fmtN(entries.length)}장${ch?' · 바뀜':''}`; okb.disabled=!ch || !entries.length; };
   const done=()=>{ ov.remove(); document.removeEventListener('keydown', onKey); entries.forEach(e=>{ const im=e.img||e.rep; if (im && im.url) URL.revokeObjectURL(im.url); }); }; const onKey=e=>{ if (e.key==='Escape') done(); };
   list.addEventListener('click', e=>{ const b=e.target.closest('button[data-act]'); if (!b) return; const i=+b.closest('.pgrow').dataset.i; const act=b.dataset.act;
     if (act==='up' && i>0){ [entries[i-1], entries[i]]=[entries[i], entries[i-1]]; } else if (act==='down' && i<entries.length-1){ [entries[i+1], entries[i]]=[entries[i], entries[i+1]]; }
-    else if (act==='del'){ entries.splice(i, 1); } else if (act==='rep'){ mode={kind:'rep', at:i}; fin.multiple=false; fin.value=''; fin.click(); return; } draw(); });
+    else if (act==='del'){ entries.splice(i, 1); } else if (act==='dup'){ entries.splice(i+1, 0, Object.assign({}, entries[i])); } else if (act==='rep'){ mode={kind:'rep', at:i}; fin.multiple=false; fin.value=''; fin.click(); return; } draw(); });
+  list.addEventListener('input', e=>{ const inp=e.target.closest('.pnm'); if (!inp) return; entries[+inp.dataset.i].name=inp.value; const ch=changed(); sum.textContent=`쪽 ${fmtN(entries.length)}장${ch?' · 바뀜':''}`; okb.disabled=!ch || !entries.length; });   // 이름은 다시 안 그린다(커서가 튄다)
   ov.querySelector('[data-v="add"]').addEventListener('click', ()=>{ mode={kind:'add', at:-1}; fin.multiple=true; fin.value=''; fin.click(); });
-  ov.querySelector('[data-v="reset"]').addEventListener('click', ()=>{ entries=[]; for (let p=1;p<=n;p++) entries.push({old:p}); draw(); });
+  ov.querySelector('[data-v="reset"]').addEventListener('click', ()=>{ entries=[]; for (let p=1;p<=n;p++) entries.push({old:p, name:(c.pnames||[])[p-1]||''}); draw(); });
   fin.addEventListener('change', async ()=>{ const files=[...fin.files].filter(f=>/\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name) || /^image\//.test(f.type)); if (!files.length){ toast('그림 파일(JPG·PNG 등)만 넣을 수 있습니다'); return; }
-    files.sort((a,b)=>a.name.localeCompare(b.name, 'ko', {numeric:true})); const items=[]; for (const f of files) items.push({bytes:new Uint8Array(await f.arrayBuffer()), name:f.name.replace(/\.[^.]+$/,''), url:URL.createObjectURL(f)});
-    if (mode.kind==='rep' && entries[mode.at]){ entries[mode.at].rep=items[0]; } else { items.forEach(im=>entries.push({img:im})); } draw(); });
+    files.sort((a,b)=>a.name.localeCompare(b.name, 'ko', {numeric:true})); const items=[]; for (const f of files) items.push({bytes:new Uint8Array(await f.arrayBuffer()), name:cleanPicName(f.name), url:URL.createObjectURL(f)});
+    if (mode.kind==='rep' && entries[mode.at]){ entries[mode.at].rep=items[0]; } else { items.forEach(im=>entries.push({img:im, name:im.name})); } draw(); });   // 새 쪽의 이름은 파일 이름(앞 번호 뺌) · 교체는 이름 유지
   ov.querySelector('[data-v="x"]').addEventListener('click', done); ov.addEventListener('mousedown', e=>{ if (e.target===ov) done(); });
   okb.addEventListener('click', async ()=>{ if (!changed() || !entries.length) return; okb.disabled=true; Prog.start('쪽 다시 묶는 중');
     try { const bytes=await rebuildPics(c, entries, (t,f)=>Prog.set(f*0.9, t)); const r=applyPageOps(c, entries, bytes); Prog.done(); done();
@@ -2331,7 +2353,7 @@ function renderPdfNotes(c){
     <div class="note ghost ${m.kind}" data-h="g${g.h}" id="ghost${g.h}"><div class="n"><span class="mk ghost static">${g.h}ʹ</span><span class="chip kd ${m.kind}">${KIND[m.kind]}</span>${m.by?`<span class="who" style="--nc:${col||'var(--ink-3)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${g.lost?'<span class="chip lostc" title="이 버전에서 같은 구절을 못 찾았습니다. 이월하면 자리 없이 목록에 남습니다">자리 못 찾음</span>':''}<span class="chip hint ${/사라짐|있음$/.test(g.hint)&&!/남아/.test(g.hint)?'ok':''}">${esc(g.hint)}</span><span class="spacer"></span>${editable()?`<button class="carry" data-carry="${esc(m.mid)}" title="이 메모를 이 버전에 넣어 이어서 다룹니다">이월</button>`:''}</div>
     <div class="gt">${esc(m.text||'')}${m.kind==='rep'?` <span class="after">→ ${esc(m.after||'')}</span>`:''}</div>${(m.reason||'').trim()?`<div class="txt">${md(m.reason||'', m.segs)}</div>`:''}${(m.replies||[]).length?`<div class="replies ro">${m.replies.map(r=>`<div class="reply"><div class="rh"><span class="who" style="--nc:${userColor(r.by, r.byId)||'var(--ink-3)'}">${esc(userLabel(r.by, r.byId)||r.by||'')}</span></div><div class="rb">${md(r.t||'')}</div></div>`).join('')}</div>`:''}</div>`; }).join('');
   notes.innerHTML = `<div class="notes-title">교정 메모 ${fmtN(c.marks.length)}${ghostHead}${filterHtml(c)}${(roVer && artifactNs && c.marks.length)?`<button class="tb danger" id="vdelAll" title="이 옛 버전의 메모를 모두 지웁니다 — 바로 저장되고 되돌리기가 없습니다">이 버전 메모 모두 지우기</button>`:''}</div>` + c.marks.map((m,i)=>{ const h=i+1; return `
-    <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:''}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${m.free?'':`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
+    <div class="note ${m.kind}${m.free?' free':''}${m.st?' '+m.st:''}${inFilter(m)?'':' fout'}" data-h="${h}" data-p="${m.page||0}" id="note${h}"><div class="n"><span class="nn" title="${m.free?(m.page?'이 쪽으로':'문서 맨 위로'):'원문의 이 자리로'}">${h}</span><span class="chip">${KIND[m.kind]}</span>${m.free?`<span class="chip scope" title="특정 자리에 묶이지 않은 메모">${scopeLabel(m)}</span>`:((m.page&&pgName(m.page))?`<span class="chip scope" title="${m.page}쪽">${esc(pgName(m.page))}</span>`:'')}${m.st?`<span class="chip st ${m.st}" title="${esc(userLabel(m.stBy||'', m.stById||'')||m.stBy||'')} · ${esc(fmtTs(m.stAt))}">${STATUS[m.st]}</span>`:''}${m.by?`<span class="who" title="작성자" style="--nc:${userColor(m.by, m.byId)||'var(--ink-2)'}">${esc(userLabel(m.by, m.byId))}</span>`:''}${i===c.marks.length-1?'<span class="chip last">마지막</span>':''}${m.lost?'<span class="chip lostc" title="본문을 고치면서 이 구절이 사라져 표시할 자리가 없습니다. 글은 남아 있습니다.">자리 잃음</span>':''}${m.from?`<span class="chip ver" title="${m.from}버전의 ${m.fromNo||''}번 메모를 이월">${m.from}버전에서</span>`:''}${m.edited?`<span class="chip edm" title="${esc(fmtTs(m.edited))} 수정">수정됨</span>`:''}${m.free?'':`<span class="k">${esc(m.text)}</span>`}<span class="nv"><button class="nvb" data-d="-1" title="바로 위 메모 (Alt+↑)" tabindex="-1">↑</button><button class="nvb" data-d="1" title="바로 아래 메모 (Alt+↓)" tabindex="-1">↓</button></span></div>
     ${m.free?((canEdit && m._editing)?`<input class="ftitle" data-i="${i}" data-f="text" value="${esc(m.text||'')}" placeholder="무엇에 대한 메모인지(제목)">`:(m.text?`<div class="ft">${esc(m.text)}</div>`:'')):''}
     ${(()=>{ const ed=canEdit && m._editing; const canDel=canEdit && (!m.byId || (me && (m.byId===me.id || me.role==='admin')));
       const body = ed
@@ -2688,6 +2710,7 @@ async function drawPages(){
     } catch(e){ console.warn('auto ocr', e); } })(); }
   st.io=io;
   if (editable() && !cont.dataset.selBound){ cont.dataset.selBound='1'; bindSelection(cont, st.c); }
+  applyPtab();   // 쪽 탭이 골라져 있으면 그 쪽만
   fitOverall();
   if (pendingSpot){ const ps=pendingSpot; pendingSpot=null; restoreSpot(ps.y, !!ps.focus); }
 }
@@ -4121,12 +4144,13 @@ function jumpMemo(dir){
 function headLine(){ const h=$('.head'), t=$('.top'); const tb=t ? t.getBoundingClientRect().bottom : 0; const hb=(h && getComputedStyle(h).position==='sticky') ? h.getBoundingClientRect().bottom : 0; return Math.max(tb, hb) + 6; }
 function currentPage(){
   const line=headLine(); let cur=0;
-  for (const el of document.querySelectorAll('.page')){ const r=el.getBoundingClientRect(); cur=+el.dataset.p; if (r.bottom > line) break; }
+  for (const el of document.querySelectorAll('.page:not(.tabhide)')){ const r=el.getBoundingClientRect(); cur=+el.dataset.p; if (r.bottom > line) break; }
   return cur;
 }
 function goPage(n){
   // 목록만 보기 중이면 문서 위 표시로 돌아간 뒤 이동
   if (pdfListMode){ const c=view.draft||cases.find(x=>x.id===view.id); if (c){ pdfListMode=false; refreshPdfHead(c); setTimeout(()=>goPage(n), 80); } return; }
+  if (ptab && Math.round(n)!==ptab){ const c=view.draft||cases.find(x=>x.id===view.id); if (c && n>=1 && n<=(c.pages||0)){ setPtab(c, Math.round(n)); return; } }   // 탭 보기 중엔 쪽 이동 = 탭 바꾸기
   const pages=document.querySelectorAll('.page'); if (!pages.length) return;
   n=Math.max(1, Math.min(pages.length, Math.round(n)||1));
   const el=document.querySelector(`.page[data-p="${n}"]`); if (!el) return;
@@ -4237,7 +4261,7 @@ function renderEdit(main){
   wz.addEventListener('dragover', e=>{ e.preventDefault(); wz.classList.add('over'); }); wz.addEventListener('dragleave', ()=>wz.classList.remove('over'));
   wz.addEventListener('drop', e=>{ e.preventDefault(); wz.classList.remove('over'); const f=e.dataTransfer.files[0]; if (f) takeWord(f); });
   $('#fWord').addEventListener('change', ()=>{ const f=$('#fWord').files[0]; if (f) takeWord(f); });
-  let pdfBytes=null;
+  let pdfBytes=null; let picNames=[];
   const setPdf=(bytes, name, label)=>{ let bin=''; for (let i=0;i<bytes.length;i+=0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i,i+0x8000));
     pdfB64 = btoa(bin); pdfBytes=bytes; pdfName = name; pdfDirty = true; view.dirty=true;
     const kb=n=>fmtN(Math.round(n/1024))+'KB';
@@ -4252,7 +4276,7 @@ function renderEdit(main){
   const takePdf = async f => {
     if (!/\.pdf$/i.test(f.name)){ $('#pdfName').textContent='PDF 파일만 넣을 수 있습니다.'; return; }
     if (f.size > 50*1024*1024){ $('#pdfName').textContent='50MB를 넘는 PDF는 넣을 수 없습니다. 쪽을 나누거나 압축해 주세요.'; return; }
-    const buf = new Uint8Array(await f.arrayBuffer()); pdfOrig=null; setPdf(buf, f.name, f.name);
+    const buf = new Uint8Array(await f.arrayBuffer()); pdfOrig=null; picNames=[]; setPdf(buf, f.name, f.name);
     if (buf.length > 3*1024*1024) await shrinkNow();   // 큰 PDF 는 기본으로 압축(「원본 그대로 쓰기」로 되돌릴 수 있음)
     if (!$('#fTitle').value.trim()) $('#fTitle').value = f.name.replace(/\.pdf$/i,'');
   };
@@ -4269,11 +4293,11 @@ function renderEdit(main){
       const items=[]; let title='';
       for (const f of use){
         if (isHtm(f)){ const r=picsFromHtml(await f.text()); if (r.title && !title) title=r.title; r.pics.forEach(x=>items.push(x)); }
-        else items.push({bytes:new Uint8Array(await f.arrayBuffer()), name:f.name.replace(/\.[^.]+$/,'')});
+        else items.push({bytes:new Uint8Array(await f.arrayBuffer()), name:cleanPicName(f.name)});
       }
       if (!items.length){ Prog.done(); $('#pdfName').textContent='쪽으로 삼을 그림을 찾지 못했습니다.'; return; }
       if (items.length===1 && !items[0].auto) items[0].name='';   // 한 장뿐이면 이름표를 달지 않는다(제목이 곧 이름)
-      const out=await picsToPdf(items, (t,f)=>Prog.set(f, t)); Prog.done();
+      const out=await picsToPdf(items, (t,f)=>Prog.set(f, t)); Prog.done(); picNames=items.map(x=>x.name||'');   // 쪽 이름 = 그림 이름(한 장뿐이면 빈 이름)
       const label = use.length===1 ? use[0].name : `${use[0].name} 외 ${fmtN(use.length-1)}개`;
       pdfOrig=null; fromImg=true; setPdf(out.bytes, label, `${label} → 그림 ${fmtN(out.pages)}쪽`);
       if (out.skipped) toast(`작은 그림 ${fmtN(out.skipped)}개는 쪽으로 삼지 않았습니다`);
@@ -4315,11 +4339,11 @@ function renderEdit(main){
     const err=m=>{ $('#editMsg').textContent=m; $('#editMsg').className='msg err'; };
     let d; const id = c.id || ('c'+Date.now().toString(36));
     // 새 버전: 지금 내용을 스냅샷으로 남긴다(PDF 원본은 저장 때 따로 올린다)
-    const snap = newVer ? {n:nextVer-1, ts:c.ts||'', type:c.type||'text', src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:JSON.parse(JSON.stringify(c.marks||[])), inks:JSON.parse(JSON.stringify(liveInks(c))), note:c.note||'', noteSegs:c.noteSegs||[], ocr:c.ocr||null, pages:c.pages||0, srcName:c.srcName||'', pdfFile: isPdf(c)?`docs/${c.id}.v${nextVer-1}.pdf.enc`:''} : null;
+    const snap = newVer ? {n:nextVer-1, ts:c.ts||'', type:c.type||'text', src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:JSON.parse(JSON.stringify(c.marks||[])), inks:JSON.parse(JSON.stringify(liveInks(c))), pnames:(c.pnames||[]).slice(), note:c.note||'', noteSegs:c.noteSegs||[], ocr:c.ocr||null, pages:c.pages||0, srcName:c.srcName||'', pdfFile: isPdf(c)?`docs/${c.id}.v${nextVer-1}.pdf.enc`:''} : null;
     const oldPdf = newVer && isPdf(c) ? c.pdf : '';
     if (type==='pdf'){
       if (!pdfB64) return err('PDF 파일을 넣어 주세요.');
-      d = Object.assign({}, c, base, {type:'pdf', id, pdf: pdfB64, pdfDirty, fromImg, srcName: pdfDirty ? pdfName : (c.srcName||''), marks: c.marks||[], lockPw, unlockReq, vis:readVis()}); delete d.src; delete d.html;   // srcName: 넣은 파일 이름(그림 여러 장이면 「첫 파일 외 N개」) — 정보 수정 화면에서 지금 원본이 무엇인지 보여 준다
+      d = Object.assign({}, c, base, {type:'pdf', id, pdf: pdfB64, pdfDirty, fromImg, srcName: pdfDirty ? pdfName : (c.srcName||''), pnames: pdfDirty ? (fromImg ? picNames : []) : (c.pnames||[]), marks: c.marks||[], lockPw, unlockReq, vis:readVis()}); delete d.src; delete d.html;   // srcName: 넣은 파일 이름(그림 여러 장이면 「첫 파일 외 N개」) — 정보 수정 화면에서 지금 원본이 무엇인지 보여 준다
     } else if (type==='html'){
       const src=$('#fHtml').value; if (!src.trim()) return err('HTML 코드를 넣어 주세요.');
       if (src.length>6*1024*1024) return err('HTML 이 6MB 를 넘습니다. 그림을 줄여 주세요.');
@@ -4334,7 +4358,8 @@ function renderEdit(main){
     }
     if (snap){ d.versions=[...(c.versions||[]), snap]; delete d._verCache; restoreInks(d, '[]'); d.carried=[]; d._ghosts=null; d.note=''; d.noteSegs=[];
       // 자리 없는 메모(문서·쪽 전체)만 새 버전으로 따라간다 — 자리가 없으니 새 도면에서도 그대로 뜻이 통한다(일정·공통 요구 같은 것). 자리 있는 메모는 전처럼 옛 버전에 남는다(2026-10-12).
-      d.marks=(c.marks||[]).filter(m=>m.free).map(m=>{ const x=JSON.parse(JSON.stringify(m)); delete x._editing; delete x._fresh; delete x._snap; x.mid=newMid(); x.mt=Date.now(); x.from=snap.n||((c.versions||[]).length+1); x.fromNo=(c.marks.indexOf(m)+1); return x; });
+      d.marks=(c.marks||[]).filter(m=>m.free).map(m=>{ const x=JSON.parse(JSON.stringify(m)); delete x._editing; delete x._fresh; delete x._snap; x.mid=newMid(); x.mt=Date.now(); x.from=snap.n||((c.versions||[]).length+1); x.fromNo=(c.marks.indexOf(m)+1); if (x.page && type==='pdf' && fromImg){ const nm=((c.pnames||[])[x.page-1]||'').trim().toLowerCase(); const k=nm?picNames.findIndex(n=>n && n.trim().toLowerCase()===nm):-1; if (k>=0) x.page=k+1; else if (x.page>picNames.length){ x.text=((x.text||'')+' (이전 '+x.page+'쪽)').trim(); x.page=0; } }   // 쪽 메모는 같은 이름의 쪽으로 따라가고, 이름이 없는데 쪽 수가 줄었으면 문서 전체 메모로(어느 탭에도 안 보이는 고아를 만들지 않게 · 2026-10-14)
+      return x; });
       if (isPdf(d)){ if (!oldPdf) return err('이전 버전의 PDF 가 메모리에 없습니다. 문서를 다시 열어 주세요'); d._snapPdf={file:snap.pdfFile, b64:oldPdf}; d.ocr=null; d.ocrAt=''; } }
     view = {mode:'case', id:d.id, draft:d, dirty:true, show:'side', newVer:false};
     const btn=$('#doCompare'); const msgEl=$('#editMsg'); msgEl.className='msg'; msgEl.id='saveMsg';
@@ -4664,7 +4689,7 @@ async function saveDoc(c, btn){
     let merged=0; try { merged=await mergeRemote(c); } catch(e){ console.warn('merge', e); }
     if (merged) toast(`다른 사람이 저장한 내용 ${fmtN(merged)}건을 합쳤습니다`);
     const cleanMarks=(c.marks||[]).map(m=>{ const o=Object.assign({}, m); delete o._editing; delete o._fresh; return o; });
-    const payload = isPdf(c) ? {marks:cleanMarks, note:c.note||'', pages:c.pages||0, fromImg:!!c.fromImg, inks:cleanInks(c), crop:(hasCrop(c)?cropOf(c):null), noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, ocr:c.ocr||null, ocrAt:c.ocrAt||'', srcName:c.srcName||'', versions:c.versions||[], carried:c.carried||[]} : {src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:cleanMarks, note:c.note||'', noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, versions:c.versions||[], carried:c.carried||[]};
+    const payload = isPdf(c) ? {marks:cleanMarks, note:c.note||'', pages:c.pages||0, pnames:(c.pnames||[]), fromImg:!!c.fromImg, inks:cleanInks(c), crop:(hasCrop(c)?cropOf(c):null), noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, ocr:c.ocr||null, ocrAt:c.ocrAt||'', srcName:c.srcName||'', versions:c.versions||[], carried:c.carried||[]} : {src:c.src||'', html:c.html||'', htmlSrc:c.htmlSrc||'', marks:cleanMarks, note:c.note||'', noteSegs:c.noteSegs||[], noteMt:c.noteMt||0, versions:c.versions||[], carried:c.carried||[]};
     // 문서 열쇠 정하기
     //  · 지정 없음·잠금 없음 = 사이트키 K
     //  · 지정 없음·잠금 = 문서키 Kd 를 문서 비밀번호와 편집자키 Ke 로 각각 감쌈(편집자는 비밀번호 없이 연다)
